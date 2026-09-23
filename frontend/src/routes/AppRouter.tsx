@@ -34,11 +34,11 @@ import { AdminMembersPage } from '@/features/admin/AdminMembersPage';
 export const AppRouter = () => {
   return (
     <Routes>
+      <Route path="/registro-antiguos" element={<OldPlayerRegisterPage />} />
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registro" element={<RegisterPage />} />
-        <Route path="/registro-antiguos" element={<OldPlayerRegisterPage />} />
         <Route path="/noticias" element={<NewsPage />} />
         <Route path="/noticias/:slug" element={<NewsDetailPage />} />
         <Route path="/eventos" element={<EventsPage />} />

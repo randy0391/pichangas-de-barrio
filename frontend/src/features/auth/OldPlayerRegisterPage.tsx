@@ -52,7 +52,7 @@ export const OldPlayerRegisterPage = () => {
 
   if (!isTemporaryPeriod) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4">
         <div className="bg-red-50 text-red-800 p-8 rounded-xl max-w-lg text-center">
             <h2 className="text-2xl font-bold mb-4">Enlace Expirado</h2>
             <p>El periodo de registro rápido para jugadores antiguos ha terminado.</p>
@@ -64,14 +64,14 @@ export const OldPlayerRegisterPage = () => {
 
   if (isSubmitting) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center">
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
         <FootballSpinner />
       </div>
     );
   }
 
   return (
-    <div className="min-h-[calc(100vh-10rem)] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
