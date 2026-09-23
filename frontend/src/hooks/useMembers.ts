@@ -2,11 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import { User, PaginatedResponse } from '@/types';
 
-export const useMembers = (page = 1) => {
+export const useMembers = (page = 1, search = '') => {
   return useQuery({
-    queryKey: ['members', page],
+    queryKey: ['members', page, search],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<User>>(`/members?page=${page}`);
+      const { data } = await api.get<PaginatedResponse<User>>(`/members?page=${page}&search=${search}`);
       return data;
     },
   });

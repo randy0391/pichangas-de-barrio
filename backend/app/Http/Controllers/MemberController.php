@@ -9,10 +9,22 @@ class MemberController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->user() && $request->user()->role === 'admin') {
-            return UserResource::collection(User::orderBy('created_at', 'desc')->paginate(15));
+        $query = User::query();
+
+        if ($request->has('search') && $request->get('search') !== '') {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('dni', 'like', "%{$search}%")
+                  ->orWhere('nickname', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
         }
-        return UserResource::collection(User::where('status', 'active')->where('is_approved', true)->orderBy('created_at', 'desc')->paginate(15));
+
+        if ($request->user() && $request->user()->role === 'admin') {
+            return UserResource::collection($query->orderBy('created_at', 'desc')->paginate(15));
+        }
+        return UserResource::collection($query->where('status', 'active')->where('is_approved', true)->orderBy('created_at', 'desc')->paginate(15));
     }
 
     public function show($id)

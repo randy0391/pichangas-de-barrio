@@ -13,7 +13,8 @@ import { Eye } from 'lucide-react';
 
 export const AdminMembersPage = () => {
     const [page, setPage] = useState(1);
-    const { data: response, isLoading } = useMembers(page);
+    const [searchQuery, setSearchQuery] = useState('');
+    const { data: response, isLoading } = useMembers(page, searchQuery);
     const { mutate: updateMember } = useUpdateMember();
     const { mutate: deleteMember, isPending: isDeleting } = useDeleteMember();
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -21,21 +22,8 @@ export const AdminMembersPage = () => {
     const [viewingUser, setViewingUser] = useState<User | null>(null);
     const [isViewOpen, setIsViewOpen] = useState(false);
 
-    const [searchQuery, setSearchQuery] = useState('');
-
-    const allMembers = response?.data || [];
+    const members = response?.data || [];
     const meta = response?.meta;
-    
-    const members = (allMembers as User[]).filter(m => {
-        if (!searchQuery) return true;
-        const query = searchQuery.toLowerCase();
-        return (
-            m.name.toLowerCase().includes(query) ||
-            (m.dni && m.dni.toLowerCase().includes(query)) ||
-            (m.nickname && m.nickname.toLowerCase().includes(query)) ||
-            (m.email && m.email.toLowerCase().includes(query))
-        );
-    });
 
     if (isLoading && !members.length) return <div className="py-20 flex justify-center"><FootballSpinner /></div>;
 
@@ -62,10 +50,10 @@ export const AdminMembersPage = () => {
                         placeholder="Buscar por nombre, DNI o apodo..." 
                         className="w-full sm:w-64 bg-slate-100 dark:bg-slate-900 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-600 dark:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent"
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                     />
                     <div className="bg-slate-100 dark:bg-slate-900 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                        Total: {(members as User[]).length} jugadores
+                        Total: {meta?.total || 0} jugadores
                     </div>
                     <Button onClick={openCreate} className="bg-accent text-white font-bold h-10 px-4 rounded-xl flex items-center gap-2">
                         <Plus size={18} /> Añadir Jugador
