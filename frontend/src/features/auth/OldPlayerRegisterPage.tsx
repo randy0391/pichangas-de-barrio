@@ -137,9 +137,6 @@ export const OldPlayerRegisterPage = () => {
                     </Button>
                 </form>
 
-                <div className="text-center text-sm font-medium text-slate-500 pt-2">
-                    ¿Eres nuevo? <Link to="/register" className="text-accent hover:text-lime-500 transition-colors font-bold text-base">Ir al registro normal</Link>
-                </div>
             </div>
         </div>
       </motion.div>
