@@ -60,6 +60,10 @@ return [
             'report' => false,
         ],
 
+        'cloudinary' => [
+            'driver' => 'cloudinary',
+        ],
+
         'gcs' => [
             'driver' => 'gcs',
             'key_file_path' => env('GOOGLE_CLOUD_KEY_FILE', null), // optional: /path/to/service-account.json
