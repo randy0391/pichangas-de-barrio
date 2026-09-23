@@ -22,8 +22,8 @@ export const MemberFormDialog: React.FC<MemberFormDialogProps> = ({ open, onOpen
         email: '',
         dni: '',
         phone: '',
-        position: '',
-        jersey_number: '',
+        position: undefined,
+        jersey_number: undefined,
         role: 'member',
         status: 'active'
     });
@@ -37,8 +37,8 @@ export const MemberFormDialog: React.FC<MemberFormDialogProps> = ({ open, onOpen
                 email: '',
                 dni: '',
                 phone: '',
-                position: '',
-                jersey_number: '',
+                position: undefined,
+                jersey_number: undefined,
                 role: 'member',
                 status: 'active'
             });
@@ -46,7 +46,11 @@ export const MemberFormDialog: React.FC<MemberFormDialogProps> = ({ open, onOpen
     }, [member, open]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData(prev => ({ 
+            ...prev, 
+            [name]: name === 'jersey_number' ? (value ? parseInt(value) : undefined) : (value === '' ? undefined : value)
+        }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
