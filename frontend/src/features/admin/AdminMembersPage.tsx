@@ -8,6 +8,8 @@ import { UserCircle, ShieldAlert, Trash2, Edit, UserX, UserCheck, Plus } from 'l
 import { toast } from 'sonner';
 import { Pagination } from '@/components/ui/Pagination';
 import { MemberFormDialog } from './MemberFormDialog';
+import { MemberViewDialog } from './MemberViewDialog';
+import { Eye } from 'lucide-react';
 
 export const AdminMembersPage = () => {
     const [page, setPage] = useState(1);
@@ -16,6 +18,8 @@ export const AdminMembersPage = () => {
     const { mutate: deleteMember, isPending: isDeleting } = useDeleteMember();
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [viewingUser, setViewingUser] = useState<User | null>(null);
+    const [isViewOpen, setIsViewOpen] = useState(false);
 
     const members = response?.data || [];
     const meta = response?.meta;
@@ -66,8 +70,12 @@ export const AdminMembersPage = () => {
                                 <motion.tr initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <td className="p-5">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center">
-                                                <UserCircle size={24} />
+                                            <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0 overflow-hidden border border-slate-700">
+                                                {m.avatar ? (
+                                                    <img src={m.avatar} alt="Avatar" className="w-full h-full object-cover shrink-0" />
+                                                ) : (
+                                                    <UserCircle size={24} />
+                                                )}
                                             </div>
                                             <div>
                                                 <span className="font-bold text-slate-900 dark:text-white block">{m.name}</span>
@@ -94,6 +102,15 @@ export const AdminMembersPage = () => {
                                         )}
                                     </td>
                                     <td className="p-5 flex justify-end gap-2">
+                                        <Button 
+                                            variant="outline" 
+                                            className="border-slate-300 dark:border-slate-700 rounded-xl h-9 px-3 hover:text-primary hover:bg-primary/10" 
+                                            onClick={() => { setViewingUser(m); setIsViewOpen(true); }}
+                                            title="Ver Jugador"
+                                        >
+                                            <Eye size={16} className="text-slate-500" />
+                                        </Button>
+
                                         <Button 
                                             variant="outline" 
                                             className="border-slate-300 dark:border-slate-700 rounded-xl h-9 px-3" 
@@ -162,6 +179,7 @@ export const AdminMembersPage = () => {
             </div>
 
             <MemberFormDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} member={selectedUser} />
+            <MemberViewDialog open={isViewOpen} onOpenChange={setIsViewOpen} member={viewingUser} />
         </div>
     );
 };

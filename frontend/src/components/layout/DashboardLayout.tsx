@@ -75,8 +75,12 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
         <aside className="w-64 bg-slate-950 border-r border-slate-800 hidden md:flex flex-col relative z-10 shadow-2xl shrink-0">
           <div className="p-6">
             <div className="flex items-center space-x-4 mb-8 p-4 bg-slate-900 rounded-2xl border border-slate-800">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent text-white rounded-full flex items-center justify-center font-black text-xl shadow-[0_0_15px_rgba(0,210,255,0.3)]">
-                {user.name?.charAt(0)?.toUpperCase() || '?'}
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent text-white rounded-full flex items-center justify-center font-black text-xl shadow-[0_0_15px_rgba(0,210,255,0.3)] shrink-0 overflow-hidden">
+                {user.avatar ? (
+                    <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover shrink-0" />
+                ) : (
+                    user.name?.charAt(0)?.toUpperCase() || '?'
+                )}
               </div>
               <div>
                 <p className="font-bold text-white leading-tight line-clamp-1">{user.name || 'Usuario'}</p>

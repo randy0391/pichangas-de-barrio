@@ -66,7 +66,7 @@ export const ProfilePage = () => {
             >
                 <div className="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-primary/20 to-transparent skew-x-12"></div>
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
-                    <div className="relative group">
+                    <div className="relative group shrink-0">
                         <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 bg-slate-800 flex items-center justify-center shadow-xl">
                             {user?.avatar ? (
                                 <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
