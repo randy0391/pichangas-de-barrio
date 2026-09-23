@@ -21,6 +21,12 @@ Route::get('/galleries/{id}', [GalleryController::class, 'show']);
 // Home Data
 Route::get('/home-data', [\App\Http\Controllers\PublicHomeController::class, 'index']);
 
+// Temporary route to migrate
+Route::get('/setup-database-777', function () {
+    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    return response()->json(['message' => 'Migration ran successfully']);
+});
+
 // Auth routes (with strict rate limiting against brute force)
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
