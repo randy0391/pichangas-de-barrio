@@ -8,6 +8,9 @@ export interface User {
   jersey_number: number | null;
   avatar: string | null;
   bio: string | null;
+  birth_date?: string | null;
+  blood_type?: string | null;
+  nickname?: string | null;
   role: 'admin' | 'member';
   status: 'active' | 'inactive';
   is_approved: boolean;

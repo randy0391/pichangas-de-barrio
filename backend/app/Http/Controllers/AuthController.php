@@ -26,6 +26,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->dni), // DNI is the password
             'phone' => $request->phone,
             'position' => $request->position,
+            'birth_date' => $request->birth_date,
             'payment_receipt' => $receiptPath,
             'is_approved' => false,
         ]);
@@ -87,10 +88,13 @@ class AuthController extends Controller
             'position' => 'nullable|in:portero,defensa,medio,delantero',
             'jersey_number' => 'nullable|integer|min:1|max:99',
             'bio' => 'nullable|string|max:500',
+            'birth_date' => 'nullable|date',
+            'blood_type' => 'nullable|string|max:10',
+            'nickname' => 'nullable|string|max:50',
         ]);
 
         $user = $request->user();
-        $user->update($request->only(['name', 'email', 'phone', 'position', 'jersey_number', 'bio']));
+        $user->update($request->only(['name', 'email', 'phone', 'position', 'jersey_number', 'bio', 'birth_date', 'blood_type', 'nickname']));
 
         return new UserResource($user->fresh());
     }

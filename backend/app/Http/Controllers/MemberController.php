@@ -31,6 +31,9 @@ class MemberController extends Controller
             'jersey_number' => 'nullable|integer',
             'role' => 'nullable|in:admin,member',
             'status' => 'nullable|in:active,inactive',
+            'birth_date' => 'nullable|date',
+            'blood_type' => 'nullable|string|max:10',
+            'nickname' => 'nullable|string|max:50',
         ]);
 
         $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['dni']);
@@ -54,6 +57,9 @@ class MemberController extends Controller
             'role' => 'sometimes|in:admin,member',
             'status' => 'sometimes|in:active,inactive',
             'is_approved' => 'sometimes|boolean',
+            'birth_date' => 'nullable|date',
+            'blood_type' => 'nullable|string|max:10',
+            'nickname' => 'nullable|string|max:50',
         ]);
 
         if (isset($validated['dni']) && $validated['dni'] !== $user->dni) {

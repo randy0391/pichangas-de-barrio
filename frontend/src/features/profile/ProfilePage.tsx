@@ -11,14 +11,16 @@ import { motion } from 'motion/react';
 export const ProfilePage = () => {
     const { user, fetchUser } = useAuthStore();
     const [formData, setFormData] = useState({
-        name: '', email: '', phone: '', position: 'medio', jersey_number: '', bio: ''
+        name: '', email: '', phone: '', position: 'medio', jersey_number: '', bio: '', birth_date: '', blood_type: '', nickname: ''
     });
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         if (user) {
             setFormData({
                 name: user.name || '', email: user.email || '', phone: user.phone || '',
-                position: user.position || 'medio', jersey_number: user.jersey_number?.toString() || '', bio: user.bio || ''
+                position: user.position || 'medio', jersey_number: user.jersey_number?.toString() || '', bio: user.bio || '',
+                birth_date: user.birth_date || '', blood_type: user.blood_type || '', nickname: user.nickname || ''
             });
         }
     }, [user]);
@@ -42,12 +44,15 @@ export const ProfilePage = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSaving(true);
         try {
             await api.put('/user', formData);
             await fetchUser();
             toast.success('Perfil actualizado correctamente');
         } catch (error) {
             toast.error('Error al actualizar el perfil');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -165,6 +170,35 @@ export const ProfilePage = () => {
                                 />
                             </div>
                         </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Fecha de Nacimiento</label>
+                                <Input 
+                                    type="date"
+                                    value={formData.birth_date} 
+                                    onChange={e => setFormData({...formData, birth_date: e.target.value})}
+                                    className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 rounded-xl focus-visible:ring-primary"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Grupo Sanguíneo</label>
+                                <Input 
+                                    placeholder="Ej: O+" 
+                                    value={formData.blood_type} 
+                                    onChange={e => setFormData({...formData, blood_type: e.target.value})}
+                                    className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 rounded-xl focus-visible:ring-primary"
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Apodo (Cómo te dicen)</label>
+                            <Input 
+                                placeholder="Ej: El Mago, El Tanque..." 
+                                value={formData.nickname} 
+                                onChange={e => setFormData({...formData, nickname: e.target.value})}
+                                className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 rounded-xl focus-visible:ring-primary"
+                            />
+                        </div>
                     </div>
 
                     <div className="space-y-2">
@@ -178,8 +212,8 @@ export const ProfilePage = () => {
                     </div>
 
                     <div className="pt-4 flex justify-end">
-                        <Button type="submit" className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-bold uppercase tracking-widest rounded-xl h-14 px-8 shadow-[0_0_15px_rgba(0,210,255,0.3)] border-0">
-                            <Save className="mr-2 h-5 w-5" /> Actualizar Ficha
+                        <Button type="submit" disabled={isSaving} className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-bold uppercase tracking-widest rounded-xl h-14 px-8 shadow-[0_0_15px_rgba(0,210,255,0.3)] border-0">
+                            {isSaving ? 'Actualizando...' : <><Save className="mr-2 h-5 w-5" /> Actualizar Ficha</>}
                         </Button>
                     </div>
                 </form>
