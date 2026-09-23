@@ -59,7 +59,7 @@ class DashboardController extends Controller
     {
         // Estadísticas generales
         $stats = [
-            'total_members' => User::where('role', 'member')->count(),
+            'total_members' => User::count(),
             'total_admins' => User::where('role', 'admin')->count(),
             'active_convocatorias' => Convocatoria::where('status', 'abierta')->count(),
             'total_convocatorias' => Convocatoria::count(),
