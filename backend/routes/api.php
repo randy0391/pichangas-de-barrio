@@ -74,6 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/media/upload', [MediaController::class, 'upload']);
         Route::delete('/media/{id}', [MediaController::class, 'destroy']);
 
+        Route::post('/members', [MemberController::class, 'store']);
         Route::put('/members/{id}', [MemberController::class, 'update']);
         Route::delete('/members/{id}', [MemberController::class, 'destroy']);
 

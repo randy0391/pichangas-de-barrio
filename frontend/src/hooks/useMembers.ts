@@ -23,6 +23,20 @@ export const useMember = (id: number) => {
   });
 };
 
+export const useCreateMember = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<User>) => {
+      const { data: response } = await api.post(`/members`, data);
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    }
+  });
+};
+
 export const useUpdateMember = () => {
   const queryClient = useQueryClient();
   return useMutation({

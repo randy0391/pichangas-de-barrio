@@ -20,10 +20,47 @@ class MemberController extends Controller
         return new UserResource(User::findOrFail($id));
     }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'dni' => 'required|string|max:20|unique:users',
+            'phone' => 'required|string|max:20|unique:users',
+            'position' => 'nullable|string',
+            'jersey_number' => 'nullable|integer',
+            'role' => 'nullable|in:admin,member',
+            'status' => 'nullable|in:active,inactive',
+        ]);
+
+        $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['dni']);
+        $validated['is_approved'] = true; // Auto approve manually added players
+
+        $user = User::create($validated);
+        return new UserResource($user);
+    }
+
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $user->update($request->only(['role', 'status', 'is_approved']));
+        
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|string|email|max:255|unique:users,email,'.$id,
+            'dni' => 'sometimes|string|max:20|unique:users,dni,'.$id,
+            'phone' => 'sometimes|string|max:20|unique:users,phone,'.$id,
+            'position' => 'nullable|string',
+            'jersey_number' => 'nullable|integer',
+            'role' => 'sometimes|in:admin,member',
+            'status' => 'sometimes|in:active,inactive',
+            'is_approved' => 'sometimes|boolean',
+        ]);
+
+        if (isset($validated['dni']) && $validated['dni'] !== $user->dni) {
+            $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['dni']); // Update password if DNI changes
+        }
+
+        $user->update($validated);
         return new UserResource($user);
     }
 
