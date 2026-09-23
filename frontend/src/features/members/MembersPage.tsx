@@ -98,9 +98,9 @@ export const MembersPage = () => {
 
                                 {/* Avatar */}
                                 <div className="mt-8 mb-4 relative">
-                                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-200 dark:border-slate-800 group-hover:border-primary transition-colors bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+                                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-200 dark:border-slate-800 group-hover:border-primary transition-colors bg-slate-200 dark:bg-slate-800 flex items-center justify-center shrink-0 aspect-square">
                                         {m.avatar ? (
-                                            <img src={m.avatar} alt={m.name} className="w-full h-full object-cover" />
+                                            <img src={m.avatar} alt={m.name} className="w-full h-full object-cover shrink-0" />
                                         ) : (
                                             <UserIcon size={40} className="text-slate-400 dark:text-slate-600" />
                                         )}

@@ -26,11 +26,12 @@ export const MemberViewDialog = ({ member, open, onOpenChange }: MemberViewDialo
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[500px] bg-slate-950 border-slate-800 text-white p-0 overflow-hidden">
-                <div className="bg-gradient-to-br from-slate-900 to-black p-8 flex flex-col items-center border-b border-slate-800 relative">
-                    <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,rgba(0,210,255,0.15),transparent_50%)]"></div>
-                    
-                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-slate-800 bg-slate-900 flex items-center justify-center shadow-2xl relative z-10 shrink-0">
+            <DialogContent className="sm:max-w-[500px] bg-slate-950 border-slate-800 text-white p-0 overflow-hidden flex flex-col max-h-[90vh]">
+                <div className="overflow-y-auto no-scrollbar">
+                    <div className="bg-gradient-to-br from-slate-900 to-black p-6 md:p-8 flex flex-col items-center border-b border-slate-800 relative shrink-0">
+                        <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,rgba(0,210,255,0.15),transparent_50%)]"></div>
+                        
+                        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-slate-800 bg-slate-900 flex items-center justify-center shadow-2xl relative z-10 shrink-0 aspect-square">
                         {member.avatar ? (
                             <img src={member.avatar} alt={member.name} className="w-full h-full object-cover shrink-0" />
                         ) : (
@@ -76,6 +77,7 @@ export const MemberViewDialog = ({ member, open, onOpenChange }: MemberViewDialo
                             <p className="font-medium text-xs truncate" title={member.email}>{member.email}</p>
                         </div>
                     </div>
+                </div>
                 </div>
             </DialogContent>
         </Dialog>
