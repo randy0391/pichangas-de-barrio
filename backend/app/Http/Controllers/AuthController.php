@@ -16,7 +16,7 @@ class AuthController extends Controller
     {
         $receiptPath = null;
         if ($request->hasFile('payment_receipt')) {
-            $receiptPath = $request->file('payment_receipt')->store('receipts', 'public');
+            $receiptPath = $request->file('payment_receipt')->store('receipts', env('FILESYSTEM_DISK', 'public'));
         }
 
         $user = User::create([
@@ -112,7 +112,7 @@ class AuthController extends Controller
             Storage::disk('public')->delete($user->avatar);
         }
 
-        $path = $request->file('avatar')->store('avatars', 'public');
+        $path = $request->file('avatar')->store('avatars', env('FILESYSTEM_DISK', 'public'));
         $user->update(['avatar' => $path]);
 
         return new UserResource($user->fresh());

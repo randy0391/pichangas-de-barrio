@@ -14,7 +14,7 @@ class MediaController extends Controller
         $mime = $file->getMimeType();
         $type = Str::startsWith($mime, 'video/') ? 'video' : 'foto';
         
-        $path = $file->store('media', 'public');
+        $path = $file->store('media', env('FILESYSTEM_DISK', 'public'));
 
         $media = Media::create([
             'gallery_id' => $request->gallery_id,

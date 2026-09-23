@@ -13,7 +13,7 @@ class GalleryResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'cover_image' => $this->cover_image ? request()->getSchemeAndHttpHost() . '/storage/' . $this->cover_image : null,
+            'cover_image' => $this->cover_image ? (str_starts_with($this->cover_image, 'http') ? $this->cover_image : \Illuminate\Support\Facades\Storage::disk(env('FILESYSTEM_DISK', 'public'))->url($this->cover_image)) : null,
             'media_count' => $this->media_count ?? $this->media()->count(),
             'media' => MediaResource::collection($this->whenLoaded('media')),
             'created_at' => $this->created_at,

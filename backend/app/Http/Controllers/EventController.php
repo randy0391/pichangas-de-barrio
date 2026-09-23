@@ -30,7 +30,7 @@ class EventController extends Controller
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
         if ($request->hasFile('cover_image')) {
-            $data['cover_image'] = $request->file('cover_image')->store('events', 'public');
+            $data['cover_image'] = $request->file('cover_image')->store('events', env('FILESYSTEM_DISK', 'public'));
         }
         return new EventResource(Event::create($data));
     }
@@ -40,7 +40,7 @@ class EventController extends Controller
         $event = Event::findOrFail($id);
         $data = $request->validated();
         if ($request->hasFile('cover_image')) {
-            $data['cover_image'] = $request->file('cover_image')->store('events', 'public');
+            $data['cover_image'] = $request->file('cover_image')->store('events', env('FILESYSTEM_DISK', 'public'));
         }
         $event->update($data);
         return new EventResource($event);

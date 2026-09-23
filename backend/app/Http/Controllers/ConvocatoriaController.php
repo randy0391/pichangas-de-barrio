@@ -87,7 +87,7 @@ class ConvocatoriaController extends Controller
 
             $receiptPath = null;
             if ($request->hasFile('payment_receipt')) {
-                $receiptPath = $request->file('payment_receipt')->store('convocatorias_receipts', 'public');
+                $receiptPath = $request->file('payment_receipt')->store('convocatorias_receipts', env('FILESYSTEM_DISK', 'public'));
             }
 
             Confirmacion::updateOrCreate(
