@@ -32,7 +32,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
 
   if (isLoading || !user) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
+      <div className="min-h-screen flex flex-col bg-slate-950">
         <Navbar />
         <div className="flex-grow flex items-center justify-center pt-16">
           <FootballSpinner />
@@ -42,7 +42,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen flex flex-col bg-slate-950">
       <Navbar />
       <div className="flex-grow flex pt-[72px] flex-col md:flex-row">
         
