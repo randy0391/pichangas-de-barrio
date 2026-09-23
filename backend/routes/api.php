@@ -21,6 +21,18 @@ Route::get('/galleries/{id}', [GalleryController::class, 'show']);
 // Home Data
 Route::get('/home-data', [\App\Http\Controllers\PublicHomeController::class, 'index']);
 
+Route::get('/setup-database', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
+            '--seed' => true,
+            '--force' => true
+        ]);
+        return response()->json(['message' => '¡Base de datos construida con éxito! Ya puedes iniciar sesión.']);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
+
 // Auth routes (with strict rate limiting against brute force)
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
