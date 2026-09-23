@@ -4,8 +4,6 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
-  withCredentials: true,
-  withXSRFToken: true,
   headers: {
     'Accept': 'application/json',
     'Cache-Control': 'no-cache',
@@ -14,10 +12,17 @@ const api = axios.create({
   },
 });
 
+// Add a request interceptor to attach the token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const getCsrfToken = async () => {
-  await axios.get(`${BACKEND_URL}/sanctum/csrf-cookie`, {
-    withCredentials: true,
-  });
+  // No longer needed for token-based auth
 };
 
 export default api;

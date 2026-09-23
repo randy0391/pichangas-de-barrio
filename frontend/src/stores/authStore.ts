@@ -24,19 +24,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   login: async (credentials) => {
-    await getCsrfToken();
-    await api.post('/login', credentials);
+    const response = await api.post('/login', credentials);
+    if (response.data.token) {
+      localStorage.setItem('auth_token', response.data.token);
+    }
     await get().fetchUser();
   },
 
   register: async (data) => {
-    await getCsrfToken();
-    await api.post('/register', data);
+    const response = await api.post('/register', data);
+    if (response.data.token) {
+      localStorage.setItem('auth_token', response.data.token);
+    }
     await get().fetchUser();
   },
 
   logout: async () => {
     await api.post('/logout');
+    localStorage.removeItem('auth_token');
     set({ user: null, isAuthenticated: false });
   },
 
