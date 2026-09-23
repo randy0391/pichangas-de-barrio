@@ -17,7 +17,7 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'position' => $this->position,
             'jersey_number' => $this->jersey_number,
-            'avatar' => $this->avatar ? url('storage/' . $this->avatar) : null,
+            'avatar' => $this->avatar ? request()->getSchemeAndHttpHost() . '/storage/' . $this->avatar : null,
             'bio' => $this->bio,
             'birth_date' => $this->birth_date,
             'blood_type' => $this->blood_type,
@@ -25,7 +25,7 @@ class UserResource extends JsonResource
             'role' => $this->role,
             'status' => $this->status,
             'is_approved' => (bool) $this->is_approved,
-            'payment_receipt' => $this->payment_receipt ? url('storage/' . $this->payment_receipt) : null,
+            'payment_receipt' => $this->payment_receipt ? request()->getSchemeAndHttpHost() . '/storage/' . $this->payment_receipt : null,
             'created_at' => $this->created_at,
         ];
     }

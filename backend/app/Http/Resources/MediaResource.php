@@ -12,8 +12,8 @@ class MediaResource extends JsonResource
         return [
             'id' => $this->id,
             'type' => $this->type,
-            'file_path' => url('storage/' . $this->file_path),
-            'thumbnail_path' => $this->thumbnail_path ? url('storage/' . $this->thumbnail_path) : null,
+            'file_path' => request()->getSchemeAndHttpHost() . '/storage/' . $this->file_path,
+            'thumbnail_path' => $this->thumbnail_path ? request()->getSchemeAndHttpHost() . '/storage/' . $this->thumbnail_path : null,
             'title' => $this->title,
             'caption' => $this->caption,
             'sort_order' => $this->sort_order,

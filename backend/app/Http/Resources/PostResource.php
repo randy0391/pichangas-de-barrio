@@ -14,7 +14,7 @@ class PostResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'content' => $this->content,
-            'featured_image' => $this->featured_image ? (str_starts_with($this->featured_image, 'http') ? $this->featured_image : url('storage/' . $this->featured_image)) : null,
+            'featured_image' => $this->featured_image ? (str_starts_with($this->featured_image, 'http') ? $this->featured_image : request()->getSchemeAndHttpHost() . '/storage/' . $this->featured_image) : null,
             'category' => $this->category,
             'status' => $this->status,
             'link' => $this->link,
