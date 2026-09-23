@@ -14,7 +14,7 @@ class PostResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'content' => $this->content,
-            'featured_image' => $this->featured_image ? (str_starts_with($this->featured_image, 'http') ? $this->featured_image : \Illuminate\Support\Facades\Storage::disk(env('FILESYSTEM_DISK', 'public'))->url($this->featured_image)) : null,
+            'featured_image' => \App\Helpers\ImageHelper::getUrl($this->featured_image),
             'category' => $this->category,
             'status' => $this->status,
             'link' => $this->link,

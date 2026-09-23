@@ -17,7 +17,7 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'position' => $this->position,
             'jersey_number' => $this->jersey_number,
-            'avatar' => $this->avatar ? (str_starts_with($this->avatar, 'http') ? $this->avatar : \Illuminate\Support\Facades\Storage::disk(env('FILESYSTEM_DISK', 'public'))->url($this->avatar)) : null,
+            'avatar' => \App\Helpers\ImageHelper::getUrl($this->avatar),
             'bio' => $this->bio,
             'birth_date' => $this->birth_date,
             'blood_type' => $this->blood_type,
@@ -25,7 +25,7 @@ class UserResource extends JsonResource
             'role' => $this->role,
             'status' => $this->status,
             'is_approved' => (bool) $this->is_approved,
-            'payment_receipt' => $this->payment_receipt ? (str_starts_with($this->payment_receipt, 'http') ? $this->payment_receipt : \Illuminate\Support\Facades\Storage::disk(env('FILESYSTEM_DISK', 'public'))->url($this->payment_receipt)) : null,
+            'payment_receipt' => \App\Helpers\ImageHelper::getUrl($this->payment_receipt),
             'created_at' => $this->created_at,
         ];
     }

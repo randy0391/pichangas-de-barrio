@@ -16,7 +16,7 @@ class EventResource extends JsonResource
             'location' => $this->location,
             'event_date' => $this->event_date->format('Y-m-d'),
             'event_time' => $this->event_time->format('H:i'),
-            'cover_image' => $this->cover_image ? url('storage/' . $this->cover_image) : null,
+            'cover_image' => \App\Helpers\ImageHelper::getUrl($this->cover_image),
             'status' => $this->status,
             'max_participants' => $this->max_participants,
             'creator' => new UserResource($this->whenLoaded('creator')),
