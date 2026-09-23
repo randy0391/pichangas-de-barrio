@@ -137,8 +137,6 @@ export const RegisterPage = () => {
                             />
                         </div>
                     </div>
-                    </div>
-                    
                     <div className="space-y-2 mt-4 p-4 border border-accent/20 bg-accent/5 rounded-xl">
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">📄 Comprobante de Pago (Inscripción)</label>
                         <p className="text-xs text-slate-500 mb-2">Para completar tu registro debes subir una foto o PDF de tu pago de colaboración.</p>
