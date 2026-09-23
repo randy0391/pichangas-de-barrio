@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: `${BACKEND_URL}/api`,
   withCredentials: true,
   withXSRFToken: true,
   headers: {
@@ -13,7 +15,7 @@ const api = axios.create({
 });
 
 export const getCsrfToken = async () => {
-  await axios.get('http://localhost:8000/sanctum/csrf-cookie', {
+  await axios.get(`${BACKEND_URL}/sanctum/csrf-cookie`, {
     withCredentials: true,
   });
 };
