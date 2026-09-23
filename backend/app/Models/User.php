@@ -24,7 +24,10 @@ class User extends Authenticatable
         'role',
         'status',
         'is_approved',
-        'payment_receipt'
+        'payment_receipt',
+        'birth_date',
+        'blood_type',
+        'nickname'
     ];
 
     protected $hidden = [
