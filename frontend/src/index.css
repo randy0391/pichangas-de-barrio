@@ -1,0 +1,100 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #00d2ff;
+  --color-primary-light: #5ce1ff;
+  --color-primary-dark: #0096b8;
+  
+  --color-accent: #ff007f;
+  --color-accent-light: #ff4da6;
+  --color-accent-dark: #b30059;
+  
+  --color-lime: #a3ff00;
+  --color-dark-bg: #0f172a;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 99%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 191 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 330 100% 50%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 78 100% 50%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 191 100% 50%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 225 30% 6%;
+    --foreground: 210 40% 98%;
+    --card: 225 30% 10%;
+    --card-foreground: 210 40% 98%;
+    --popover: 225 30% 10%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 191 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 330 100% 50%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 225 30% 15%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 78 100% 50%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 225 30% 15%;
+    --input: 225 30% 15%;
+    --ring: 191 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-gray-200;
+    scrollbar-width: thin;
+    scrollbar-color: #334155 #0f172a;
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
+  /* Custom WebKit Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #070b14; 
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e293b; 
+    border-radius: 5px;
+    border: 2px solid #070b14;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334155; 
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
