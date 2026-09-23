@@ -32,8 +32,8 @@ class AuthController extends Controller
         ]);
         
         return response()->json([
+            'message' => 'Registro exitoso, pendiente de aprobación.',
             'user' => new UserResource($user),
-            'token' => $user->createToken('auth')->plainTextToken,
         ]);
     }
 

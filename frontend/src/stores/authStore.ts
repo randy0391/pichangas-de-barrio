@@ -32,11 +32,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   register: async (data) => {
-    const response = await api.post('/register', data);
-    if (response.data.token) {
-      localStorage.setItem('auth_token', response.data.token);
-    }
-    await get().fetchUser();
+    await api.post('/register', data);
+    // No guardamos token ni hacemos fetchUser para evitar auto-login a cuentas pendientes
   },
 
   logout: async () => {
