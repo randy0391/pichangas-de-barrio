@@ -12,8 +12,6 @@ export const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [dni, setDni] = useState('');
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [paymentReceipt, setPaymentReceipt] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register } = useAuthStore();
@@ -21,10 +19,6 @@ export const RegisterPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== passwordConfirmation) {
-      toast.error('Las contraseñas no coinciden');
-      return;
-    }
     if (!paymentReceipt) {
       toast.error('Debes subir el comprobante de pago');
       return;
@@ -36,8 +30,6 @@ export const RegisterPage = () => {
       fd.append('email', email);
       fd.append('dni', dni);
       fd.append('phone', phone);
-      fd.append('password', password);
-      fd.append('password_confirmation', passwordConfirmation);
       fd.append('payment_receipt', paymentReceipt);
 
       await register(fd);
@@ -145,29 +137,6 @@ export const RegisterPage = () => {
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Contraseña</label>
-                            <Input
-                                type="password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 text-base rounded-xl focus-visible:ring-accent"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Confirmar</label>
-                            <Input
-                                type="password"
-                                required
-                                value={passwordConfirmation}
-                                onChange={(e) => setPasswordConfirmation(e.target.value)}
-                                placeholder="••••••••"
-                                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 text-base rounded-xl focus-visible:ring-accent"
-                            />
-                        </div>
                     </div>
                     
                     <div className="space-y-2 mt-4 p-4 border border-accent/20 bg-accent/5 rounded-xl">

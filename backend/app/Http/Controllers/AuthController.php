@@ -23,7 +23,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'dni' => $request->dni,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($request->dni), // DNI is the password
             'phone' => $request->phone,
             'position' => $request->position,
             'payment_receipt' => $receiptPath,
@@ -38,7 +38,7 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request)
     {
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        if (!Auth::attempt(['phone' => $request->phone, 'password' => $request->password])) {
             return response()->json(['message' => 'Credenciales inválidas'], 401);
         }
         

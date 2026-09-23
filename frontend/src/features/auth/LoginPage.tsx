@@ -6,9 +6,8 @@ import { Input } from '@/components/ui/Input';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
-
 export const LoginPage = () => {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuthStore();
@@ -18,7 +17,7 @@ export const LoginPage = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await login({ email, password });
+      await login({ phone, password });
       toast.success('¡Bienvenido!');
       const user = useAuthStore.getState().user;
       if (user?.role === 'admin') {
@@ -58,9 +57,9 @@ export const LoginPage = () => {
 
             <div className="relative z-10 mt-12">
                 <h1 className="text-5xl font-black text-white mb-4 leading-tight tracking-tight">
-                    DOMINA<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">LA CANCHA</span>
+                    Volvamos a la <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-lime-400">cancha.</span>
                 </h1>
-                <p className="text-slate-300 text-lg leading-relaxed">Inicia sesión para confirmar tu asistencia a los próximos partidos y asegurar tu titularidad en el equipo.</p>
+                <p className="text-xl text-slate-300 font-medium">Inicia sesión y revisa tu próxima convocatoria.</p>
             </div>
             
             {/* Decorative glows */}
@@ -69,37 +68,33 @@ export const LoginPage = () => {
         </div>
 
         {/* Right Side: Form */}
-        <div className="w-full md:w-1/2 p-8 md:p-12 bg-white dark:bg-slate-950 flex flex-col justify-center relative">
-            <div className="absolute top-0 right-0 p-8 md:hidden">
-                 <img src="/logo.jpg" alt="Logo" className="w-12 h-12 rounded-full border-2 border-primary" />
-            </div>
-
-            <div className="max-w-md w-full mx-auto space-y-8">
-                <div className="text-center md:text-left mt-8 md:mt-0">
-                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Bienvenido de vuelta</h2>
+        <div className="w-full md:w-1/2 p-8 md:p-12 bg-white dark:bg-slate-950 flex flex-col justify-center">
+            <div className="max-w-md mx-auto w-full">
+                <div className="text-center md:text-left mb-8">
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Iniciar Sesión</h2>
                     <p className="text-slate-500 mt-2">Ingresa tus credenciales para continuar</p>
                 </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Email</label>
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Número de Celular</label>
                         <Input
-                            type="email"
+                            type="text"
                             required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="tu@email.com"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            placeholder="987654321"
                             className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-14 text-lg rounded-xl focus-visible:ring-primary"
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Contraseña</label>
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">DNI (Contraseña)</label>
                         <Input
                             type="password"
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
+                            placeholder="Tu número de DNI"
                             className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-14 text-lg rounded-xl focus-visible:ring-primary"
                         />
                     </div>
