@@ -25,16 +25,18 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Set permissions for the whole app
+RUN chown -R www-data:www-data /var/www/html
+RUN chmod -R 755 /var/www/html
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Change Apache document root to public
+# Change Apache document root to public and allow overrides
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}/!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+RUN sed -ri -e 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
-# Listen on the correct port given by Render/Koyeb
+# Listen on the correct port given by Render
 RUN echo "Listen 8080" >> /etc/apache2/ports.conf
 RUN sed -ri -e 's!:80!:8080!g' /etc/apache2/sites-available/*.conf
 
