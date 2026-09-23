@@ -13,17 +13,13 @@ export const RegisterPage = () => {
   const [dni, setDni] = useState('');
   const [phone, setPhone] = useState('');
   const [paymentReceipt, setPaymentReceipt] = useState<File | null>(null);
-  const [isOldPlayer, setIsOldPlayer] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register } = useAuthStore();
   const navigate = useNavigate();
 
-  // Validate temporary period (Ends Sept 23, 2026 11:59:59 PM Lima Time)
-  const isTemporaryPeriod = new Date() < new Date('2026-09-24T00:00:00-05:00');
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!paymentReceipt && (!isTemporaryPeriod || !isOldPlayer)) {
+    if (!paymentReceipt) {
       toast.error('Debes subir el comprobante de pago');
       return;
     }
@@ -34,9 +30,7 @@ export const RegisterPage = () => {
       fd.append('email', email);
       fd.append('dni', dni);
       fd.append('phone', phone);
-      if (paymentReceipt) {
-        fd.append('payment_receipt', paymentReceipt);
-      }
+      fd.append('payment_receipt', paymentReceipt);
 
       await register(fd);
       
@@ -147,35 +141,17 @@ export const RegisterPage = () => {
                             />
                         </div>
                     </div>
-                    
-                    {isTemporaryPeriod && (
-                        <div className="flex items-center space-x-2 bg-yellow-50 dark:bg-yellow-500/10 p-3 rounded-xl border border-yellow-200 dark:border-yellow-500/20">
-                            <input 
-                                type="checkbox" 
-                                id="oldPlayer" 
-                                checked={isOldPlayer}
-                                onChange={(e) => setIsOldPlayer(e.target.checked)}
-                                className="w-5 h-5 rounded text-accent focus:ring-accent border-gray-300"
-                            />
-                            <label htmlFor="oldPlayer" className="text-sm font-bold text-yellow-800 dark:text-yellow-200 cursor-pointer">
-                                Soy jugador antiguo (Registro rápido sin pago hasta medianoche)
-                            </label>
-                        </div>
-                    )}
-
-                    {!isOldPlayer && (
-                        <div className="space-y-2 mt-4 p-4 border border-accent/20 bg-accent/5 rounded-xl">
-                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">📄 Comprobante de Pago (Inscripción)</label>
-                            <p className="text-xs text-slate-500 mb-2">Para completar tu registro debes subir una foto o PDF de tu pago de colaboración.</p>
-                            <Input
-                                type="file"
-                                required
-                                accept="image/*,.pdf"
-                                onChange={(e) => setPaymentReceipt(e.target.files?.[0] || null)}
-                                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-12 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-accent file:text-white hover:file:bg-accent/80"
-                            />
-                        </div>
-                    )}
+                    <div className="space-y-2 mt-4 p-4 border border-accent/20 bg-accent/5 rounded-xl">
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">📄 Comprobante de Pago (Inscripción)</label>
+                        <p className="text-xs text-slate-500 mb-2">Para completar tu registro debes subir una foto o PDF de tu pago de colaboración.</p>
+                        <Input
+                            type="file"
+                            required
+                            accept="image/*,.pdf"
+                            onChange={(e) => setPaymentReceipt(e.target.files?.[0] || null)}
+                            className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-12 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-accent file:text-white hover:file:bg-accent/80"
+                        />
+                    </div>
                     
                     <Button type="submit" disabled={isSubmitting} className="w-full h-14 text-lg font-bold bg-gradient-to-r from-accent to-lime-500 text-slate-900 hover:opacity-90 shadow-[0_0_20px_rgba(255,0,127,0.3)] transition-all rounded-xl mt-6 border-0">
                         {isSubmitting ? 'Registrando...' : 'Firmar Contrato'}

@@ -7,6 +7,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { HomePage } from '@/features/home/HomePage';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
+import { OldPlayerRegisterPage } from '@/features/auth/OldPlayerRegisterPage';
 import { NewsPage } from '@/features/news/NewsPage';
 import { NewsDetailPage } from '@/features/news/NewsDetailPage';
 import { EventsPage } from '@/features/events/EventsPage';
@@ -37,6 +38,7 @@ export const AppRouter = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registro" element={<RegisterPage />} />
+        <Route path="/registro-antiguos" element={<OldPlayerRegisterPage />} />
         <Route path="/noticias" element={<NewsPage />} />
         <Route path="/noticias/:slug" element={<NewsDetailPage />} />
         <Route path="/eventos" element={<EventsPage />} />
