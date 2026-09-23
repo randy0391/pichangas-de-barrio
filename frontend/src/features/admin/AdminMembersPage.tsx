@@ -14,7 +14,16 @@ import { Eye } from 'lucide-react';
 export const AdminMembersPage = () => {
     const [page, setPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
-    const { data: response, isLoading } = useMembers(page, searchQuery);
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    React.useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [searchQuery]);
+
+    const { data: response, isLoading } = useMembers(page, debouncedSearch);
     const { mutate: updateMember } = useUpdateMember();
     const { mutate: deleteMember, isPending: isDeleting } = useDeleteMember();
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
