@@ -196,11 +196,23 @@ class ConvocatoriaController extends Controller
         $convocatoria = Convocatoria::findOrFail($id);
 
         if ($convocatoria->status !== 'abierta') {
-            return response()->json(['message' => 'La convocatoria ya no está abierta'], 400);
+            return response()->json(['message' => 'La convocatoria ya no esta abierta'], 400);
         }
 
         if ($convocatoria->confirmaciones()->where('user_id', $request->user_id)->exists()) {
-            return response()->json(['message' => 'El jugador ya está confirmado'], 400);
+            return response()->json(['message' => 'El jugador ya esta confirmado'], 400);
+        }
+
+        if ($request->match_role === 'portero') {
+            $currentPorteros = $convocatoria->confirmaciones()->where('status', 'confirmado')->where('match_role', 'portero')->count();
+            if ($currentPorteros >= $convocatoria->num_teams) {
+                return response()->json(['message' => 'Ya se completaron los cupos de portero.'], 422);
+            }
+        }
+
+        $currentConfirmados = $convocatoria->confirmaciones()->where('status', 'confirmado')->count();
+        if ($currentConfirmados >= $convocatoria->max_players) {
+            return response()->json(['message' => 'Ya se completo el cupo maximo de jugadores.'], 422);
         }
 
         $convocatoria->confirmaciones()->create([
@@ -209,6 +221,6 @@ class ConvocatoriaController extends Controller
             'status' => 'confirmado'
         ]);
 
-        return response()->json(['message' => 'Jugador añadido exitosamente']);
+        return response()->json(['message' => 'Jugador anadido exitosamente']);
     }
 }
