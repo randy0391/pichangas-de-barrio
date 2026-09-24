@@ -39,7 +39,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-        'is_approved' => 'boolean',
+        
         ];
     }
 
@@ -93,3 +93,4 @@ class User extends Authenticatable
         return $this->multas()->whereIn('status', ['pendiente', 'en_revision'])->exists();
     }
 }
+
