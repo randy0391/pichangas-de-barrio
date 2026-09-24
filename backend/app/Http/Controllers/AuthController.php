@@ -28,7 +28,7 @@ class AuthController extends Controller
             'position' => empty($request->position) ? null : $request->position,
             'birth_date' => $request->birth_date,
             'payment_receipt' => $receiptPath,
-            'is_approved' => false,
+            'is_approved' => 'false',
         ]);
         
         return response()->json([

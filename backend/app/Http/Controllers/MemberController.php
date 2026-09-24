@@ -102,3 +102,4 @@ class MemberController extends Controller
         return response()->noContent();
     }
 }
+
