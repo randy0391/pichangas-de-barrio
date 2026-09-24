@@ -61,7 +61,7 @@ class PostController extends Controller
         $data['slug'] = Str::slug($data['title']) . '-' . time();
         
         if ($request->hasFile('featured_image')) {
-            $data['featured_image'] = $request->file('featured_image')->store('posts', env('FILESYSTEM_DISK', 'public'));
+            $data['featured_image'] = $request->file('featured_image')->store('posts', config('filesystems.default', 'public'));
         } elseif (!empty($data['link_image'])) {
             $data['featured_image'] = $data['link_image'];
         }
@@ -115,7 +115,7 @@ class PostController extends Controller
         }
         
         if ($request->hasFile('featured_image')) {
-            $data['featured_image'] = $request->file('featured_image')->store('posts', env('FILESYSTEM_DISK', 'public'));
+            $data['featured_image'] = $request->file('featured_image')->store('posts', config('filesystems.default', 'public'));
         } elseif (isset($data['link_image']) && !$post->featured_image) {
             $data['featured_image'] = $data['link_image'];
         }

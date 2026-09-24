@@ -16,7 +16,7 @@ class AdminSeeder extends Seeder
             'dni' => '12345678',
             'password' => Hash::make('12345678'),
             'role' => 'admin',
-            'is_approved' => true,
+            'is_approved' => 'true',
         ]);
     }
 }

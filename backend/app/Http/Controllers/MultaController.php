@@ -46,7 +46,7 @@ class MultaController extends Controller
         ]);
 
         if ($request->hasFile('receipt')) {
-            $disk = env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.default', 'public');
             $path = $request->file('receipt')->store('multas', $disk);
             
             $multa->payment_receipt = $path;

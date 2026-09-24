@@ -22,7 +22,7 @@ class GalleryController extends Controller
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
         if ($request->hasFile('cover_image')) {
-            $data['cover_image'] = $request->file('cover_image')->store('galleries', env('FILESYSTEM_DISK', 'public'));
+            $data['cover_image'] = $request->file('cover_image')->store('galleries', config('filesystems.default', 'public'));
         }
         return new GalleryResource(Gallery::create($data));
     }
@@ -32,7 +32,7 @@ class GalleryController extends Controller
         $gallery = Gallery::findOrFail($id);
         $data = $request->validated();
         if ($request->hasFile('cover_image')) {
-            $data['cover_image'] = $request->file('cover_image')->store('galleries', env('FILESYSTEM_DISK', 'public'));
+            $data['cover_image'] = $request->file('cover_image')->store('galleries', config('filesystems.default', 'public'));
         }
         $gallery->update($data);
         return new GalleryResource($gallery);

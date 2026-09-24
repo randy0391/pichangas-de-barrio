@@ -91,6 +91,11 @@ class MemberController extends Controller
         $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['dni']); // Update password if DNI changes
         }
 
+        if (isset($validated['is_approved'])) {
+            $validated['is_approved'] = $validated['is_approved'] ? 'true' : 'false';
+        }
+        if (isset($validated['position']) && empty($validated['position'])) $validated['position'] = null;
+        if (isset($validated['jersey_number']) && empty($validated['jersey_number'])) $validated['jersey_number'] = null;
         $user->update($validated);
         return new UserResource($user);
     }

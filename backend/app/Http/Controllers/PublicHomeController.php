@@ -13,7 +13,7 @@ class PublicHomeController extends Controller
     public function index()
     {
         // 1. Stats
-        $activePlayers = User::where('role', 'member')->where('is_approved', true)->count();
+        $activePlayers = User::where('role', 'member')->where('is_approved', 'true')->count();
         $gamesPlayed = Convocatoria::count();
         $totalConfirmaciones = Confirmacion::where('status', 'confirmado')->count(); // Representando Asistencias o Compromiso
         $canchasAliadas = Convocatoria::distinct('location')->count('location');
