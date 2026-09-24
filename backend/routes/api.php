@@ -21,6 +21,16 @@ Route::get('/galleries/{id}', [GalleryController::class, 'show']);
 // Home Data
 Route::get('/home-data', [\App\Http\Controllers\PublicHomeController::class, 'index']);
 
+// Temporary public route to migrate DB on Render Free tier
+Route::get('/run-migrations', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return response()->json(['message' => 'Migraciones ejecutadas exitosamente', 'output' => \Illuminate\Support\Facades\Artisan::output()]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
+
 // Auth routes (with strict rate limiting against brute force)
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
