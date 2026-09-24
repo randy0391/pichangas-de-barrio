@@ -29,7 +29,7 @@ class MemberController extends Controller
         if ($request->user() && $request->user()->role === 'admin') {
             return UserResource::collection($query->orderBy('created_at', 'desc')->paginate(15));
         }
-        return UserResource::collection($query->where('status', 'active')->where('is_approved', true)->orderBy('created_at', 'desc')->paginate(15));
+        return UserResource::collection($query->orderBy('created_at', 'desc')->paginate(15));
     }
 
     public function show($id)

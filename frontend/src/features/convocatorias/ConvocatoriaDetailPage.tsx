@@ -58,7 +58,15 @@ export const ConvocatoriaDetailPage = () => {
 
         confirmar({ id: c.id, formData: fd }, {
             onSuccess: () => toast.success(`¡Confirmado como ${selectedRole}!`),
-            onError: (err: any) => toast.error(err?.response?.data?.message || 'Error al confirmar')
+            onError: (err: any) => {
+                const msgs = err?.response?.data?.errors;
+                if (msgs) {
+                    const firstError = Object.values(msgs)[0] as string[];
+                    toast.error(firstError[0] || 'Error al confirmar');
+                } else {
+                    toast.error(err?.response?.data?.message || 'Error al confirmar');
+                }
+            }
         });
     };
 
