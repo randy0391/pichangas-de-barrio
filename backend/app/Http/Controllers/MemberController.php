@@ -53,6 +53,8 @@ class MemberController extends Controller
             'nickname' => 'nullable|string|max:50',
         ]);
 
+        if (empty($validated['position'])) $validated['position'] = null;
+        if (empty($validated['jersey_number'])) $validated['jersey_number'] = null;
         $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['dni']);
         $validated['is_approved'] = true; // Auto approve manually added players
 
@@ -80,7 +82,9 @@ class MemberController extends Controller
         ]);
 
         if (isset($validated['dni']) && $validated['dni'] !== $user->dni) {
-            $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['dni']); // Update password if DNI changes
+            if (empty($validated['position'])) $validated['position'] = null;
+        if (empty($validated['jersey_number'])) $validated['jersey_number'] = null;
+        $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['dni']); // Update password if DNI changes
         }
 
         $user->update($validated);
