@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -32,7 +32,9 @@ Route::get('/run-migrations', function () {
 });
 
 Route::get('/logs', function () {
-    return response()->file(storage_path('logs/laravel.log'));
+    $path = storage_path('logs/laravel.log');
+    if (!file_exists($path)) return 'No log file';
+    return response(file_get_contents($path), 200)->header('Content-Type', 'text/plain');
 });
 
 // Auth routes (with strict rate limiting against brute force)
