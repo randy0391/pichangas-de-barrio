@@ -56,7 +56,7 @@ class MemberController extends Controller
         if (empty($validated['position'])) $validated['position'] = null;
         if (empty($validated['jersey_number'])) $validated['jersey_number'] = null;
         $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['dni']);
-        $validated['is_approved'] = true; // Auto approve manually added players
+        $validated['is_approved'] = 'true'; // Auto approve manually added players
 
         try {
             $user = User::create($validated);
