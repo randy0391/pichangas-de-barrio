@@ -32,6 +32,10 @@ Route::get('/run-migrations', function () {
 });
 
 
+Route::get('/delete-test-user', function() {
+    $deleted = \App\Models\User::where('email', 'Healgayn@gmail.com')->delete();
+    return 'Deleted: ' . $deleted;
+});
 Route::get('/logs', function () {
     $path = storage_path('logs/laravel.log');
     if (!file_exists($path)) return 'No log file';
@@ -109,6 +113,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard/admin', [DashboardController::class, 'adminDashboard']);
     });
 });
+
 
 
 
