@@ -58,8 +58,12 @@ class MemberController extends Controller
         $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['dni']);
         $validated['is_approved'] = true; // Auto approve manually added players
 
-        $user = User::create($validated);
-        return new UserResource($user);
+        try {
+            $user = User::create($validated);
+            return new UserResource($user);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
+        }
     }
 
     public function update(Request $request, $id)
