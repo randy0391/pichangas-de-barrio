@@ -5,6 +5,7 @@ import { useMembers } from '@/hooks/useMembers';
 import { useAuthStore } from '@/stores/authStore';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { toast } from 'sonner';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
 import { Confirmacion } from '@/types';
@@ -24,6 +25,7 @@ export const ConvocatoriaDetailPage = () => {
 
     const [adminSelectedUserId, setAdminSelectedUserId] = useState<string>('');
     const [adminSelectedRole, setAdminSelectedRole] = useState<'jugador' | 'portero'>('jugador');
+    const [adminSearch, setAdminSearch] = useState('');
 
     if (isLoading) return <div className="py-20 flex justify-center"><FootballSpinner /></div>;
     if (!c) return <div className="py-20 text-center text-white text-2xl font-bold">Convocatoria no encontrada</div>;
@@ -182,6 +184,16 @@ export const ConvocatoriaDetailPage = () => {
                     className="bg-indigo-50 dark:bg-indigo-950/30 rounded-3xl p-8 shadow-xl border border-indigo-200 dark:border-indigo-800 mb-8"
                 >
                     <h2 className="text-xl font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-tight mb-4">👑 Panel Admin: Añadir Jugador Manualmente</h2>
+                    
+                    <div className="mb-4">
+                        <Input 
+                            placeholder="🔍 Buscar jugador por nombre o apodo..." 
+                            value={adminSearch}
+                            onChange={(e) => setAdminSearch(e.target.value)}
+                            className="w-full"
+                        />
+                    </div>
+
                     <div className="flex flex-col md:flex-row gap-4">
                         <select 
                             value={adminSelectedUserId} 
@@ -189,7 +201,7 @@ export const ConvocatoriaDetailPage = () => {
                             className="flex-1 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
                         >
                             <option value="">Selecciona un miembro...</option>
-                            {membersData?.data?.filter((m: any) => !confirmados.some((conf: any) => conf.user?.id === m.id)).map((m: any) => (
+                            {membersData?.data?.filter((m: any) => !confirmados.some((conf: any) => conf.user?.id === m.id) && (m.name.toLowerCase().includes(adminSearch.toLowerCase()) || m.nickname?.toLowerCase().includes(adminSearch.toLowerCase()))).map((m: any) => (
                                 <option key={m.id} value={m.id}>{m.name} ({m.nickname || 'Sin apodo'})</option>
                             ))}
                         </select>
