@@ -21,6 +21,11 @@ class MemberController extends Controller
             });
         }
 
+        if ($request->has('limit')) {
+            $limit = (int) $request->get('limit');
+            return UserResource::collection($query->orderBy('created_at', 'desc')->paginate($limit));
+        }
+
         if ($request->user() && $request->user()->role === 'admin') {
             return UserResource::collection($query->orderBy('created_at', 'desc')->paginate(15));
         }

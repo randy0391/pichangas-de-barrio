@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useConvocatoria, useConfirmar } from '@/hooks/useConvocatorias';
+import { useConvocatoria, useConfirmar, useAddPlayerToConvocatoria } from '@/hooks/useConvocatorias';
+import { useMembers } from '@/hooks/useMembers';
 import { useAuthStore } from '@/stores/authStore';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/Button';
@@ -15,8 +16,14 @@ export const ConvocatoriaDetailPage = () => {
     const { user } = useAuthStore();
     const { data: c, isLoading } = useConvocatoria(Number(id));
     const { mutate: confirmar, isPending: isConfirming } = useConfirmar();
+    const { mutate: addPlayer, isPending: isAddingPlayer } = useAddPlayerToConvocatoria();
+    const { data: membersData } = useMembers(1, '', 100);
+    
     const [selectedRole, setSelectedRole] = useState<'jugador' | 'portero'>('jugador');
     const [paymentReceipt, setPaymentReceipt] = useState<File | null>(null);
+
+    const [adminSelectedUserId, setAdminSelectedUserId] = useState<string>('');
+    const [adminSelectedRole, setAdminSelectedRole] = useState<'jugador' | 'portero'>('jugador');
 
     if (isLoading) return <div className="py-20 flex justify-center"><FootballSpinner /></div>;
     if (!c) return <div className="py-20 text-center text-white text-2xl font-bold">Convocatoria no encontrada</div>;
@@ -52,6 +59,17 @@ export const ConvocatoriaDetailPage = () => {
         confirmar({ id: c.id, formData: fd }, {
             onSuccess: () => toast.success(`¡Confirmado como ${selectedRole}!`),
             onError: (err: any) => toast.error(err?.response?.data?.message || 'Error al confirmar')
+        });
+    };
+
+    const handleAdminAddPlayer = () => {
+        if (!adminSelectedUserId) return toast.error('Selecciona un jugador');
+        addPlayer({ id: c.id, userId: Number(adminSelectedUserId), matchRole: adminSelectedRole }, {
+            onSuccess: () => {
+                toast.success('Jugador añadido exitosamente');
+                setAdminSelectedUserId('');
+            },
+            onError: (err: any) => toast.error(err?.response?.data?.message || 'Error al añadir jugador')
         });
     };
 
@@ -147,6 +165,42 @@ export const ConvocatoriaDetailPage = () => {
                             </div>
                         </>
                     )}
+                </motion.div>
+            )}
+
+            {/* Admin Add Player */}
+            {user?.role === 'admin' && c.status === 'abierta' && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+                    className="bg-indigo-50 dark:bg-indigo-950/30 rounded-3xl p-8 shadow-xl border border-indigo-200 dark:border-indigo-800 mb-8"
+                >
+                    <h2 className="text-xl font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-tight mb-4">👑 Panel Admin: Añadir Jugador Manualmente</h2>
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <select 
+                            value={adminSelectedUserId} 
+                            onChange={(e) => setAdminSelectedUserId(e.target.value)}
+                            className="flex-1 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
+                        >
+                            <option value="">Selecciona un miembro...</option>
+                            {membersData?.data?.filter((m: any) => !confirmados.some((conf: any) => conf.user?.id === m.id)).map((m: any) => (
+                                <option key={m.id} value={m.id}>{m.name} ({m.nickname || 'Sin apodo'})</option>
+                            ))}
+                        </select>
+                        <select 
+                            value={adminSelectedRole} 
+                            onChange={(e) => setAdminSelectedRole(e.target.value as any)}
+                            className="w-full md:w-48 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
+                        >
+                            <option value="jugador">Jugador</option>
+                            <option value="portero">Portero</option>
+                        </select>
+                        <Button 
+                            onClick={handleAdminAddPlayer} 
+                            disabled={isAddingPlayer || !adminSelectedUserId} 
+                            className="h-auto px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest rounded-xl"
+                        >
+                            {isAddingPlayer ? 'Añadiendo...' : 'Añadir'}
+                        </Button>
+                    </div>
                 </motion.div>
             )}
 

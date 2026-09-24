@@ -125,7 +125,7 @@ export const useRemoveConfirmacion = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, userId }: { id: number; userId: number }) => {
-      await api.delete(`/convocatorias/${id}/confirmaciones/${userId}`);
+      await api.delete(`/admin/convocatorias/${id}/confirmaciones/${userId}`);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['convocatorias'] });
@@ -134,5 +134,23 @@ export const useRemoveConfirmacion = () => {
       queryClient.invalidateQueries({ queryKey: ['mis-convocatorias'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
+  });
+};
+
+export const useAddPlayerToConvocatoria = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, userId, matchRole }: { id: number; userId: number; matchRole: 'jugador' | 'portero' }) => {
+      const { data } = await api.post(`/admin/convocatorias/${id}/add-player`, {
+        user_id: userId,
+        match_role: matchRole
+      });
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['convocatorias'] });
+      queryClient.invalidateQueries({ queryKey: ['convocatoria'] });
+      queryClient.invalidateQueries({ queryKey: ['convocatoria', variables.id] });
+    }
   });
 };

@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { Plus, Shuffle, Trash2, Eye, X, Users, Shield, MapPin, CalendarDays, Clock } from 'lucide-react';
 import { Pagination } from '@/components/ui/Pagination';
+import { Link } from 'react-router-dom';
 import { AdminAttendanceDialog } from './AdminAttendanceDialog';
 
 const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
@@ -275,7 +276,12 @@ export const AdminConvocatoriasPage = () => {
                                 </div>
                             </div>
                             
-                            <div className="flex flex-wrap gap-2 items-center">
+                            <div className="flex flex-wrap gap-2 items-center mt-4">
+                                <Link to={`/convocatorias/${c.id}`}>
+                                    <Button variant="outline" className="border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400 rounded-xl font-bold text-xs uppercase hover:bg-emerald-50 dark:hover:bg-emerald-950">
+                                        🌐 Ver Página
+                                    </Button>
+                                </Link>
                                 <Button onClick={() => setExpandedId(expandedId === c.id ? null : c.id)} variant="outline" className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-xs uppercase">
                                     <Eye className="mr-1 h-4 w-4" /> {expandedId === c.id ? 'Ocultar' : 'Ver Equipos'}
                                 </Button>

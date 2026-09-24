@@ -2,11 +2,11 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import api from '@/lib/axios';
 import { User, PaginatedResponse } from '@/types';
 
-export const useMembers = (page = 1, search = '') => {
+export const useMembers = (page = 1, search = '', limit = 15) => {
   return useQuery({
-    queryKey: ['members', page, search],
+    queryKey: ['members', page, search, limit],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<User>>(`/members?page=${page}&search=${search}`);
+      const { data } = await api.get<PaginatedResponse<User>>(`/members?page=${page}&search=${search}&limit=${limit}`);
       return data;
     },
     placeholderData: keepPreviousData,

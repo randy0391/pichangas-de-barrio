@@ -183,4 +183,32 @@ class ConvocatoriaController extends Controller
         Confirmacion::where('convocatoria_id', $id)->where('user_id', $userId)->delete();
         return response()->json(['message' => 'Reserva eliminada correctamente']);
     }
+
+    public function addPlayer(Request $request, $id)
+    {
+        if (!$request->user()->isAdmin()) return response()->json(['message' => 'Unauthorized'], 403);
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'match_role' => 'required|in:jugador,portero'
+        ]);
+
+        $convocatoria = Convocatoria::findOrFail($id);
+
+        if ($convocatoria->status !== 'abierta') {
+            return response()->json(['message' => 'La convocatoria ya no está abierta'], 400);
+        }
+
+        if ($convocatoria->confirmaciones()->where('user_id', $request->user_id)->exists()) {
+            return response()->json(['message' => 'El jugador ya está confirmado'], 400);
+        }
+
+        $convocatoria->confirmaciones()->create([
+            'user_id' => $request->user_id,
+            'match_role' => $request->match_role,
+            'status' => 'confirmado'
+        ]);
+
+        return response()->json(['message' => 'Jugador añadido exitosamente']);
+    }
 }
