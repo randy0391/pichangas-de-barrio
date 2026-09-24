@@ -25,7 +25,7 @@ class AuthController extends Controller
             'dni' => $request->dni,
             'password' => Hash::make($request->dni), // DNI is the password
             'phone' => $request->phone,
-            'position' => $request->position,
+            'position' => empty($request->position) ? null : $request->position,
             'birth_date' => $request->birth_date,
             'payment_receipt' => $receiptPath,
             'is_approved' => false,
