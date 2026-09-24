@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Resources;
 
@@ -17,7 +17,7 @@ class ConfirmacionResource extends JsonResource
             'team_number' => $this->team_number,
             'notes' => $this->notes,
             'confirmed_at' => $this->confirmed_at,
-            'payment_receipt' => $this->payment_receipt ? url('storage/' . $this->payment_receipt) : null,
+            'payment_receipt' => \App\Helpers\ImageHelper::getUrl($this->payment_receipt),
             'attendance' => $this->attendance,
             'user' => new UserResource($this->whenLoaded('user')),
         ];
