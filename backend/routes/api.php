@@ -31,14 +31,7 @@ Route::get('/run-migrations', function () {
     }
 });
 
-Route::get('/test-create', function() {
-    try {
-        $user = \App\Models\User::create(['name'=>'HENRY GALLARDO', 'email'=>'Healgayn@gmail.com', 'dni'=>'71346613', 'phone'=>'997658881', 'position'=>'medio', 'jersey_number'=>15, 'role'=>'member', 'status'=>'active', 'password'=>bcrypt('71346613'), 'is_approved'=>'true']);
-        return $user;
-    } catch (\Exception $e) {
-        return $e->getMessage();
-    }
-});
+
 Route::get('/logs', function () {
     $path = storage_path('logs/laravel.log');
     if (!file_exists($path)) return 'No log file';
@@ -116,6 +109,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard/admin', [DashboardController::class, 'adminDashboard']);
     });
 });
+
 
 
 
