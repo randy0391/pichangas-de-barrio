@@ -26,6 +26,7 @@ class UserResource extends JsonResource
             'status' => $this->status,
             'is_approved' => (bool) $this->is_approved,
             'payment_receipt' => \App\Helpers\ImageHelper::getUrl($this->payment_receipt),
+            'has_pending_multas' => $this->resource instanceof \App\Models\User ? $this->hasPendingMultas() : false,
             'created_at' => $this->created_at,
         ];
     }

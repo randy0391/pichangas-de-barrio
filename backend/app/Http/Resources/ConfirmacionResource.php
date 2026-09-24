@@ -18,6 +18,7 @@ class ConfirmacionResource extends JsonResource
             'notes' => $this->notes,
             'confirmed_at' => $this->confirmed_at,
             'payment_receipt' => $this->payment_receipt ? url('storage/' . $this->payment_receipt) : null,
+            'attendance' => $this->attendance,
             'user' => new UserResource($this->whenLoaded('user')),
         ];
     }

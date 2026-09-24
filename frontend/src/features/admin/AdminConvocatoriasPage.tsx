@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { Plus, Shuffle, Trash2, Eye, X, Users, Shield, MapPin, CalendarDays, Clock } from 'lucide-react';
 import { Pagination } from '@/components/ui/Pagination';
+import { AdminAttendanceDialog } from './AdminAttendanceDialog';
 
 const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
     const { data: c } = useConvocatoria(convocatoriaId);
@@ -131,6 +132,7 @@ export const AdminConvocatoriasPage = () => {
 
     const [showForm, setShowForm] = useState(false);
     const [expandedId, setExpandedId] = useState<number | null>(null);
+    const [attendanceDialogId, setAttendanceDialogId] = useState<number | null>(null);
     const [editingId, setEditingId] = useState<number | null>(null);
     const initialForm = { title: '', description: '', location: '', match_date: '', match_time: '', max_players: 14, num_teams: 2, rival: '' };
     const [form, setForm] = useState(initialForm);
@@ -277,6 +279,9 @@ export const AdminConvocatoriasPage = () => {
                                 <Button onClick={() => setExpandedId(expandedId === c.id ? null : c.id)} variant="outline" className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-xs uppercase">
                                     <Eye className="mr-1 h-4 w-4" /> {expandedId === c.id ? 'Ocultar' : 'Ver Equipos'}
                                 </Button>
+                                <Button onClick={() => setAttendanceDialogId(c.id)} variant="outline" className="border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold text-xs uppercase">
+                                    📋 Lista
+                                </Button>
                                 <Button onClick={() => handleSortear(c.id)} disabled={isSorting || c.confirmed_count < c.max_players || c.confirmaciones?.some((p: Confirmacion) => p.team_number !== null)} className={`border-0 rounded-xl font-bold text-xs uppercase shadow-md ${c.confirmed_count < c.max_players || c.confirmaciones?.some((p: Confirmacion) => p.team_number !== null) ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-gradient-to-r from-amber-400 to-orange-500 text-white'}`}>
                                     <Shuffle className="mr-1 h-4 w-4" /> {c.confirmaciones?.some((p: Confirmacion) => p.team_number !== null) ? 'Sorteado' : 'Sortear'}
                                 </Button>
@@ -321,6 +326,13 @@ export const AdminConvocatoriasPage = () => {
                 <div className="mt-8">
                     <Pagination currentPage={meta.current_page} lastPage={meta.last_page} onPageChange={setPage} />
                 </div>
+            )}
+
+            {attendanceDialogId && (
+                <AdminAttendanceDialog 
+                    convocatoriaId={attendanceDialogId} 
+                    onClose={() => setAttendanceDialogId(null)} 
+                />
             )}
         </div>
     );

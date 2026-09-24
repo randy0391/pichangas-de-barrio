@@ -48,6 +48,14 @@ class ConvocatoriaController extends Controller
     public function confirmar(Request $request, $id)
     {
         $matchRole = $request->input('match_role', 'jugador');
+        
+        $user = $request->user();
+        if ($user->hasPendingMultas()) {
+            return response()->json([
+                'message' => 'No puedes unirte. Tienes una multa pendiente que debe ser pagada y aprobada primero.',
+                'has_multas' => true,
+            ], 403);
+        }
 
         return \Illuminate\Support\Facades\DB::transaction(function () use ($request, $id, $matchRole) {
             $convocatoria = Convocatoria::where('id', $id)->lockForUpdate()->firstOrFail();

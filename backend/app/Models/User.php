@@ -81,4 +81,14 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
+
+    public function multas()
+    {
+        return $this->hasMany(Multa::class);
+    }
+
+    public function hasPendingMultas(): bool
+    {
+        return $this->multas()->whereIn('status', ['pendiente', 'en_revision'])->exists();
+    }
 }

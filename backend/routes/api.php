@@ -50,8 +50,18 @@ Route::middleware('auth:sanctum')->group(function () {
     // Dashboard
     Route::get('/dashboard/user', [DashboardController::class, 'userDashboard']);
 
+    // Multas
+    Route::get('/multas', [\App\Http\Controllers\MultaController::class, 'index']);
+    Route::post('/multas/{id}/receipt', [\App\Http\Controllers\MultaController::class, 'uploadReceipt']);
+
     // Admin routes
     Route::middleware('admin')->group(function () {
+        Route::post('/multas/{id}/approve', [\App\Http\Controllers\MultaController::class, 'approve']);
+        Route::post('/multas/{id}/reject', [\App\Http\Controllers\MultaController::class, 'reject']);
+        
+        Route::post('/confirmaciones/{id}/attendance', [\App\Http\Controllers\AttendanceController::class, 'mark']);
+        Route::get('/admin/attendance-report', [\App\Http\Controllers\AttendanceController::class, 'report']);
+
         Route::post('/posts', [PostController::class, 'store']);
         Route::put('/posts/{id}', [PostController::class, 'update']);
         Route::delete('/posts/{id}', [PostController::class, 'destroy']);

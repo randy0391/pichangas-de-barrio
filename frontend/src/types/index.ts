@@ -15,6 +15,19 @@ export interface User {
   status: 'active' | 'inactive';
   is_approved: boolean;
   payment_receipt: string | null;
+  has_pending_multas?: boolean;
+  created_at: string;
+}
+
+export interface Multa {
+  id: number;
+  user: User;
+  convocatoria: Convocatoria;
+  amount: string;
+  reason: string;
+  status: 'pendiente' | 'en_revision' | 'pagada';
+  payment_receipt: string | null;
+  admin_notes: string | null;
   created_at: string;
 }
 
@@ -61,6 +74,7 @@ export interface Confirmacion {
   notes: string | null;
   confirmed_at: string | null;
   payment_receipt: string | null;
+  attendance?: 'presente' | 'tardanza' | 'falta' | 'pendiente';
   user: User;
 }
 

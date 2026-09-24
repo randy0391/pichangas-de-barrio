@@ -135,6 +135,10 @@ export const ConvocatoriaDetailPage = () => {
                                     <div className="flex-1 h-14 bg-slate-100 dark:bg-slate-800 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700">
                                         <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">✅ Ya confirmaste asistencia</span>
                                     </div>
+                                ) : user?.has_pending_multas ? (
+                                    <div className="flex-1 bg-red-500/20 text-red-600 dark:text-red-400 font-bold p-4 rounded-xl text-center border border-red-500/30">
+                                        ⚠️ Tienes una multa pendiente. Págala para poder asistir.
+                                    </div>
                                 ) : (
                                     <Button onClick={handleConfirm} disabled={isConfirming} className="flex-1 h-14 bg-gradient-to-r from-lime-400 to-lime-500 text-slate-900 font-black uppercase tracking-widest rounded-xl shadow-lg border-0 text-lg">
                                         {isConfirming ? 'Confirmando...' : '✅ Confirmar Asistencia'}

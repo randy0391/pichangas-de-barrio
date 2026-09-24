@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { useAuthStore } from '@/stores/authStore';
-import { LayoutDashboard, Calendar, History, Users, User, Settings, Image } from 'lucide-react';
+import { LayoutDashboard, Calendar, History, Users, User, Settings, Image, AlertCircle, FileSpreadsheet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
 
@@ -13,6 +13,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Convocatorias', path: '/convocatorias', icon: Calendar },
     { name: 'Mis Participaciones', path: '/mis-participaciones', icon: History },
+    { name: 'Mis Multas', path: '/mis-multas', icon: AlertCircle },
     { name: 'Miembros', path: '/miembros', icon: Users },
     { name: 'Mi Perfil', path: '/perfil', icon: User },
   ];
@@ -24,6 +25,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
     { name: 'Gestión Convocatorias', path: '/admin/convocatorias', icon: Calendar },
     { name: 'Galerías', path: '/admin/galeria', icon: Image },
     { name: 'Gestión Miembros', path: '/admin/miembros', icon: Users },
+    { name: 'Gestión Multas', path: '/admin/multas', icon: AlertCircle },
     { name: 'Mis Participaciones', path: '/mis-participaciones', icon: History },
     { name: 'Mi Perfil', path: '/perfil', icon: User },
   ];

@@ -20,6 +20,7 @@ import { ConvocatoriasPage } from '@/features/convocatorias/ConvocatoriasPage';
 import { ConvocatoriaDetailPage } from '@/features/convocatorias/ConvocatoriaDetailPage';
 import { MisParticipacionesPage } from '@/features/convocatorias/MisParticipacionesPage';
 import { ProfilePage } from '@/features/profile/ProfilePage';
+import { MyFinesPage } from '@/features/profile/MyFinesPage';
 import { MembersPage } from '@/features/members/MembersPage';
 
 // Admin Pages
@@ -30,6 +31,8 @@ import { AdminConvocatoriasPage } from '@/features/admin/AdminConvocatoriasPage'
 import { AdminGalleriesPage } from '@/features/admin/AdminGalleriesPage';
 import { AdminGalleryDetailPage } from '@/features/admin/AdminGalleryDetailPage';
 import { AdminMembersPage } from '@/features/admin/AdminMembersPage';
+import { AdminFinesPage } from '@/features/admin/AdminFinesPage';
+import { AdminAttendanceReportPage } from '@/features/admin/AdminAttendanceReportPage';
 
 export const AppRouter = () => {
   return (
@@ -52,11 +55,14 @@ export const AppRouter = () => {
         <Route path="/convocatorias/:id" element={<ConvocatoriaDetailPage />} />
         <Route path="/mis-participaciones" element={<MisParticipacionesPage />} />
         <Route path="/perfil" element={<ProfilePage />} />
+        <Route path="/mis-multas" element={<MyFinesPage />} />
         <Route path="/miembros" element={<MembersPage />} />
       </Route>
 
       <Route element={<ProtectedRoute requireAdmin><AdminLayout /></ProtectedRoute>}>
         <Route path="/admin" element={<AdminDashboardPage />} />
+        <Route path="/admin/multas" element={<AdminFinesPage />} />
+        <Route path="/admin/asistencias" element={<AdminAttendanceReportPage />} />
         <Route path="/admin/noticias" element={<AdminPostsPage />} />
         <Route path="/admin/eventos" element={<AdminEventsPage />} />
         <Route path="/admin/convocatorias" element={<AdminConvocatoriasPage />} />
