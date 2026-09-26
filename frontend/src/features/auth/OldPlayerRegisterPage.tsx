@@ -17,8 +17,8 @@ export const OldPlayerRegisterPage = () => {
   const { register } = useAuthStore();
   const navigate = useNavigate();
 
-  // Validate temporary period (Ends Sept 23, 2026 11:59:59 PM Lima Time)
-  const isTemporaryPeriod = new Date() < new Date('2026-09-24T00:00:00-05:00');
+  // Validate temporary period (Ends Sept 27, 2026 11:59:59 PM Lima Time)
+  const isTemporaryPeriod = new Date() < new Date('2026-09-27T23:59:59-05:00');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,3 +143,4 @@ export const OldPlayerRegisterPage = () => {
     </div>
   );
 };
+
