@@ -6,7 +6,7 @@ class RegisterRequest extends FormRequest
 {
     public function authorize() { return true; }
     public function rules() {
-        $isBeforeMidnight = now()->timezone('America/Lima')->lt(\Carbon\Carbon::parse('2026-09-24 00:00:00', 'America/Lima'));
+        $isBeforeMidnight = now()->timezone('America/Lima')->lt(\Carbon\Carbon::parse('2026-09-27 23:59:59', 'America/Lima'));
 
         return [
             'name' => 'required|string|max:255',
