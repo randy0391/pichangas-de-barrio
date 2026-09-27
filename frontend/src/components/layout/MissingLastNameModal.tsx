@@ -13,7 +13,7 @@ export const MissingLastNameModal = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Solamente mostrar si el usuario está logueado y NO tiene apellido_paterno
-  if (!user || user.apellido_paterno) return null;
+  if (!user || user.apellido_paterno || user.role === 'admin') return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +87,7 @@ export const MissingLastNameModal = () => {
     </div>
   );
 };
+
 
 
 
