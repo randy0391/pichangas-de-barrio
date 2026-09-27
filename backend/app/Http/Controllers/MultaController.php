@@ -12,13 +12,13 @@ class MultaController extends Controller
     {
         if ($request->user()->isAdmin()) {
             // Admins see all multas
-            $multas = Multa::with(['user', 'convocatoria'])->orderBy('created_at', 'desc')->get();
+            $multas = Multa::with(['user', 'convocatoria'])->orderBy('created_at', 'desc')->paginate(20);
         } else {
             // Users see their own multas
-            $multas = Multa::with(['convocatoria'])->where('user_id', $request->user()->id)->orderBy('created_at', 'desc')->get();
+            $multas = Multa::with(['convocatoria'])->where('user_id', $request->user()->id)->orderBy('created_at', 'desc')->paginate(20);
         }
 
-        return response()->json($multas->map(function ($multa) {
+        return response()->json($multas->through(function ($multa) {
             return [
                 'id' => $multa->id,
                 'user' => $multa->user,

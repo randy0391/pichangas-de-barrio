@@ -9,7 +9,7 @@ class GalleryController extends Controller
 {
     public function index()
     {
-        return GalleryResource::collection(Gallery::withCount('media')->get());
+        return GalleryResource::collection(Gallery::withCount('media')->paginate(12));
     }
 
     public function show($id)

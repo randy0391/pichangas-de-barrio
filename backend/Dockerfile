@@ -2,7 +2,7 @@ FROM php:8.2-apache
 
 RUN apt-get update && apt-get install -y \
     libpng-dev libjpeg-dev libpq-dev libzip-dev zip unzip \
-    && docker-php-ext-install pdo pdo_mysql pdo_pgsql gd zip
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql gd zip opcache
 
 RUN a2enmod rewrite
 
@@ -30,3 +30,11 @@ RUN echo '<VirtualHost *:8080>\n\
 RUN echo "Listen 8080" > /etc/apache2/ports.conf
 
 EXPOSE 8080
+RUN echo 'opcache.enable=1' >> /usr/local/etc/php/conf.d/opcache.ini && \
+    echo 'opcache.memory_consumption=128' >> /usr/local/etc/php/conf.d/opcache.ini && \
+    echo 'opcache.max_accelerated_files=10000' >> /usr/local/etc/php/conf.d/opcache.ini && \
+    echo 'opcache.validate_timestamps=0' >> /usr/local/etc/php/conf.d/opcache.ini
+
+RUN php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache

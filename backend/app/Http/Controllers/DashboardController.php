@@ -22,6 +22,7 @@ class DashboardController extends Controller
         $upcomingConvocatorias = Convocatoria::where('status', 'abierta')
             ->where('match_date', '>=', now()->toDateString())
             ->with('creator')
+            ->withCount(['confirmaciones as confirmed_count' => function($q) { $q->where('status', 'confirmado'); }])
             ->orderBy('match_date')
             ->take(5)
             ->get();
@@ -31,6 +32,7 @@ class DashboardController extends Controller
             ->whereHas('registrations', function ($q) use ($user) {
                 $q->where('user_id', $user->id)->where('status', 'registrado');
             })
+            ->withCount('registrations')
             ->orderBy('event_date')
             ->take(5)
             ->get();
@@ -71,6 +73,7 @@ class DashboardController extends Controller
 
         // Últimas convocatorias con stats de confirmación
         $recentConvocatorias = Convocatoria::with('creator')
+            ->withCount(['confirmaciones as confirmed_count' => function($q) { $q->where('status', 'confirmado'); }])
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
