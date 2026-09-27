@@ -17,7 +17,15 @@ class ImageHelper
             $cloudName = end($parts);
             // Support both image and raw (PDF) uploads
             $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-            $resourceType = in_array($ext, ['pdf', 'doc', 'docx', 'zip']) ? 'raw' : 'image';
+            $videoExts = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'flv', 'wmv', 'ogg', 'm4v', '3gp'];
+            $rawExts = ['pdf', 'doc', 'docx', 'zip'];
+            if (in_array($ext, $videoExts)) {
+                $resourceType = 'video';
+            } elseif (in_array($ext, $rawExts)) {
+                $resourceType = 'raw';
+            } else {
+                $resourceType = 'image';
+            }
             return "https://res.cloudinary.com/{$cloudName}/{$resourceType}/upload/{$path}";
         }
 

@@ -50,7 +50,7 @@ class DashboardController extends Controller
             'my_confirmations' => ConfirmacionResource::collection($myConfirmations),
             'stats' => [
                 'total_participations' => $user->confirmaciones()->where('status', 'confirmado')->count(),
-                'upcoming_convocatorias_count' => Convocatoria::where('status', 'abierta')->count(),
+                'upcoming_convocatorias_count' => Convocatoria::where('status', 'abierta')->where('match_date', '>=', now()->toDateString())->count(),
                 'upcoming_events_count' => Event::where('status', 'proximo')->count(),
                 'registered_events' => $user->eventRegistrations()->where('status', 'registrado')->count(),
             ],
@@ -63,7 +63,7 @@ class DashboardController extends Controller
         $stats = [
             'total_members' => User::count(),
             'total_admins' => User::where('role', 'admin')->count(),
-            'active_convocatorias' => Convocatoria::where('status', 'abierta')->count(),
+            'active_convocatorias' => Convocatoria::where('status', 'abierta')->where('match_date', '>=', now()->toDateString())->count(),
             'total_convocatorias' => Convocatoria::count(),
             'total_events' => Event::count(),
             'upcoming_events' => Event::where('status', 'proximo')->count(),
