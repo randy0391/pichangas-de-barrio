@@ -21,23 +21,11 @@ Route::get('/galleries/{id}', [GalleryController::class, 'show']);
 // Home Data
 Route::get('/home-data', [\App\Http\Controllers\PublicHomeController::class, 'index']);
 
-// Temporary public route to migrate DB on Render Free tier
-Route::get('/run-migrations', function () {
-    try {
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        return response()->json(['message' => 'Migraciones ejecutadas exitosamente', 'output' => \Illuminate\Support\Facades\Artisan::output()]);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-});
 
 
 
-Route::get('/logs', function () {
-    $path = storage_path('logs/laravel.log');
-    if (!file_exists($path)) return 'No log file';
-    return response(file_get_contents($path), 200)->header('Content-Type', 'text/plain');
-});
+
+
 
 // Auth routes (with strict rate limiting against brute force)
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
@@ -45,6 +33,20 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
+    // Security protected routes
+    Route::get('/run-migrations', function (\Illuminate\Http\Request $request) {
+        if (!$request->user()->isAdmin()) return response()->json(['error' => 'Unauthorized'], 403);
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return response()->json(['message' => 'OK', 'output' => \Illuminate\Support\Facades\Artisan::output()]);
+    });
+
+    Route::get('/logs', function (\Illuminate\Http\Request $request) {
+        if (!$request->user()->isAdmin()) return response()->json(['error' => 'Unauthorized'], 403);
+        $path = storage_path('logs/laravel.log');
+        if (!file_exists($path)) return 'No log file';
+        return response(file_get_contents($path), 200)->header('Content-Type', 'text/plain');
+    });
+
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     Route::put('/user', [AuthController::class, 'updateProfile']);
