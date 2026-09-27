@@ -12,7 +12,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-        'name',
+        'nombres', 'apellido_paterno', 'apellido_materno',
         'email',
         'dni',
         'phone',
@@ -92,5 +92,11 @@ class User extends Authenticatable
     {
         return $this->multas()->whereIn('status', ['pendiente', 'en_revision'])->exists();
     }
-}
 
+    public function getFullNameAttribute()
+    {
+        $parts = array_filter([$this->nombres, $this->apellido_paterno, $this->apellido_materno]);
+        return implode(' ', $parts);
+    }
+
+}

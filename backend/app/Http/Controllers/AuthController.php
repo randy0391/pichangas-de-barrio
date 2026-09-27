@@ -20,7 +20,7 @@ class AuthController extends Controller
         }
 
         $user = User::create([
-            'name' => $request->name,
+            'nombres' => $request->nombres, 'apellido_paterno' => $request->apellido_paterno, 'apellido_materno' => $request->apellido_materno,
             'email' => $request->email,
             'dni' => $request->dni,
             'password' => Hash::make($request->dni), // DNI is the password
@@ -82,7 +82,7 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
         $request->validate([
-            'name' => 'sometimes|string|max:255',
+            'nombres' => 'sometimes|string|max:100', 'apellido_paterno' => 'sometimes|string|max:100', 'apellido_materno' => 'sometimes|string|max:100',
             'email' => 'sometimes|email|unique:users,email,' . $request->user()->id,
             'phone' => 'nullable|string|max:20',
             'position' => 'nullable|in:portero,defensa,medio,delantero',
@@ -94,7 +94,7 @@ class AuthController extends Controller
         ]);
 
         $user = $request->user();
-        $user->update($request->only(['name', 'email', 'phone', 'position', 'jersey_number', 'bio', 'birth_date', 'blood_type', 'nickname']));
+        $user->update($request->only(['nombres', 'apellido_paterno', 'apellido_materno', 'email', 'phone', 'position', 'jersey_number', 'bio', 'birth_date', 'blood_type', 'nickname']));
 
         return new UserResource($user->fresh());
     }

@@ -9,7 +9,7 @@ class RegisterRequest extends FormRequest
         $isBeforeMidnight = now()->timezone('America/Lima')->lt(\Carbon\Carbon::parse('2026-09-27 23:59:59', 'America/Lima'));
 
         return [
-            'name' => 'required|string|max:255',
+            'nombres' => 'required|string|max:100', 'apellido_paterno' => 'required|string|max:100', 'apellido_materno' => 'required|string|max:100',
             'email' => 'required|string|email|max:255|unique:users',
             'dni' => 'required|string|max:20|unique:users',
             'phone' => 'required|string|max:20|unique:users',

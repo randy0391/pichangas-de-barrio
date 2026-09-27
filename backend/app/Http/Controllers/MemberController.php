@@ -14,9 +14,9 @@ class MemberController extends Controller
         if ($request->has('search') && $request->get('search') !== '') {
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+                $q->where('nombres', 'like', "%{$search}%")
                   ->orWhere('dni', 'like', "%{$search}%")
-                  ->orWhere('nickname', 'like', "%{$search}%")
+                  ->orWhere('apellido_paterno', 'like', "%{$search}%")->orWhere('apellido_materno', 'like', "%{$search}%")->orWhere('nickname', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
             });
         }
@@ -40,7 +40,7 @@ class MemberController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'nombres' => 'required|string|max:100', 'apellido_paterno' => 'required|string|max:100', 'apellido_materno' => 'required|string|max:100',
             'email' => 'required|string|email|max:255|unique:users',
             'dni' => 'required|string|max:20|unique:users',
             'phone' => 'required|string|max:20|unique:users',
@@ -71,7 +71,7 @@ class MemberController extends Controller
         $user = User::findOrFail($id);
         
         $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
+            'nombres' => 'sometimes|string|max:100', 'apellido_paterno' => 'sometimes|string|max:100', 'apellido_materno' => 'sometimes|string|max:100',
             'email' => 'sometimes|string|email|max:255|unique:users,email,'.$id,
             'dni' => 'sometimes|string|max:20|unique:users,dni,'.$id,
             'phone' => 'sometimes|string|max:20|unique:users,phone,'.$id,
