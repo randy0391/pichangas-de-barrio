@@ -8,7 +8,9 @@ import { toast } from 'sonner';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
 
 export const RegisterPage = () => {
-  const [name, setName] = useState('');
+  const [nombres, setNombres] = useState('');
+  const [apellidoPaterno, setApellidoPaterno] = useState('');
+  const [apellidoMaterno, setApellidoMaterno] = useState('');
   const [email, setEmail] = useState('');
   const [dni, setDni] = useState('');
   const [phone, setPhone] = useState('');
@@ -27,7 +29,9 @@ export const RegisterPage = () => {
     setIsSubmitting(true);
     try {
       const fd = new FormData();
-      fd.append('name', name);
+      fd.append('nombres', nombres);
+    fd.append('apellido_paterno', apellidoPaterno);
+    fd.append('apellido_materno', apellidoMaterno);
       fd.append('email', email);
       fd.append('dni', dni);
       fd.append('phone', phone);
@@ -98,15 +102,39 @@ export const RegisterPage = () => {
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Nombre Completo</label>
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Nombres</label>
                         <Input
                             type="text"
                             required
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Tu nombre en la camiseta"
-                                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 text-base rounded-xl focus-visible:ring-accent"
+                            value={nombres}
+                            onChange={(e) => setNombres(e.target.value)}
+                            placeholder="Tus nombres"
+                            className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 text-base rounded-xl focus-visible:ring-accent"
                         />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Apellido Paterno</label>
+                            <Input
+                                type="text"
+                                required
+                                value={apellidoPaterno}
+                                onChange={(e) => setApellidoPaterno(e.target.value)}
+                                placeholder="Paterno"
+                                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 text-base rounded-xl focus-visible:ring-accent"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Apellido Materno</label>
+                            <Input
+                                type="text"
+                                required
+                                value={apellidoMaterno}
+                                onChange={(e) => setApellidoMaterno(e.target.value)}
+                                placeholder="Materno"
+                                className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 text-base rounded-xl focus-visible:ring-accent"
+                            />
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Email</label>

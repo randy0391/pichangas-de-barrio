@@ -1,6 +1,10 @@
 export interface User {
   id: number;
   name: string;
+  nombres: string;
+  apellido_paterno: string;
+  apellido_materno: string;
+  full_name: string;
   email: string;
   dni: string | null;
   phone: string | null;
@@ -144,7 +148,11 @@ export interface AdminDashboardStats {
   };
   recent_convocatorias: Convocatoria[];
   recent_confirmations: Confirmacion[];
-  recent_members: { id: number; name: string; email: string; position: string | null; created_at: string }[];
+  recent_members: { id: number; name: string;
+  nombres: string;
+  apellido_paterno: string;
+  apellido_materno: string;
+  full_name: string; email: string; position: string | null; created_at: string }[];
 }
 
 export interface PaginatedResponse<T> {
@@ -156,3 +164,4 @@ export interface PaginatedResponse<T> {
     total: number;
   };
 }
+

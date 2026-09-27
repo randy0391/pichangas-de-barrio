@@ -141,3 +141,4 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
 export const AdminLayout = () => {
   return <DashboardLayout isAdmin={true} />;
 };
+
