@@ -31,10 +31,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired - logout
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Only redirect if user HAD a token (session expired)
+      // Don't redirect if there's no token (initial auth check)
+      const hadToken = localStorage.getItem('auth_token');
+      if (hadToken) {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
