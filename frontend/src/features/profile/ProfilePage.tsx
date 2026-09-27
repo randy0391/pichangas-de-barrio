@@ -11,14 +11,14 @@ import { motion } from 'motion/react';
 export const ProfilePage = () => {
     const { user, fetchUser } = useAuthStore();
     const [formData, setFormData] = useState({
-        name: '', email: '', phone: '', position: 'medio', jersey_number: '', bio: '', birth_date: '', blood_type: '', nickname: ''
+        nombres: '', apellido_paterno: '', apellido_materno: '', email: '', phone: '', position: 'medio', jersey_number: '', bio: '', birth_date: '', blood_type: '', nickname: ''
     });
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
         if (user) {
             setFormData({
-                name: user.name || '', email: user.email || '', phone: user.phone || '',
+                nombres: user.nombres || '', apellido_paterno: user.apellido_paterno || '', apellido_materno: user.apellido_materno || '', email: user.email || '', phone: user.phone || '',
                 position: user.position || 'medio', jersey_number: user.jersey_number?.toString() || '', bio: user.bio || '',
                 birth_date: user.birth_date || '', blood_type: user.blood_type || '', nickname: user.nickname || ''
             });
@@ -118,11 +118,29 @@ export const ProfilePage = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Nombre Completo</label>
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Nombres</label>
                             <Input 
-                                placeholder="Tu nombre" 
-                                value={formData.name} 
-                                onChange={e => setFormData({...formData, name: e.target.value})}
+                                placeholder="Tus nombres" 
+                                value={formData.nombres} 
+                                onChange={e => setFormData({...formData, nombres: e.target.value})}
+                                className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 rounded-xl focus-visible:ring-primary"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Apellido Paterno</label>
+                            <Input 
+                                placeholder="Apellido paterno" 
+                                value={formData.apellido_paterno} 
+                                onChange={e => setFormData({...formData, apellido_paterno: e.target.value})}
+                                className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 rounded-xl focus-visible:ring-primary"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Apellido Materno</label>
+                            <Input 
+                                placeholder="Apellido materno" 
+                                value={formData.apellido_materno} 
+                                onChange={e => setFormData({...formData, apellido_materno: e.target.value})}
                                 className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 rounded-xl focus-visible:ring-primary"
                             />
                         </div>
@@ -221,3 +239,4 @@ export const ProfilePage = () => {
         </div>
     );
 };
+
