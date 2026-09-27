@@ -56,7 +56,7 @@ export const AdminFinesPage = () => {
                         <div key={m.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-yellow-200 dark:border-yellow-800/30 flex flex-col sm:flex-row gap-6 items-start sm:items-center">
                             {m.payment_receipt && (
                                 <a href={m.payment_receipt} target="_blank" rel="noreferrer" className="shrink-0 w-32 h-32 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 block hover:opacity-80 transition-opacity relative group">
-                                    <img src={m.payment_receipt} alt="Voucher" className="w-full h-full object-cover" />
+                                    <img loading="lazy" src={m.payment_receipt} alt="Voucher" className="w-full h-full object-cover" />
                                     <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Eye className="text-white" />
                                     </div>

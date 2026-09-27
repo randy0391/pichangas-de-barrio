@@ -4,6 +4,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
+  timeout: 30000,
   headers: {
     'Accept': 'application/json',
     'Cache-Control': 'no-cache',
@@ -24,5 +25,19 @@ api.interceptors.request.use((config) => {
 export const getCsrfToken = async () => {
   // No longer needed for token-based auth
 };
+
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired - logout
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

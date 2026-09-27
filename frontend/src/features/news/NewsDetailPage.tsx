@@ -47,8 +47,7 @@ export const NewsDetailPage = () => {
                 <div className="relative w-full h-[400px] md:h-[500px] bg-slate-100 dark:bg-slate-800 group overflow-hidden">
                     {post.featured_image ? (
                         <>
-                            <img 
-                                src={post.featured_image} 
+                            <img loading="lazy" src={post.featured_image} 
                                 alt={post.title} 
                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
                             />
@@ -130,7 +129,7 @@ export const NewsDetailPage = () => {
                                     >
                                         {post.link_image ? (
                                             <div className="w-full sm:w-48 h-48 sm:h-auto shrink-0 overflow-hidden">
-                                                <img src={post.link_image} alt={post.link_title || "Enlace"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                                <img loading="lazy" src={post.link_image} alt={post.link_title || "Enlace"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                             </div>
                                         ) : (
                                             <div className="w-full sm:w-48 h-48 sm:h-auto bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">

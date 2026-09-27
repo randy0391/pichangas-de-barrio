@@ -81,7 +81,7 @@ export const AdminMembersPage = () => {
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0 overflow-hidden border border-slate-700">
                                                 {m.avatar ? (
-                                                    <img src={m.avatar} alt="Avatar" className="w-full h-full object-cover shrink-0" />
+                                                    <img loading="lazy" src={m.avatar} alt="Avatar" className="w-full h-full object-cover shrink-0" />
                                                 ) : (
                                                     <UserCircle size={24} />
                                                 )}

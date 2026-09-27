@@ -21,8 +21,7 @@ const MediaItem = ({ m, index }: { m: any, index: number }) => {
         >
             {m.type === 'foto' ? (
                 (m.file_path && !error) ? (
-                    <img 
-                        src={m.file_path} 
+                    <img loading="lazy" src={m.file_path} 
                         alt="" 
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                         onError={() => setError(true)}
@@ -75,7 +74,7 @@ export const GalleryDetailPage = () => {
                 <div className="absolute inset-0 z-0 bg-slate-900">
                     {gallery.cover_image ? (
                         <>
-                            <img src={gallery.cover_image} alt="" className="w-full h-full object-cover opacity-30" />
+                            <img loading="lazy" src={gallery.cover_image} alt="" className="w-full h-full object-cover opacity-30" />
                             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#070b14]/80 to-[#070b14]"></div>
                         </>
                     ) : (
@@ -167,8 +166,7 @@ export const GalleryDetailPage = () => {
                         onClick={(e) => e.stopPropagation()}
                     >
                         {selectedMedia.type === 'foto' ? (
-                            <img 
-                                src={selectedMedia.file_path} 
+                            <img loading="lazy" src={selectedMedia.file_path} 
                                 alt="Vista completa" 
                                 className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" 
                             />

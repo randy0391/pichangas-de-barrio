@@ -63,7 +63,7 @@ export const NewsPage = () => {
                                 
                                 <div className="relative h-56 overflow-hidden bg-slate-100 dark:bg-slate-800">
                                     {post.featured_image ? (
-                                        <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                        <img loading="lazy" src={post.featured_image} alt={post.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                                     ) : (
                                         <div className="w-full h-full flex justify-center items-center text-slate-300 dark:text-slate-700">
                                             <span className="text-6xl">⚽</span>

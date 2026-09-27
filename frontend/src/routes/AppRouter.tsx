@@ -1,42 +1,44 @@
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { DashboardLayout, AdminLayout } from '@/components/layout/DashboardLayout';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { FootballSpinner } from '@/components/ui/FootballSpinner';
 
 // Public Pages
-import { HomePage } from '@/features/home/HomePage';
-import { LoginPage } from '@/features/auth/LoginPage';
-import { RegisterPage } from '@/features/auth/RegisterPage';
-import { OldPlayerRegisterPage } from '@/features/auth/OldPlayerRegisterPage';
-import { NewsPage } from '@/features/news/NewsPage';
-import { NewsDetailPage } from '@/features/news/NewsDetailPage';
-import { EventsPage } from '@/features/events/EventsPage';
-import { GalleryPage } from '@/features/gallery/GalleryPage';
-import { GalleryDetailPage } from '@/features/gallery/GalleryDetailPage';
+const HomePage = React.lazy(() => import('@/features/home/HomePage').then(m => ({ default: m.HomePage })));
+const LoginPage = React.lazy(() => import('@/features/auth/LoginPage').then(m => ({ default: m.LoginPage })));
+const RegisterPage = React.lazy(() => import('@/features/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));
+const OldPlayerRegisterPage = React.lazy(() => import('@/features/auth/OldPlayerRegisterPage').then(m => ({ default: m.OldPlayerRegisterPage })));
+const NewsPage = React.lazy(() => import('@/features/news/NewsPage').then(m => ({ default: m.NewsPage })));
+const NewsDetailPage = React.lazy(() => import('@/features/news/NewsDetailPage').then(m => ({ default: m.NewsDetailPage })));
+const EventsPage = React.lazy(() => import('@/features/events/EventsPage').then(m => ({ default: m.EventsPage })));
+const GalleryPage = React.lazy(() => import('@/features/gallery/GalleryPage').then(m => ({ default: m.GalleryPage })));
+const GalleryDetailPage = React.lazy(() => import('@/features/gallery/GalleryDetailPage').then(m => ({ default: m.GalleryDetailPage })));
 
 // Dashboard Pages
-import { UserDashboardPage } from '@/features/dashboard/UserDashboardPage';
-import { ConvocatoriasPage } from '@/features/convocatorias/ConvocatoriasPage';
-import { ConvocatoriaDetailPage } from '@/features/convocatorias/ConvocatoriaDetailPage';
-import { MisParticipacionesPage } from '@/features/convocatorias/MisParticipacionesPage';
-import { ProfilePage } from '@/features/profile/ProfilePage';
-import { MyFinesPage } from '@/features/profile/MyFinesPage';
-import { MembersPage } from '@/features/members/MembersPage';
+const UserDashboardPage = React.lazy(() => import('@/features/dashboard/UserDashboardPage').then(m => ({ default: m.UserDashboardPage })));
+const ConvocatoriasPage = React.lazy(() => import('@/features/convocatorias/ConvocatoriasPage').then(m => ({ default: m.ConvocatoriasPage })));
+const ConvocatoriaDetailPage = React.lazy(() => import('@/features/convocatorias/ConvocatoriaDetailPage').then(m => ({ default: m.ConvocatoriaDetailPage })));
+const MisParticipacionesPage = React.lazy(() => import('@/features/convocatorias/MisParticipacionesPage').then(m => ({ default: m.MisParticipacionesPage })));
+const ProfilePage = React.lazy(() => import('@/features/profile/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const MyFinesPage = React.lazy(() => import('@/features/profile/MyFinesPage').then(m => ({ default: m.MyFinesPage })));
+const MembersPage = React.lazy(() => import('@/features/members/MembersPage').then(m => ({ default: m.MembersPage })));
 
 // Admin Pages
-import { AdminDashboardPage } from '@/features/admin/AdminDashboardPage';
-import { AdminPostsPage } from '@/features/admin/AdminPostsPage';
-import { AdminEventsPage } from '@/features/admin/AdminEventsPage';
-import { AdminConvocatoriasPage } from '@/features/admin/AdminConvocatoriasPage';
-import { AdminGalleriesPage } from '@/features/admin/AdminGalleriesPage';
-import { AdminGalleryDetailPage } from '@/features/admin/AdminGalleryDetailPage';
-import { AdminMembersPage } from '@/features/admin/AdminMembersPage';
-import { AdminFinesPage } from '@/features/admin/AdminFinesPage';
-import { AdminAttendanceReportPage } from '@/features/admin/AdminAttendanceReportPage';
+const AdminDashboardPage = React.lazy(() => import('@/features/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
+const AdminPostsPage = React.lazy(() => import('@/features/admin/AdminPostsPage').then(m => ({ default: m.AdminPostsPage })));
+const AdminEventsPage = React.lazy(() => import('@/features/admin/AdminEventsPage').then(m => ({ default: m.AdminEventsPage })));
+const AdminConvocatoriasPage = React.lazy(() => import('@/features/admin/AdminConvocatoriasPage').then(m => ({ default: m.AdminConvocatoriasPage })));
+const AdminGalleriesPage = React.lazy(() => import('@/features/admin/AdminGalleriesPage').then(m => ({ default: m.AdminGalleriesPage })));
+const AdminGalleryDetailPage = React.lazy(() => import('@/features/admin/AdminGalleryDetailPage').then(m => ({ default: m.AdminGalleryDetailPage })));
+const AdminMembersPage = React.lazy(() => import('@/features/admin/AdminMembersPage').then(m => ({ default: m.AdminMembersPage })));
+const AdminFinesPage = React.lazy(() => import('@/features/admin/AdminFinesPage').then(m => ({ default: m.AdminFinesPage })));
+const AdminAttendanceReportPage = React.lazy(() => import('@/features/admin/AdminAttendanceReportPage').then(m => ({ default: m.AdminAttendanceReportPage })));
 
 export const AppRouter = () => {
   return (
-    <Routes>
+    <React.Suspense fallback={<FootballSpinner />}><Routes>
       <Route path="/registro-antiguos" element={<OldPlayerRegisterPage />} />
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
@@ -70,6 +72,6 @@ export const AppRouter = () => {
         <Route path="/admin/galeria/:id" element={<AdminGalleryDetailPage />} />
         <Route path="/admin/miembros" element={<AdminMembersPage />} />
       </Route>
-    </Routes>
+    </Routes></React.Suspense>
   );
 };

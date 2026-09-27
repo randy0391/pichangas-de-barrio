@@ -99,7 +99,7 @@ export const EventsPage = () => {
                                 
                                 {event.cover_image && (
                                     <div className="mb-4 h-32 w-full rounded-xl overflow-hidden">
-                                        <img src={event.cover_image} alt={event.title} className="w-full h-full object-cover" />
+                                        <img loading="lazy" src={event.cover_image} alt={event.title} className="w-full h-full object-cover" />
                                     </div>
                                 )}
                                 

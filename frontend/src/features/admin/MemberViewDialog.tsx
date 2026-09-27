@@ -33,7 +33,7 @@ export const MemberViewDialog = ({ member, open, onOpenChange }: MemberViewDialo
                         
                         <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-slate-800 bg-slate-900 flex items-center justify-center shadow-2xl relative z-10 shrink-0 aspect-square">
                         {member.avatar ? (
-                            <img src={member.avatar} alt={member.name} className="w-full h-full object-cover shrink-0" />
+                            <img loading="lazy" src={member.avatar} alt={member.name} className="w-full h-full object-cover shrink-0" />
                         ) : (
                             <UserIcon size={48} className="text-slate-500" />
                         )}

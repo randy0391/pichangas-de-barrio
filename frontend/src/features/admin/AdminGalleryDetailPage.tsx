@@ -119,7 +119,7 @@ export const AdminGalleryDetailPage = () => {
                                             <Video size={48} className="text-slate-600" />
                                         </div>
                                     ) : (
-                                        <img src={item.file_path} alt={item.title || 'Media'} className="w-full h-full object-cover" />
+                                        <img loading="lazy" src={item.file_path} alt={item.title || 'Media'} className="w-full h-full object-cover" />
                                     )}
                                     
                                     <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
