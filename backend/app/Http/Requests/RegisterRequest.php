@@ -6,7 +6,7 @@ class RegisterRequest extends FormRequest
 {
     public function authorize() { return true; }
     public function rules() {
-        $isBeforeMidnight = now()->timezone('America/Lima')->lt(\Carbon\Carbon::parse('2026-09-27 23:59:59', 'America/Lima'));
+        $isBeforeMidnight = true; // Permanently enabled as per user request
 
         return [
             'nombres' => 'required|string|max:100', 'apellido_paterno' => 'required|string|max:100', 'apellido_materno' => 'required|string|max:100',
@@ -19,3 +19,4 @@ class RegisterRequest extends FormRequest
         ];
     }
 }
+
