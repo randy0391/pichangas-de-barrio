@@ -18,7 +18,7 @@ export const MemberFormDialog: React.FC<MemberFormDialogProps> = ({ open, onOpen
     const isPending = isCreating || isUpdating;
 
     const [formData, setFormData] = useState<Partial<User>>({
-        name: '',
+        nombres: '', apellido_paterno: '', apellido_materno: '',
         email: '',
         dni: '',
         phone: '',
@@ -33,7 +33,7 @@ export const MemberFormDialog: React.FC<MemberFormDialogProps> = ({ open, onOpen
             setFormData(member);
         } else {
             setFormData({
-                name: '',
+                nombres: '', apellido_paterno: '', apellido_materno: '',
                 email: '',
                 dni: '',
                 phone: '',
@@ -89,8 +89,18 @@ export const MemberFormDialog: React.FC<MemberFormDialogProps> = ({ open, onOpen
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                     <div className="space-y-1">
-                        <label className="text-xs font-bold text-slate-400 uppercase">Nombre</label>
-                        <Input name="name" value={formData.name || ''} onChange={handleChange} required className="bg-slate-800 border-slate-700 text-white" />
+                        <label className="text-xs font-bold text-slate-400 uppercase">Nombres</label>
+                        <Input name="nombres" value={formData.nombres || ''} onChange={handleChange} required className="bg-slate-800 border-slate-700 text-white" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-slate-400 uppercase">Apellido Paterno</label>
+                            <Input name="apellido_paterno" value={formData.apellido_paterno || ''} onChange={handleChange} required className="bg-slate-800 border-slate-700 text-white" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-slate-400 uppercase">Apellido Materno</label>
+                            <Input name="apellido_materno" value={formData.apellido_materno || ''} onChange={handleChange} required className="bg-slate-800 border-slate-700 text-white" />
+                        </div>
                     </div>
                     <div className="space-y-1">
                         <label className="text-xs font-bold text-slate-400 uppercase">Email</label>
