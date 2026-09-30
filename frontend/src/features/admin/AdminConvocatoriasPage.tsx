@@ -7,7 +7,7 @@ import { Convocatoria, Confirmacion } from '@/types';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
-import { Plus, Shuffle, Trash2, Eye, X, Users, Shield, MapPin, CalendarDays, Clock } from 'lucide-react';
+import { Plus, Shuffle, Trash2, Eye, X, Users, Shield, MapPin, CalendarDays, Clock , Copy } from 'lucide-react';
 import { Pagination } from '@/components/ui/Pagination';
 import { Link } from 'react-router-dom';
 import { AdminAttendanceDialog } from './AdminAttendanceDialog';
@@ -20,9 +20,21 @@ const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
     const confirmados = c.confirmaciones.filter((p: Confirmacion) => p.status === 'confirmado');
     const hasTeams = confirmados.some((p: Confirmacion) => p.team_number !== null);
 
+    const handleCopy = () => {
+        const sorted = [...confirmados].sort((a,b) => a.match_role === 'portero' ? -1 : 1);
+        const text = sorted.map((p, i) => `${i + 1}. ${p.user?.name || 'Jugador'} ${p.match_role === 'portero' ? '(Portero)' : ''}`).join('\n');
+        navigator.clipboard.writeText(`Lista de confirmados:\n\n${text}`);
+        toast.success('Lista copiada al portapapeles');
+    };
+
     if (!hasTeams) return (
         <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
-            <h4 className="font-black text-sm uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3">Jugadores Confirmados ({confirmados.length}/{c.max_players})</h4>
+            <div className="flex justify-between items-center mb-3">
+                <h4 className="font-black text-sm uppercase tracking-widest text-slate-500 dark:text-slate-400">Jugadores Confirmados ({confirmados.length}/{c.max_players})</h4>
+                <button onClick={handleCopy} className="flex items-center gap-1 text-xs font-bold uppercase text-primary hover:text-accent transition-colors px-2 py-1 bg-primary/10 hover:bg-accent/10 rounded-lg">
+                    <Copy size={14} /> Copiar
+                </button>
+            </div>
             {confirmados.length === 0 ? (
                 <p className="text-sm text-slate-500 italic">Nadie ha confirmado asistencia aún.</p>
             ) : (

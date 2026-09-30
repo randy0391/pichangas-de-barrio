@@ -36,6 +36,12 @@ export const ConvocatoriaDetailPage = () => {
     const porterosLlenos = (c.porteros_count || 0) >= (c.num_teams || 2);
     const cupoLleno = c.confirmed_count >= c.max_players;
 
+        const handleCopy = () => {
+        const sorted = [...confirmados].sort((a,b) => a.match_role === 'portero' ? -1 : 1);
+        const text = sorted.map((p, i) => `${i + 1}. ${p.user?.name || 'Jugador'} ${p.match_role === 'portero' ? '(Portero)' : ''}`).join('\n');
+        navigator.clipboard.writeText(`Lista de confirmados:\n\n${text}`);
+        toast.success('Lista copiada al portapapeles');
+    };
     const hasTeams = confirmados.some((p: Confirmacion) => p.team_number !== null);
     const teams: Record<number, Confirmacion[]> = {};
     if (hasTeams) {
