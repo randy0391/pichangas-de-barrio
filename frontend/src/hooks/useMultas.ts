@@ -7,7 +7,7 @@ export const useMultas = () => {
     queryKey: ['multas'],
     queryFn: async () => {
       const { data } = await api.get<Multa[]>(`/multas`);
-      return data;
+      return (data as any).data || data;
     },
   });
 };
