@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { toast } from 'sonner';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
 import { Confirmacion } from '@/types';
-import { ArrowLeft, Users, Shield, MapPin, CalendarDays, Clock, User as UserIcon } from 'lucide-react';
+import { ArrowLeft, Users, Shield, MapPin, CalendarDays, Clock, User as UserIcon, Copy } from 'lucide-react';
 
 export const ConvocatoriaDetailPage = () => {
     const { id } = useParams();
@@ -262,9 +262,14 @@ export const ConvocatoriaDetailPage = () => {
                     <div className="max-w-3xl mx-auto">
                         {/* Confirmed */}
                         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-xl">
-                            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase mb-4 flex items-center gap-2">
-                                ✅ Confirmados <span className="text-primary">({confirmados.length})</span>
-                            </h3>
+                            <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase flex items-center gap-2">
+            ? Confirmados <span className="text-primary">({confirmados.length})</span>
+        </h3>
+        <button onClick={handleCopy} className="flex items-center gap-1 text-xs font-bold uppercase text-primary hover:text-accent transition-colors px-3 py-2 bg-primary/10 hover:bg-accent/10 rounded-lg">
+            <Copy size={14} /> Copiar Lista
+        </button>
+    </div>
                             <div className="space-y-3">
                                 {confirmados.length === 0 && <p className="text-slate-500 text-sm italic">Nadie se ha confirmado aún.</p>}
                                 {confirmados.map((p: Confirmacion) => (

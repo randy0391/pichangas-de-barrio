@@ -86,8 +86,15 @@ const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
     const teamColors = ['from-red-500 to-red-400', 'from-purple-600 to-purple-400', 'from-green-500 to-emerald-400', 'from-orange-500 to-amber-400', 'from-blue-500 to-cyan-400'];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
-            {Object.entries(teams).sort(([a],[b]) => Number(a)-Number(b)).map(([teamNum, players]) => (
+        <div>
+            <div className="flex justify-between items-center mb-3 mt-6">
+                <h4 className="font-black text-sm uppercase tracking-widest text-slate-500 dark:text-slate-400">Equipos Sorteados ({confirmados.length} jugadores)</h4>
+                <button onClick={handleCopy} className="flex items-center gap-1 text-xs font-bold uppercase text-primary hover:text-accent transition-colors px-2 py-1 bg-primary/10 hover:bg-accent/10 rounded-lg">
+                    <Copy size={14} /> Copiar
+                </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {Object.entries(teams).sort(([a],[b]) => Number(a)-Number(b)).map(([teamNum, players]) => (
                 <div key={teamNum} className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
                     <div className={`inline-block px-3 py-1 rounded-full ${Number(teamNum) === 0 ? 'bg-slate-500' : `bg-gradient-to-r ${teamColors[(Number(teamNum)-1) % teamColors.length]}`} text-white font-black text-xs uppercase tracking-widest mb-3`}>
                         {Number(teamNum) === 0 ? 'Sin Equipo' : `Equipo ${teamNum}`}
@@ -128,6 +135,7 @@ const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
                     </div>
                 </div>
             ))}
+            </div>
         </div>
     );
 };
