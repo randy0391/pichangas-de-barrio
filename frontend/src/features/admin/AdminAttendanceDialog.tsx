@@ -1,3 +1,4 @@
+import ReactDOM from 'react-dom';
 import React, { useState } from 'react';
 import { useConvocatoria } from '@/hooks/useConvocatorias';
 import { useMarkAttendance } from '@/hooks/useMultas';
@@ -86,7 +87,7 @@ export const AdminAttendanceDialog: React.FC<AdminAttendanceDialogProps> = ({ co
         document.body.removeChild(link);
     };
 
-    return (
+    return ReactDOM.createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm">
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden relative">
                 <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-start sm:items-center gap-2 sm:gap-4 bg-slate-50 dark:bg-slate-950 shrink-0">
@@ -141,6 +142,7 @@ export const AdminAttendanceDialog: React.FC<AdminAttendanceDialogProps> = ({ co
                     ))}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
