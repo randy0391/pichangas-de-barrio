@@ -87,18 +87,18 @@ export const AdminAttendanceDialog: React.FC<AdminAttendanceDialogProps> = ({ co
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm">
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden relative">
-                <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
-                    <div>
-                        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Llamado de Lista</h2>
-                        <p className="text-sm text-slate-500">{convocatoria.title}</p>
+                <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-start sm:items-center gap-2 sm:gap-4 bg-slate-50 dark:bg-slate-950 shrink-0">
+                    <div className="flex-1 min-w-0">
+                        <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight truncate">Llamado de Lista</h2>
+                        <p className="text-xs sm:text-sm text-slate-500 truncate">{convocatoria.title}</p>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <Button onClick={exportCSV} variant="outline" className="h-10 text-green-600 border-green-200 hover:bg-green-50">
-                            <Download size={16} className="mr-2" /> Exportar
+                    <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                        <Button onClick={exportCSV} variant="outline" className="h-8 sm:h-10 text-xs sm:text-sm text-green-600 border-green-200 hover:bg-green-50 px-2 sm:px-4">
+                            <Download size={14} className="sm:mr-2" /> <span className="hidden sm:inline">Exportar</span>
                         </Button>
-                        <button onClick={onClose} className="text-slate-400 hover:text-slate-900 dark:hover:text-white"><X size={24} /></button>
+                        <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white"><X size={20} className="sm:w-6 sm:h-6" /></button>
                     </div>
                 </div>
 
