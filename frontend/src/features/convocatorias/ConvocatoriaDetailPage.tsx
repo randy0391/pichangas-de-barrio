@@ -52,7 +52,7 @@ export const ConvocatoriaDetailPage = () => {
         });
     }
 
-    const teamColors = ['from-primary to-cyan-400', 'from-accent to-pink-400', 'from-lime-400 to-emerald-400', 'from-amber-400 to-orange-400'];
+    const teamColors = ['from-red-500 to-red-400', 'from-purple-600 to-purple-400', 'from-green-500 to-emerald-400', 'from-orange-500 to-amber-400', 'from-blue-500 to-cyan-400'];
 
     const handleConfirm = () => {
         if (!paymentReceipt) {

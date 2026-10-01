@@ -83,7 +83,7 @@ const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
         teams[t].push(p);
     });
 
-    const teamColors = ['from-primary to-cyan-400', 'from-accent to-pink-400', 'from-lime-400 to-emerald-400', 'from-amber-400 to-orange-400', 'from-violet-400 to-purple-400'];
+    const teamColors = ['from-red-500 to-red-400', 'from-purple-600 to-purple-400', 'from-green-500 to-emerald-400', 'from-orange-500 to-amber-400', 'from-blue-500 to-cyan-400'];
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
