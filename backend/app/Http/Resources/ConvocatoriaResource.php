@@ -15,7 +15,9 @@ class ConvocatoriaResource extends JsonResource
         $dynamicStatus = $this->status;
         
         // Si la fecha y hora ya pasaron, la mostramos como 'finalizada' en vez de 'abierta'
-        if ($dynamicStatus === 'abierta' && now()->timezone('America/Lima')->gt($matchDateTime)) {
+        $matchDateOnly = Carbon::parse($this->match_date->format('Y-m-d'), 'America/Lima')->endOfDay();
+        // Si ya pasamos al día siguiente de la fecha del partido, se marca como finalizada
+        if ($dynamicStatus === 'abierta' && now()->timezone('America/Lima')->gt($matchDateOnly)) {
             $dynamicStatus = 'finalizada';
         }
 
