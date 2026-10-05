@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useConvocatorias, useCreateConvocatoria, useUpdateConvocatoria, useDeleteConvocatoria, useSortearEquipos, useConvocatoria, useRemoveConfirmacion } from '@/hooks/useConvocatorias';
+import { useConvocatorias, useCreateConvocatoria, useUpdateConvocatoria, useDeleteConvocatoria, useSortearEquipos, useConvocatoria, useRemoveConfirmacion, useUpdatePlayerRole } from '@/hooks/useConvocatorias';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -15,6 +15,7 @@ import { AdminAttendanceDialog } from './AdminAttendanceDialog';
 const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
     const { data: c } = useConvocatoria(convocatoriaId);
     const { mutate: removeConfirmacion } = useRemoveConfirmacion();
+    const { mutate: updateRole } = useUpdatePlayerRole();
     if (!c || !c.confirmaciones) return null;
 
     const confirmados = c.confirmaciones.filter((p: Confirmacion) => p.status === 'confirmado');
@@ -41,9 +42,16 @@ const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {confirmados.sort((a,b) => a.match_role === 'portero' ? -1 : 1).map((p: Confirmacion) => (
                         <div key={p.id} className="flex items-center gap-3 text-sm bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
-                            <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center font-bold text-xs ${p.match_role === 'portero' ? 'bg-yellow-400 text-yellow-900' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
+                            <button 
+    onClick={() => updateRole({ id: convocatoriaId, userId: p.user.id, role: p.match_role === 'portero' ? 'jugador' : 'portero' }, {
+        onSuccess: () => toast.success(`Rol cambiado a ${p.match_role === 'portero' ? 'Jugador' : 'Portero'}`)
+    })}
+    title={`Cambiar a ${p.match_role === 'portero' ? 'Jugador' : 'Portero'}`}
+    className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center font-bold text-xs hover:scale-110 transition-transform cursor-pointer ${p.match_role === 'portero' ? 'bg-yellow-400 text-yellow-900 ring-2 ring-yellow-400/50' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'}`}>
+    
                                 {p.match_role === 'portero' ? '🧤' : '⚽'}
-                            </div>
+                            
+</button>
                             <div className="min-w-0 flex-1">
                                 <p className="font-bold text-slate-900 dark:text-white truncate">{p.user?.name}</p>
                                 <p className="text-xs text-slate-500 truncate">{p.user?.phone || 'Sin número'}</p>
@@ -102,9 +110,16 @@ const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
                     <div className="space-y-2">
                         {players.sort((a,b) => a.match_role === 'portero' ? -1 : 1).map(p => (
                             <div key={p.id} className="flex items-center gap-3 text-sm bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm">
-                                <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center font-bold text-xs ${p.match_role === 'portero' ? 'bg-yellow-400 text-yellow-900' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
+                                <button 
+    onClick={() => updateRole({ id: convocatoriaId, userId: p.user.id, role: p.match_role === 'portero' ? 'jugador' : 'portero' }, {
+        onSuccess: () => toast.success(`Rol cambiado a ${p.match_role === 'portero' ? 'Jugador' : 'Portero'}`)
+    })}
+    title={`Cambiar a ${p.match_role === 'portero' ? 'Jugador' : 'Portero'}`}
+    className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center font-bold text-xs hover:scale-110 transition-transform cursor-pointer ${p.match_role === 'portero' ? 'bg-yellow-400 text-yellow-900 ring-2 ring-yellow-400/50' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'}`}>
+    
                                     {p.match_role === 'portero' ? '🧤' : '⚽'}
-                                </div>
+                                
+</button>
                                 <div className="min-w-0 flex-1">
                                     <span className="font-bold text-slate-900 dark:text-white truncate block">{p.user?.name} {p.match_role === 'portero' && <span className="ml-1 text-[10px] text-yellow-600 dark:text-yellow-400 font-bold uppercase bg-yellow-100 dark:bg-yellow-900/30 px-1 rounded">Portero</span>}</span>
                                     <span className="text-xs text-slate-500 block truncate">{p.user?.phone || 'Sin número'}</span>

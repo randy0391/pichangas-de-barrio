@@ -97,6 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/convocatorias/{id}/sortear', [ConvocatoriaController::class, 'sortearEquipos']);
         Route::post('/convocatorias/{id}/add-player', [ConvocatoriaController::class, 'addPlayer']);
         Route::delete('/convocatorias/{id}/confirmaciones/{userId}', [ConvocatoriaController::class, 'removeConfirmacion']);
+        Route::put('/convocatorias/{id}/confirmaciones/{userId}/role', [ConvocatoriaController::class, 'updatePlayerRole']);
 
         Route::post('/galleries', [GalleryController::class, 'store']);
         Route::put('/galleries/{id}', [GalleryController::class, 'update']);

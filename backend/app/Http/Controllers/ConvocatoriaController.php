@@ -178,6 +178,23 @@ class ConvocatoriaController extends Controller
         return ConvocatoriaResource::collection($convocatorias);
     }
 
+        public function updatePlayerRole(Request $request, $id, $userId)
+    {
+        if (!$request->user()->isAdmin()) return response()->json(['message' => 'Unauthorized'], 403);
+
+        $request->validate([
+            'match_role' => 'required|in:jugador,portero'
+        ]);
+
+        $convocatoria = Convocatoria::findOrFail($id);
+        $confirmacion = $convocatoria->confirmaciones()->where('user_id', $userId)->firstOrFail();
+
+        $confirmacion->match_role = $request->match_role;
+        $confirmacion->save();
+
+        return response()->json(['message' => 'Rol actualizado correctamente']);
+    }
+
     public function removeConfirmacion($id, $userId)
     {
         Confirmacion::where('convocatoria_id', $id)->where('user_id', $userId)->delete();

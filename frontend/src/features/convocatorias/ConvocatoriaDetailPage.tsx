@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useConvocatoria, useConfirmar, useAddPlayerToConvocatoria } from '@/hooks/useConvocatorias';
+import { useConvocatoria, useConfirmar, useAddPlayerToConvocatoria, useUpdatePlayerRole } from '@/hooks/useConvocatorias';
 import { useMembers } from '@/hooks/useMembers';
 import { useAuthStore } from '@/stores/authStore';
 import { motion } from 'motion/react';
@@ -18,6 +18,7 @@ export const ConvocatoriaDetailPage = () => {
     const { data: c, isLoading } = useConvocatoria(Number(id));
     const { mutate: confirmar, isPending: isConfirming } = useConfirmar();
     const { mutate: addPlayer, isPending: isAddingPlayer } = useAddPlayerToConvocatoria();
+    const { mutate: updateRole } = useUpdatePlayerRole();
     const { data: membersData } = useMembers(1, '', 100);
     
     const [selectedRole, setSelectedRole] = useState<'jugador' | 'portero'>('jugador');

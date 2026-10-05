@@ -154,3 +154,17 @@ export const useAddPlayerToConvocatoria = () => {
     }
   });
 };
+
+export const useUpdatePlayerRole = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, userId, role }: { id: number; userId: number; role: 'jugador' | 'portero' }) => {
+            const { data } = await api.put(`/convocatorias/${id}/confirmaciones/${userId}/role`, { match_role: role });
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['convocatorias'] });
+            queryClient.invalidateQueries({ queryKey: ['convocatoria'] });
+        }
+    });
+};
