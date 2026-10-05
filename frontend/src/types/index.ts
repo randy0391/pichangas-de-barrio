@@ -98,6 +98,7 @@ export interface Convocatoria {
   rejected_count: number;
   pending_count: number;
   porteros_count: number;
+  has_teams?: boolean;
   confirmaciones?: Confirmacion[];
   my_confirmation?: Confirmacion | null;
   created_at: string;

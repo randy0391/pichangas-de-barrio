@@ -323,8 +323,8 @@ export const AdminConvocatoriasPage = () => {
                                 <Button onClick={() => setAttendanceDialogId(c.id)} variant="outline" className="border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold text-xs uppercase">
                                     📋 Lista
                                 </Button>
-                                <Button onClick={() => handleSortear(c.id)} disabled={isSorting || c.confirmed_count < c.max_players || c.confirmaciones?.some((p: Confirmacion) => p.team_number !== null)} className={`border-0 rounded-xl font-bold text-xs uppercase shadow-md ${c.confirmed_count < c.max_players || c.confirmaciones?.some((p: Confirmacion) => p.team_number !== null) ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-gradient-to-r from-amber-400 to-orange-500 text-white'}`}>
-                                    <Shuffle className="mr-1 h-4 w-4" /> {c.confirmaciones?.some((p: Confirmacion) => p.team_number !== null) ? 'Sorteado' : 'Sortear'}
+                                <Button onClick={() => handleSortear(c.id)} disabled={isSorting || c.confirmed_count < c.max_players || c.has_teams} className={`border-0 rounded-xl font-bold text-xs uppercase shadow-md ${c.confirmed_count < c.max_players || c.has_teams ? 'bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-gradient-to-r from-amber-400 to-orange-500 text-white'}`}>
+                                    <Shuffle className="mr-1 h-4 w-4" /> {c.has_teams ? 'Sorteado' : 'Sortear'}
                                 </Button>
                                 <Button onClick={() => handleEditClick(c)} variant="outline" className="border-blue-300 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950 rounded-xl font-bold text-xs uppercase">
                                     ✏️

@@ -38,6 +38,7 @@ class ConvocatoriaResource extends JsonResource
             'pending_count' => $this->confirmaciones()->where('status', 'pendiente')->count(),
             'porteros_count' => $this->confirmaciones()->where('status', 'confirmado')->where('match_role', 'portero')->count(),
             'confirmaciones' => ConfirmacionResource::collection($this->whenLoaded('confirmaciones')),
+            'has_teams' => $this->confirmaciones()->whereNotNull('team_number')->exists(),
             'created_at' => $this->created_at,
         ];
     }
