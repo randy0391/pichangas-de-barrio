@@ -267,9 +267,11 @@ export const ConvocatoriaDetailPage = () => {
         <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase flex items-center gap-2">
             ? Confirmados <span className="text-primary">({confirmados.length})</span>
         </h3>
-        <button onClick={handleCopy} className="flex items-center gap-1 text-xs font-bold uppercase text-primary hover:text-accent transition-colors px-3 py-2 bg-primary/10 hover:bg-accent/10 rounded-lg">
-            <Copy size={14} /> Copiar Lista
-        </button>
+        {user?.role === 'admin' && (
+                                <button onClick={handleCopy} className="flex items-center gap-1 text-xs font-bold uppercase text-primary hover:text-accent transition-colors px-3 py-2 bg-primary/10 hover:bg-accent/10 rounded-lg">
+                                    <Copy size={14} /> Copiar Lista
+                                </button>
+                            )}
     </div>
                             <div className="space-y-3">
                                 {confirmados.length === 0 && <p className="text-slate-500 text-sm italic">Nadie se ha confirmado aún.</p>}
