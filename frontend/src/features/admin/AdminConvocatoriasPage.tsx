@@ -285,9 +285,34 @@ export const AdminConvocatoriasPage = () => {
                                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Descripción</label>
                                     <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Detalles del partido..." required className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl min-h-[80px]" />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">📍 Ubicación</label>
-                                    <Input value={form.location} onChange={e => setForm({...form, location: e.target.value})} placeholder="Cancha sintética norte" required className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-12 rounded-xl" />
+                                <div className="space-y-2 relative">
+                                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">?? Ubicaci�n Exacta</label>
+                                    <Input 
+                                        value={form.location} 
+                                        onChange={e => handleLocationChange(e.target.value)} 
+                                        onFocus={() => locationSuggestions.length > 0 && setShowSuggestions(true)}
+                                        onBlur={() => window.setTimeout(() => setShowSuggestions(false), 200)}
+                                        placeholder="Escribe para buscar (Ej. Cajamarca)" 
+                                        required 
+                                        className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-12 rounded-xl" 
+                                    />
+                                    {showSuggestions && (
+                                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                                            {locationSuggestions.length === 0 ? (
+                                                <div className="p-3 text-sm text-slate-500 italic">Buscando...</div>
+                                            ) : (
+                                                locationSuggestions.map((loc, i) => (
+                                                    <div 
+                                                        key={i} 
+                                                        onClick={() => selectLocation(loc.display_name)}
+                                                        className="p-3 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0"
+                                                    >
+                                                        {loc.display_name}
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">⚔️ Rival (opcional)</label>
