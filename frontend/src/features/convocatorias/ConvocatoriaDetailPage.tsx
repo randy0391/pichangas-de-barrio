@@ -119,6 +119,26 @@ export const ConvocatoriaDetailPage = () => {
                 </div>
             </motion.div>
 
+            {/* Location Map */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+                className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 dark:border-slate-800 mb-8"
+            >
+                <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4 flex items-center gap-2">
+                    <MapPin className="text-primary" /> Ubicaci�n del Partido
+                </h2>
+                <div className="w-full h-64 md:h-80 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800">
+                    <iframe
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        style={{ border: 0 }}
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(c.location)}&t=m&z=15&output=embed&iwloc=near`}
+                        allowFullScreen
+                    ></iframe>
+                </div>
+            </motion.div>
+
             {/* Confirm Action */}
             {c.status === 'abierta' && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
