@@ -172,11 +172,18 @@ export const AdminConvocatoriasPage = () => {
     const [editingId, setEditingId] = useState<number | null>(null);
     const initialForm = { title: '', description: '', location: '', match_date: '', match_time: '', max_players: 14, num_teams: 2, rival: '' };
     const [form, setForm] = useState(initialForm);
+    const [debouncedLocation, setDebouncedLocation] = useState('');
 
     
     const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const searchTimeout = useRef<number | null>(null);
+
+    
+    React.useEffect(() => {
+        const timer = setTimeout(() => setDebouncedLocation(form.location), 800);
+        return () => clearTimeout(timer);
+    }, [form.location]);
 
     const handleLocationChange = (val: string) => {
         setForm({...form, location: val});
@@ -285,32 +292,25 @@ export const AdminConvocatoriasPage = () => {
                                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Descripción</label>
                                     <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Detalles del partido..." required className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl min-h-[80px]" />
                                 </div>
-                                <div className="space-y-2 relative">
-                                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">?? Ubicaci�n Exacta</label>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">?? UBICACION EXACTA (G. MAPS)</label>
                                     <Input 
                                         value={form.location} 
-                                        onChange={e => handleLocationChange(e.target.value)} 
-                                        onFocus={() => locationSuggestions.length > 0 && setShowSuggestions(true)}
-                                        onBlur={() => window.setTimeout(() => setShowSuggestions(false), 200)}
-                                        placeholder="Escribe para buscar (Ej. Cajamarca)" 
+                                        onChange={e => setForm({...form, location: e.target.value})} 
+                                        placeholder="Ej. Colegio San Ram�n, Cajamarca" 
                                         required 
-                                        className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-12 rounded-xl" 
+                                        className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-12 rounded-xl mb-2" 
                                     />
-                                    {showSuggestions && (
-                                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                                            {locationSuggestions.length === 0 ? (
-                                                <div className="p-3 text-sm text-slate-500 italic">Buscando...</div>
-                                            ) : (
-                                                locationSuggestions.map((loc, i) => (
-                                                    <div 
-                                                        key={i} 
-                                                        onClick={() => selectLocation(loc.display_name)}
-                                                        className="p-3 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-100 dark:border-slate-700 last:border-0"
-                                                    >
-                                                        {loc.display_name}
-                                                    </div>
-                                                ))
-                                            )}
+                                    {debouncedLocation.length > 3 && (
+                                        <div className="w-full h-32 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 relative">
+                                            <div className="absolute top-0 left-0 bg-primary/80 text-white text-[10px] px-2 py-1 rounded-br-lg z-10 font-bold">VISTA PREVIA</div>
+                                            <iframe
+                                                width="100%"
+                                                height="100%"
+                                                frameBorder="0"
+                                                style={{ border: 0 }}
+                                                src={`https://maps.google.com/maps?q=${encodeURIComponent(debouncedLocation)}&t=m&z=15&output=embed&iwloc=near`}
+                                            ></iframe>
                                         </div>
                                     )}
                                 </div>
