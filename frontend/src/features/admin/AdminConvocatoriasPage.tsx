@@ -293,11 +293,11 @@ export const AdminConvocatoriasPage = () => {
                                     <Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Detalles del partido..." required className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl min-h-[80px]" />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">?? UBICACION EXACTA (G. MAPS)</label>
+                                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">?? UBICACION EXACTA</label>
                                     <Input 
                                         value={form.location} 
                                         onChange={e => setForm({...form, location: e.target.value})} 
-                                        placeholder="Ej. Colegio San Ram�n, Cajamarca" 
+                                        placeholder="Ej. Colegio San Ramon, Cajamarca" 
                                         required 
                                         className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-12 rounded-xl mb-2" 
                                     />
