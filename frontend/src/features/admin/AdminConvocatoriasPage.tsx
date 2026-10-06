@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useConvocatorias, useCreateConvocatoria, useUpdateConvocatoria, useDeleteConvocatoria, useSortearEquipos, useConvocatoria, useRemoveConfirmacion, useUpdatePlayerRole } from '@/hooks/useConvocatorias';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -172,6 +172,38 @@ export const AdminConvocatoriasPage = () => {
     const [editingId, setEditingId] = useState<number | null>(null);
     const initialForm = { title: '', description: '', location: '', match_date: '', match_time: '', max_players: 14, num_teams: 2, rival: '' };
     const [form, setForm] = useState(initialForm);
+
+    
+    const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const searchTimeout = useRef<number | null>(null);
+
+    const handleLocationChange = (val: string) => {
+        setForm({...form, location: val});
+        if (val.length < 3) {
+            setLocationSuggestions([]);
+            setShowSuggestions(false);
+            return;
+        }
+        
+        if (searchTimeout.current) clearTimeout(searchTimeout.current);
+        
+        searchTimeout.current = window.setTimeout(async () => {
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=pe&limit=5`);
+                const data = await res.json();
+                setLocationSuggestions(data);
+                setShowSuggestions(true);
+            } catch (e) {
+                // ignore
+            }
+        }, 500);
+    };
+
+    const selectLocation = (displayName: string) => {
+        setForm({...form, location: displayName});
+        setShowSuggestions(false);
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
