@@ -58,6 +58,7 @@ export interface Event {
   title: string;
   description: string;
   location: string;
+  maps_url?: string;
   event_date: string;
   event_time: string;
   cover_image: string | null;

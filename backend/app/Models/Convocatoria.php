@@ -10,7 +10,7 @@ class Convocatoria extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'title', 'description', 'location', 'match_date', 'match_time', 'max_players', 'num_teams', 'rival', 'status'
+        'user_id', 'title', 'description', 'location', 'maps_url', 'match_date', 'match_time', 'max_players', 'num_teams', 'rival', 'status'
     ];
 
     protected $casts = [

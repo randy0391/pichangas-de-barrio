@@ -39,4 +39,4 @@ RUN php artisan route:cache && \
     php artisan view:cache
 
 # config:cache runs at startup (not build) so Render env vars are available
-CMD php artisan config:cache && apache2-foreground
+CMD php artisan config:cache && php artisan migrate --force && apache2-foreground

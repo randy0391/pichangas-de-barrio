@@ -26,6 +26,7 @@ class ConvocatoriaResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'location' => $this->location,
+            'maps_url' => $this->maps_url,
             'match_date' => $this->match_date->format('Y-m-d'),
             'match_time' => $this->match_time->format('H:i'),
             'max_players' => $this->max_players,

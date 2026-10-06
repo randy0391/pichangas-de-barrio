@@ -124,9 +124,16 @@ export const ConvocatoriaDetailPage = () => {
                 className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 dark:border-slate-800 mb-8"
             >
                 <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4 flex items-center gap-2">
-                    <MapPin className="text-primary" /> Ubicaci�n del Partido
+                    <MapPin className="text-primary" /> Ubicacion del Partido
                 </h2>
                 <div className="w-full h-64 md:h-80 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800">
+                    {c.maps_url && (
+                        <div className="mb-4">
+                            <a href={c.maps_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl font-bold text-sm transition-colors shadow-lg shadow-blue-500/20">
+                                ?? Abrir en Google Maps (Ruta Oficial)
+                            </a>
+                        </div>
+                    )}
                     <iframe
                         width="100%"
                         height="100%"
