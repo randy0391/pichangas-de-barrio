@@ -83,6 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Admin Wallets
         Route::get('/admin/wallets', [\App\Http\Controllers\WalletController::class, 'adminListAll']);
         Route::get('/admin/wallets/pending', [\App\Http\Controllers\WalletController::class, 'adminListPending']);
+        Route::get('/admin/wallets/{userId}/transactions', [\App\Http\Controllers\WalletController::class, 'playerTransactions']);
         Route::post('/admin/wallets/transactions/{id}/approve', [\App\Http\Controllers\WalletController::class, 'approveRecharge']);
         Route::post('/admin/wallets/transactions/{id}/reject', [\App\Http\Controllers\WalletController::class, 'rejectRecharge']);
         Route::post('/admin/wallets/{userId}/adjust', [\App\Http\Controllers\WalletController::class, 'adminAdjust']);

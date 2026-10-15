@@ -94,30 +94,83 @@ class WalletController extends Controller
 
     public function adminListAll(Request $request)
     {
-        // Ensure all users have a wallet record
-        $users = User::all();
-        foreach ($users as $u) {
-            $u->getOrCreateWallet();
+        $query = User::with('wallet');
+
+        if ($request->has('search') && $request->get('search') !== '') {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('nombres', 'like', "%{$search}%")
+                  ->orWhere('apellido_paterno', 'like', "%{$search}%")
+                  ->orWhere('apellido_materno', 'like', "%{$search}%")
+                  ->orWhere('nickname', 'like', "%{$search}%")
+                  ->orWhere('dni', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
         }
 
-        $wallets = Wallet::with('user')
-            ->orderBy('balance', 'desc')
-            ->paginate(50);
+        $users = $query->orderBy('nombres', 'asc')->get();
 
-        return response()->json($wallets->through(function ($w) {
+        $data = $users->map(function ($u) {
+            $wallet = $u->wallet;
+            if (!$wallet) {
+                $wallet = Wallet::firstOrCreate(['user_id' => $u->id], ['balance' => 0]);
+            }
             return [
-                'id' => $w->id,
-                'user_id' => $w->user_id,
-                'balance' => $w->balance,
-                'user' => $w->user ? [
-                    'id' => $w->user->id,
-                    'name' => $w->user->full_name ?: $w->user->nombres,
-                    'phone' => $w->user->phone,
-                    'dni' => $w->user->dni,
-                ] : null,
-                'created_at' => $w->created_at,
+                'id' => $wallet->id,
+                'user_id' => $u->id,
+                'balance' => $wallet->balance,
+                'user' => [
+                    'id' => $u->id,
+                    'name' => $u->full_name ?: $u->nombres,
+                    'nickname' => $u->nickname,
+                    'phone' => $u->phone,
+                    'dni' => $u->dni,
+                    'role' => $u->role,
+                    'avatar' => ImageHelper::getUrl($u->avatar),
+                    'is_approved' => (bool)$u->is_approved,
+                ],
+                'created_at' => $wallet->created_at,
             ];
-        }));
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function playerTransactions(Request $request, $userId)
+    {
+        $user = User::findOrFail($userId);
+        $wallet = $user->getOrCreateWallet();
+
+        $transactions = WalletTransaction::where('wallet_id', $wallet->id)
+            ->with(['approver'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->full_name ?: $user->nombres,
+                'nickname' => $user->nickname,
+                'phone' => $user->phone,
+                'dni' => $user->dni,
+                'balance' => $wallet->balance,
+            ],
+            'transactions' => $transactions->map(function ($tx) {
+                return [
+                    'id' => $tx->id,
+                    'type' => $tx->type,
+                    'amount' => $tx->amount,
+                    'balance_after' => $tx->balance_after,
+                    'description' => $tx->description,
+                    'reference_type' => $tx->reference_type,
+                    'reference_id' => $tx->reference_id,
+                    'receipt_path' => $tx->receipt_path ? ImageHelper::getUrl($tx->receipt_path) : null,
+                    'status' => $tx->status,
+                    'approver_name' => $tx->approver ? ($tx->approver->full_name ?: $tx->approver->nombres) : null,
+                    'created_at' => $tx->created_at,
+                ];
+            }),
+        ]);
     }
 
     public function approveRecharge(Request $request, $id)
