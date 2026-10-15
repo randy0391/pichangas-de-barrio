@@ -210,18 +210,32 @@ export const AdminWalletsPage = () => {
         <div className="space-y-4">
           {/* Search bar & total indicator */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3 bg-slate-900 px-3 py-2 rounded-xl border border-slate-800 w-full sm:max-w-md">
-              <Search className="h-5 w-5 text-slate-400 shrink-0" />
-              <Input
+            <div className="flex items-center gap-3 bg-slate-900 px-3 py-2 rounded-xl border border-slate-800 focus-within:border-lime-400/50 focus-within:ring-1 focus-within:ring-lime-400/30 transition-all w-full sm:max-w-md">
+              <Search className="h-4 w-4 text-slate-400 shrink-0" />
+              <input
                 type="text"
+                autoComplete="off"
                 placeholder="Buscar por nombre, celular o DNI..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
                   setPage(1);
                 }}
-                className="bg-transparent border-0 text-white placeholder:text-slate-500 h-9 p-0 focus-visible:ring-0"
+                className="bg-transparent border-0 outline-none focus:outline-none ring-0 focus:ring-0 text-white placeholder:text-slate-500 text-sm w-full h-7 p-0"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setPage(1);
+                  }}
+                  className="text-slate-500 hover:text-white p-0.5 rounded-lg transition-colors"
+                  title="Limpiar busqueda"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
             <div className="text-xs font-bold text-slate-400 bg-slate-900/60 px-3 py-2 rounded-xl border border-slate-800/80 self-start sm:self-auto">
               Total Jugadores: <span className="text-white font-black">{meta?.total ?? allWallets.length}</span>

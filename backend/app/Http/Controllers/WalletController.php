@@ -97,14 +97,16 @@ class WalletController extends Controller
         $query = User::with('wallet');
 
         if ($request->has('search') && $request->get('search') !== '') {
-            $search = $request->get('search');
+            $search = trim($request->get('search'));
             $query->where(function ($q) use ($search) {
-                $q->where('nombres', 'like', "%{$search}%")
+                $q->where(DB::raw("CONCAT_WS(' ', COALESCE(nombres, ''), COALESCE(apellido_paterno, ''), COALESCE(apellido_materno, ''))"), 'like', "%{$search}%")
+                  ->orWhere('nombres', 'like', "%{$search}%")
                   ->orWhere('apellido_paterno', 'like', "%{$search}%")
                   ->orWhere('apellido_materno', 'like', "%{$search}%")
                   ->orWhere('nickname', 'like', "%{$search}%")
                   ->orWhere('dni', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
