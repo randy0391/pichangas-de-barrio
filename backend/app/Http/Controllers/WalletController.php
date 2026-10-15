@@ -108,9 +108,10 @@ class WalletController extends Controller
             });
         }
 
-        $users = $query->orderBy('nombres', 'asc')->get();
+        $perPage = (int)$request->get('per_page', 15);
+        $users = $query->orderBy('nombres', 'asc')->paginate($perPage);
 
-        $data = $users->map(function ($u) {
+        $data = $users->getCollection()->map(function ($u) {
             $wallet = $u->wallet;
             if (!$wallet) {
                 $wallet = Wallet::firstOrCreate(['user_id' => $u->id], ['balance' => 0]);
@@ -133,7 +134,15 @@ class WalletController extends Controller
             ];
         });
 
-        return response()->json(['data' => $data]);
+        return response()->json([
+            'data' => $data,
+            'meta' => [
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+            ]
+        ]);
     }
 
     public function playerTransactions(Request $request, $userId)

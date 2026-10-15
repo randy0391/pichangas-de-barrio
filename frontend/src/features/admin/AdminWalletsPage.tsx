@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 import ReactDOM from 'react-dom';
@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
+import { Pagination } from '@/components/ui/Pagination';
 import { WalletTransaction, Wallet as WalletType } from '@/types';
 
 interface PlayerHistoryTransaction {
@@ -30,6 +31,7 @@ interface PlayerHistoryTransaction {
 
 export const AdminWalletsPage = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'all'>('all');
+  const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
   
@@ -53,12 +55,27 @@ export const AdminWalletsPage = () => {
     enabled: activeTab === 'pending'
   });
 
-  const { data: allWalletsData, isLoading: loadingAll } = useQuery<{ data: WalletType[] }>({
-    queryKey: ['admin-wallets-all'],
+  const { data: allWalletsData, isLoading: loadingAll } = useQuery<{
+    data: WalletType[];
+    meta?: {
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+    };
+  }>({
+    queryKey: ['admin-wallets-all', page, searchQuery],
     queryFn: async () => {
-      const res = await api.get('/admin/wallets');
+      const res = await api.get('/admin/wallets', {
+        params: {
+          page,
+          search: searchQuery.trim() || undefined,
+          per_page: 15
+        }
+      });
       return (res.data as any).data ? res.data : { data: res.data };
     },
+    placeholderData: keepPreviousData,
     enabled: activeTab === 'all'
   });
 
@@ -134,14 +151,8 @@ export const AdminWalletsPage = () => {
   });
 
   const pendingList = pendingData?.data || [];
-  const allWallets = (allWalletsData?.data || []).filter(w => {
-    if (!searchQuery) return true;
-    const name = w.user?.name || w.user?.full_name || '';
-    const phone = w.user?.phone || '';
-    const dni = w.user?.dni || '';
-    const query = searchQuery.toLowerCase();
-    return name.toLowerCase().includes(query) || phone.includes(query) || dni.includes(query);
-  });
+  const allWallets = allWalletsData?.data || [];
+  const meta = allWalletsData?.meta;
 
   const getTypeLabel = (type: string) => {
     switch (type) {
@@ -175,7 +186,7 @@ export const AdminWalletsPage = () => {
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            Todas las Billeteras ({allWallets.length})
+            Todas las Billeteras ({meta?.total ?? allWallets.length})
           </button>
           <button
             onClick={() => setActiveTab('pending')}
@@ -205,19 +216,23 @@ export const AdminWalletsPage = () => {
                 type="text"
                 placeholder="Buscar por nombre, celular o DNI..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
                 className="bg-transparent border-0 text-white placeholder:text-slate-500 h-9 p-0 focus-visible:ring-0"
               />
             </div>
             <div className="text-xs font-bold text-slate-400 bg-slate-900/60 px-3 py-2 rounded-xl border border-slate-800/80 self-start sm:self-auto">
-              Total Jugadores: <span className="text-white font-black">{allWallets.length}</span>
+              Total Jugadores: <span className="text-white font-black">{meta?.total ?? allWallets.length}</span>
             </div>
           </div>
 
           {loadingAll ? (
             <div className="py-20 flex justify-center"><FootballSpinner /></div>
           ) : (
-            <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+            <>
+              <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
@@ -307,6 +322,17 @@ export const AdminWalletsPage = () => {
                 </table>
               </div>
             </div>
+
+            {meta && meta.last_page > 1 && (
+              <div className="pt-2">
+                <Pagination
+                  currentPage={meta.current_page}
+                  lastPage={meta.last_page}
+                  onPageChange={(p) => setPage(p)}
+                />
+              </div>
+            )}
+          </>
           )}
         </div>
       )}
