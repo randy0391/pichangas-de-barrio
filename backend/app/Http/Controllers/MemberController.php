@@ -12,12 +12,22 @@ class MemberController extends Controller
         $query = User::query();
 
         if ($request->has('search') && $request->get('search') !== '') {
-            $search = $request->get('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('nombres', 'like', "%{$search}%")
-                  ->orWhere('dni', 'like', "%{$search}%")
-                  ->orWhere('apellido_paterno', 'like', "%{$search}%")->orWhere('apellido_materno', 'like', "%{$search}%")->orWhere('nickname', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+            $search = trim($request->get('search'));
+            $lowerSearch = mb_strtolower($search, 'UTF-8');
+            $words = preg_split('/\s+/', $lowerSearch, -1, PREG_SPLIT_NO_EMPTY);
+            $query->where(function ($q) use ($lowerSearch, $words) {
+                $q->whereRaw("LOWER(COALESCE(dni, '')) LIKE ?", ["%{$lowerSearch}%"])
+                  ->orWhereRaw("LOWER(COALESCE(phone, '')) LIKE ?", ["%{$lowerSearch}%"])
+                  ->orWhereRaw("LOWER(COALESCE(email, '')) LIKE ?", ["%{$lowerSearch}%"])
+                  ->orWhereRaw("LOWER(COALESCE(nickname, '')) LIKE ?", ["%{$lowerSearch}%"]);
+
+                if (!empty($words)) {
+                    $q->orWhere(function ($subQ) use ($words) {
+                        foreach ($words as $word) {
+                            $subQ->whereRaw("LOWER(CONCAT_WS(' ', COALESCE(nombres, ''), COALESCE(apellido_paterno, ''), COALESCE(apellido_materno, ''), COALESCE(nickname, ''))) LIKE ?", ["%{$word}%"]);
+                        }
+                    });
+                }
             });
         }
 
