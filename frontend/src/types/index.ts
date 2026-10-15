@@ -100,8 +100,37 @@ export interface Convocatoria {
   pending_count: number;
   porteros_count: number;
   has_teams?: boolean;
+  maps_url?: string;
+  cost_per_player?: string | number;
   confirmaciones?: Confirmacion[];
   my_confirmation?: Confirmacion | null;
+  created_at: string;
+}
+
+export interface WalletTransaction {
+  id: number;
+  wallet_id: number;
+  user_id: number;
+  type: 'recarga' | 'descuento' | 'devolucion' | 'ajuste';
+  amount: string;
+  balance_after: string;
+  description: string | null;
+  reference_type?: string | null;
+  reference_id?: number | null;
+  receipt_path: string | null;
+  status: 'pendiente' | 'aprobado' | 'rechazado';
+  approved_by?: number | null;
+  approved_at?: string | null;
+  user?: User;
+  created_at: string;
+}
+
+export interface Wallet {
+  id: number;
+  user_id: number;
+  balance: string;
+  user?: User;
+  transactions?: WalletTransaction[];
   created_at: string;
 }
 

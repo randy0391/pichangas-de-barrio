@@ -10,13 +10,10 @@ class ConvocatoriaResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $matchDateTime = Carbon::parse($this->match_date->format('Y-m-d') . ' ' . $this->match_time->format('H:i:s'), 'America/Lima');
-        
         $dynamicStatus = $this->status;
         
-        // Si la fecha y hora ya pasaron, la mostramos como 'finalizada' en vez de 'abierta'
+        // Si la fecha y hora ya pasaron, la mostramos como finalizada en vez de abierta
         $matchDateOnly = Carbon::parse($this->match_date->format('Y-m-d'), 'America/Lima')->endOfDay();
-        // Si ya pasamos al día siguiente de la fecha del partido, se marca como finalizada
         if ($dynamicStatus === 'abierta' && now()->timezone('America/Lima')->gt($matchDateOnly)) {
             $dynamicStatus = 'finalizada';
         }
@@ -32,6 +29,7 @@ class ConvocatoriaResource extends JsonResource
             'max_players' => $this->max_players,
             'num_teams' => $this->num_teams,
             'rival' => $this->rival,
+            'cost_per_player' => $this->cost_per_player ?? 0,
             'status' => $dynamicStatus,
             'creator' => new UserResource($this->whenLoaded('creator')),
             'confirmed_count' => $this->confirmaciones()->where('status', 'confirmado')->count(),

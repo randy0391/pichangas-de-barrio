@@ -10,11 +10,13 @@ class UpdateConvocatoriaRequest extends FormRequest
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'location' => 'sometimes|string|max:255',
+            'maps_url' => 'nullable|string',
             'match_date' => 'sometimes|date',
             'match_time' => 'sometimes|date_format:H:i',
             'max_players' => 'sometimes|integer|min:1',
             'num_teams' => 'sometimes|integer|min:2',
             'rival' => 'nullable|string|max:255',
+            'cost_per_player' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:abierta,cerrada,completada,cancelada',
         ];
     }

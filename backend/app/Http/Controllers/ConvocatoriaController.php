@@ -84,18 +84,49 @@ class ConvocatoriaController extends Controller
 
             if ($currentConfirmados >= $convocatoria->max_players) {
                 return response()->json([
-                    'message' => 'Ya se completó el cupo máximo de jugadores.',
+                    'message' => 'Ya se completo el cupo maximo de jugadores.',
                     'cupo_lleno' => true,
                 ], 422);
             }
 
+            // Check if already confirmed (avoid double charging if just switching roles)
+            $existingConfirmation = Confirmacion::where('convocatoria_id', $id)
+                ->where('user_id', $request->user()->id)
+                ->where('status', 'confirmado')
+                ->first();
+
+            $cost = floatval($convocatoria->cost_per_player ?? 0);
+            $userWallet = null;
+
+            if ($cost > 0 && !$existingConfirmation) {
+                $userWallet = $request->user()->getOrCreateWallet();
+                if ($userWallet->balance < $cost) {
+                    return response()->json([
+                        'message' => 'Saldo insuficiente en tu Billetera Digital. El costo es S/ ' . number_format($cost, 2) . ' y tu saldo disponible es S/ ' . number_format($userWallet->balance, 2) . '. Recarga tu billetera.',
+                        'insufficient_balance' => true,
+                        'required' => $cost,
+                        'balance' => $userWallet->balance,
+                    ], 400);
+                }
+            }
+
             $request->validate([
-                'payment_receipt' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120',
+                'payment_receipt' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
             ]);
 
             $receiptPath = null;
             if ($request->hasFile('payment_receipt')) {
                 $receiptPath = $request->file('payment_receipt')->store('convocatorias_receipts', config('filesystems.default', 'public'));
+            }
+
+            // Deduct from wallet if cost applies and not previously confirmed
+            if ($cost > 0 && $userWallet && !$existingConfirmation) {
+                $userWallet->withdraw(
+                    $cost,
+                    'Pago convocatoria: ' . $convocatoria->title,
+                    'convocatoria',
+                    $convocatoria->id
+                );
             }
 
             Confirmacion::updateOrCreate(
@@ -110,7 +141,7 @@ class ConvocatoriaController extends Controller
                 ]
             );
 
-            return response()->json(['message' => 'Asistencia confirmada']);
+            return response()->json(['message' => 'Asistencia confirmada exitosamente']);
         });
     }
 
@@ -197,8 +228,27 @@ class ConvocatoriaController extends Controller
 
     public function removeConfirmacion($id, $userId)
     {
-        Confirmacion::where('convocatoria_id', $id)->where('user_id', $userId)->delete();
-        return response()->json(['message' => 'Reserva eliminada correctamente']);
+        $convocatoria = Convocatoria::findOrFail($id);
+        $confirmacion = Confirmacion::where('convocatoria_id', $id)->where('user_id', $userId)->first();
+
+        if ($confirmacion) {
+            $cost = floatval($convocatoria->cost_per_player ?? 0);
+            if ($cost > 0) {
+                $targetUser = \App\Models\User::find($userId);
+                if ($targetUser) {
+                    $wallet = $targetUser->getOrCreateWallet();
+                    $wallet->refund(
+                        $cost,
+                        'Devolucion por cancelacion en convocatoria: ' . $convocatoria->title,
+                        'convocatoria',
+                        $convocatoria->id
+                    );
+                }
+            }
+            $confirmacion->delete();
+        }
+
+        return response()->json(['message' => 'Reserva eliminada y saldo devuelto si correspondia']);
     }
 
     public function addPlayer(Request $request, $id)

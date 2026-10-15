@@ -93,10 +93,19 @@ class User extends Authenticatable
         return $this->multas()->whereIn('status', ['pendiente', 'en_revision'])->exists();
     }
 
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
+
+    public function getOrCreateWallet()
+    {
+        return $this->wallet ?: $this->wallet()->create(['balance' => 0]);
+    }
+
     public function getFullNameAttribute()
     {
         $parts = array_filter([$this->nombres, $this->apellido_paterno, $this->apellido_materno]);
         return implode(' ', $parts);
     }
-
 }

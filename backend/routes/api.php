@@ -74,8 +74,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/multas', [\App\Http\Controllers\MultaController::class, 'index']);
     Route::post('/multas/{id}/receipt', [\App\Http\Controllers\MultaController::class, 'uploadReceipt']);
 
+    // Wallet (Billetera Digital)
+    Route::get('/wallet', [\App\Http\Controllers\WalletController::class, 'myWallet']);
+    Route::post('/wallet/recharge', [\App\Http\Controllers\WalletController::class, 'requestRecharge']);
+
     // Admin routes
     Route::middleware('admin')->group(function () {
+        // Admin Wallets
+        Route::get('/admin/wallets', [\App\Http\Controllers\WalletController::class, 'adminListAll']);
+        Route::get('/admin/wallets/pending', [\App\Http\Controllers\WalletController::class, 'adminListPending']);
+        Route::post('/admin/wallets/transactions/{id}/approve', [\App\Http\Controllers\WalletController::class, 'approveRecharge']);
+        Route::post('/admin/wallets/transactions/{id}/reject', [\App\Http\Controllers\WalletController::class, 'rejectRecharge']);
+        Route::post('/admin/wallets/{userId}/adjust', [\App\Http\Controllers\WalletController::class, 'adminAdjust']);
+
         Route::post('/multas/{id}/approve', [\App\Http\Controllers\MultaController::class, 'approve']);
         Route::post('/multas/{id}/reject', [\App\Http\Controllers\MultaController::class, 'reject']);
         

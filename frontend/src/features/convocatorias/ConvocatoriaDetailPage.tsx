@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useConvocatoria, useConfirmar, useAddPlayerToConvocatoria, useUpdatePlayerRole } from '@/hooks/useConvocatorias';
 import { useMembers } from '@/hooks/useMembers';
 import { useAuthStore } from '@/stores/authStore';
@@ -9,12 +9,15 @@ import { Input } from '@/components/ui/Input';
 import { toast } from 'sonner';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
 import { Confirmacion } from '@/types';
-import { ArrowLeft, Users, Shield, MapPin, CalendarDays, Clock, User as UserIcon, Copy } from 'lucide-react';
+import { ArrowLeft, Users, Shield, MapPin, CalendarDays, Clock, User as UserIcon, Copy, Wallet } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import api from '@/lib/axios';
 
 export const ConvocatoriaDetailPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuthStore();
+    const queryClient = useQueryClient();
     const { data: c, isLoading } = useConvocatoria(Number(id));
     const { mutate: confirmar, isPending: isConfirming } = useConfirmar();
     const { mutate: addPlayer, isPending: isAddingPlayer } = useAddPlayerToConvocatoria();
@@ -27,6 +30,19 @@ export const ConvocatoriaDetailPage = () => {
     const [adminSelectedUserId, setAdminSelectedUserId] = useState<string>('');
     const [adminSelectedRole, setAdminSelectedRole] = useState<'jugador' | 'portero'>('jugador');
     const [adminSearch, setAdminSearch] = useState('');
+
+    const { data: walletData } = useQuery<{ wallet: { balance: string } }>({
+        queryKey: ['my-wallet'],
+        queryFn: async () => {
+            const res = await api.get('/wallet');
+            return res.data;
+        },
+        enabled: !!user
+    });
+
+    const userBalance = parseFloat(walletData?.wallet?.balance || '0');
+    const cost = parseFloat(String(c?.cost_per_player || '0'));
+    const hasEnoughBalance = cost <= 0 || userBalance >= cost;
 
     if (isLoading) return <div className="py-20 flex justify-center"><FootballSpinner /></div>;
     if (!c) return <div className="py-20 text-center text-white text-2xl font-bold">Convocatoria no encontrada</div>;
@@ -56,17 +72,22 @@ export const ConvocatoriaDetailPage = () => {
     const teamColors = ['from-red-500 to-red-400', 'from-purple-600 to-purple-400', 'from-green-500 to-emerald-400', 'from-orange-500 to-amber-400', 'from-blue-500 to-cyan-400'];
 
     const handleConfirm = () => {
-        if (!paymentReceipt) {
-            toast.error('Debes subir el comprobante de pago de la convocatoria.');
+        if (cost > 0 && !hasEnoughBalance) {
+            toast.error(`Saldo insuficiente. Necesitas S/ ${cost.toFixed(2)} en tu Billetera Digital.`);
             return;
         }
 
         const fd = new FormData();
         fd.append('match_role', selectedRole);
-        fd.append('payment_receipt', paymentReceipt);
+        if (paymentReceipt) {
+            fd.append('payment_receipt', paymentReceipt);
+        }
 
         confirmar({ id: c.id, formData: fd }, {
-            onSuccess: () => toast.success(`¡Confirmado como ${selectedRole}!`),
+            onSuccess: () => {
+                toast.success(`¡Confirmado como ${selectedRole}!`);
+                queryClient.invalidateQueries({ queryKey: ['my-wallet'] });
+            },
             onError: (err: any) => {
                 const msgs = err?.response?.data?.errors;
                 if (msgs) {
@@ -182,16 +203,42 @@ export const ConvocatoriaDetailPage = () => {
                                     </button>
                                 </div>
                             </div>
-                            <div className="mb-6 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 block">📄 Comprobante de Pago</label>
-                                <p className="text-xs text-slate-500 mb-3">Sube la captura de tu transferencia o Yape/Plin para asegurar tu cupo.</p>
-                                <input
-                                    type="file"
-                                    accept="image/*,.pdf"
-                                    onChange={(e) => setPaymentReceipt(e.target.files?.[0] || null)}
-                                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 dark:file:bg-primary/20 dark:hover:file:bg-primary/30"
-                                />
-                            </div>
+                            {/* Digital Wallet or Free match info */}
+                            {cost > 0 ? (
+                                <div className="mb-6 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                            <Wallet className="h-4 w-4 text-lime-500 dark:text-lime-400" /> Billetera Digital
+                                        </span>
+                                        <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
+                                            Tu saldo: <span className={hasEnoughBalance ? 'text-lime-600 dark:text-lime-400 font-black' : 'text-red-500 font-black'}>S/ {userBalance.toFixed(2)}</span>
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                                        <div>
+                                            <p className="text-xs text-slate-500">Costo de inscripción:</p>
+                                            <p className="text-xl font-black text-slate-900 dark:text-white">S/ {cost.toFixed(2)}</p>
+                                        </div>
+                                        {!hasEnoughBalance && (
+                                            <Link to="/billetera">
+                                                <Button className="bg-lime-400 hover:bg-lime-500 text-slate-950 font-bold text-xs h-9 rounded-xl border-0">
+                                                    Recargar Saldo
+                                                </Button>
+                                            </Link>
+                                        )}
+                                    </div>
+                                    {!hasEnoughBalance && (
+                                        <p className="text-xs text-red-500 dark:text-red-400 mt-2 font-medium">
+                                            ⚠️ Saldo insuficiente en tu billetera digital. Recarga tu saldo para confirmar tu cupo.
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="mb-6 p-4 rounded-xl bg-lime-400/10 border border-lime-400/30 text-center">
+                                    <p className="text-sm font-bold text-lime-600 dark:text-lime-400">🎉 ¡Esta pichanga es de inscripción gratuita!</p>
+                                </div>
+                            )}
+
                             <div className="flex gap-4">
                                 {isConfirmed ? (
                                     <div className="flex-1 h-14 bg-slate-100 dark:bg-slate-800 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700">
@@ -201,9 +248,15 @@ export const ConvocatoriaDetailPage = () => {
                                     <div className="flex-1 bg-red-500/20 text-red-600 dark:text-red-400 font-bold p-4 rounded-xl text-center border border-red-500/30">
                                         ⚠️ Tienes una multa pendiente. Págala para poder asistir.
                                     </div>
+                                ) : !hasEnoughBalance ? (
+                                    <Link to="/billetera" className="flex-1">
+                                        <Button className="w-full h-14 bg-gradient-to-r from-lime-400 to-lime-500 text-slate-900 font-black uppercase tracking-widest rounded-xl shadow-lg border-0 text-base">
+                                            💳 Recargar Billetera para Confirmar
+                                        </Button>
+                                    </Link>
                                 ) : (
                                     <Button onClick={handleConfirm} disabled={isConfirming} className="flex-1 h-14 bg-gradient-to-r from-lime-400 to-lime-500 text-slate-900 font-black uppercase tracking-widest rounded-xl shadow-lg border-0 text-lg">
-                                        {isConfirming ? 'Confirmando...' : '✅ Confirmar Asistencia'}
+                                        {isConfirming ? 'Confirmando...' : `✅ Confirmar Asistencia${cost > 0 ? ` (S/ ${cost.toFixed(2)})` : ''}`}
                                     </Button>
                                 )}
                             </div>

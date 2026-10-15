@@ -170,7 +170,7 @@ export const AdminConvocatoriasPage = () => {
     const [expandedId, setExpandedId] = useState<number | null>(null);
     const [attendanceDialogId, setAttendanceDialogId] = useState<number | null>(null);
     const [editingId, setEditingId] = useState<number | null>(null);
-    const initialForm = { title: '', description: '', location: '', match_date: '', match_time: '', max_players: 14, num_teams: 2, rival: '' };
+    const initialForm = { title: '', description: '', location: '', match_date: '', match_time: '', max_players: 14, num_teams: 2, rival: '', cost_per_player: 0 };
     const [form, setForm] = useState(initialForm);
     const [debouncedLocation, setDebouncedLocation] = useState('');
 
@@ -246,7 +246,8 @@ export const AdminConvocatoriasPage = () => {
             match_time: c.match_time.slice(0, 5), // Assuming HH:mm:ss, we want HH:mm for the input type="time"
             max_players: c.max_players,
             num_teams: c.num_teams,
-            rival: c.rival || ''
+            rival: c.rival || '',
+            cost_per_player: c.cost_per_player ? Number(c.cost_per_player) : 0
         });
         setShowForm(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -334,6 +335,10 @@ export const AdminConvocatoriasPage = () => {
                                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">🏟️ Número de Equipos</label>
                                     <Input type="number" min={2} max={10} value={form.num_teams} onChange={e => setForm({...form, num_teams: parseInt(e.target.value)})} required className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-12 rounded-xl font-bold text-lg" />
                                 </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">💰 Costo por Jugador (S/)</label>
+                                    <Input type="number" step="0.50" min={0} value={form.cost_per_player} onChange={e => setForm({...form, cost_per_player: parseFloat(e.target.value) || 0})} required className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-12 rounded-xl font-bold text-lg text-lime-600 dark:text-lime-400" />
+                                </div>
                             </div>
                             
                             <Button type="submit" disabled={isCreating || isUpdating} className={`w-full h-14 font-black uppercase tracking-widest rounded-xl shadow-lg border-0 text-lg ${editingId ? 'bg-gradient-to-r from-blue-400 to-indigo-500 text-white' : 'bg-gradient-to-r from-lime-400 to-lime-500 text-slate-900'}`}>
@@ -356,6 +361,11 @@ export const AdminConvocatoriasPage = () => {
                                     <h3 className="text-xl font-black text-slate-900 dark:text-white">{c.title}</h3>
                                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${c.status === 'abierta' ? 'bg-lime-400/20 text-lime-600 dark:text-lime-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>{c.status}</span>
                                     <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">{c.num_teams} equipos</span>
+                                    {Number(c.cost_per_player) > 0 && (
+                                        <span className="px-3 py-1 rounded-full bg-lime-400/20 text-lime-600 dark:text-lime-400 text-xs font-black">
+                                            💰 S/ {parseFloat(String(c.cost_per_player)).toFixed(2)}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-400 font-medium">
                                     <span className="flex items-center gap-1"><CalendarDays size={14} /> {c.match_date}</span>
