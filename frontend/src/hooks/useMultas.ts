@@ -78,3 +78,30 @@ export const useMarkAttendance = () => {
     }
   });
 };
+
+export const useBatchAttendance = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      convocatoriaId,
+      attendances
+    }: {
+      convocatoriaId: number;
+      attendances: {
+        confirmacion_id: number;
+        attendance: 'presente' | 'tardanza' | 'falta' | 'pendiente';
+        amount?: number;
+      }[];
+    }) => {
+      const { data } = await api.post(`/convocatorias/${convocatoriaId}/attendance-batch`, { attendances });
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['convocatorias'] });
+      queryClient.invalidateQueries({ queryKey: ['convocatoria'] });
+      queryClient.invalidateQueries({ queryKey: ['convocatoria', variables.convocatoriaId] });
+      queryClient.invalidateQueries({ queryKey: ['multas'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance-report'] });
+    }
+  });
+};

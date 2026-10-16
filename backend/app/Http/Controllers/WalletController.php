@@ -139,7 +139,7 @@ class WalletController extends Controller
         $pendingCount = (clone $statsQuery)->where('status', 'pendiente')->count();
         $rejectedCount = (clone $statsQuery)->where('status', 'rechazado')->count();
 
-        $perPage = (int)$request->get('per_page', 15);
+        $perPage = $request->boolean('all') ? 1000 : (int)$request->get('per_page', 15);
         $paginator = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         $items = $paginator->getCollection()->map(function ($tx) {

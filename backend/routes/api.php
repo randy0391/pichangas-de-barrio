@@ -93,6 +93,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/multas/{id}/reject', [\App\Http\Controllers\MultaController::class, 'reject']);
         
         Route::post('/confirmaciones/{id}/attendance', [\App\Http\Controllers\AttendanceController::class, 'mark']);
+        Route::post('/convocatorias/{id}/attendance-batch', [\App\Http\Controllers\AttendanceController::class, 'batchMark']);
         Route::get('/admin/attendance-report', [\App\Http\Controllers\AttendanceController::class, 'report']);
 
         Route::post('/posts', [PostController::class, 'store']);

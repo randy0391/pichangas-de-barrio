@@ -83,6 +83,66 @@ export const AdminWalletsPage = () => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copiado: "${text}"`);
   };
+
+  const [isCopyingAll, setIsCopyingAll] = useState(false);
+
+  const copyFullHistoryList = async () => {
+    try {
+      setIsCopyingAll(true);
+      // Fetch all records for the current filter criteria
+      const res = await api.get<RechargesHistoryResponse>('/admin/wallets/recharges', {
+        params: {
+          all: true,
+          search: historySearch.trim() || undefined,
+          status: historyStatus !== 'all' ? historyStatus : undefined,
+          start_date: historyStartDate || undefined,
+          end_date: historyEndDate || undefined,
+        }
+      });
+
+      const list = res.data?.data || historyData?.data || [];
+      if (list.length === 0) {
+        toast.error('No hay recargas en la lista para copiar');
+        return;
+      }
+
+      const lines = list.map((tx, idx) => {
+        const name = tx.user?.name || 'Jugador';
+        const amount = parseFloat(tx.amount || '0').toFixed(2);
+        const date = new Date(tx.created_at).toLocaleDateString('es-PE', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+        const status = tx.status ? tx.status.toUpperCase() : 'PENDIENTE';
+        return `${idx + 1}. ${name} - S/ ${amount} (${date}) [${status}]`;
+      });
+
+      const filterInfo: string[] = [];
+      if (historyStartDate && historyEndDate) {
+        filterInfo.push(`Periodo: ${historyStartDate} al ${historyEndDate}`);
+      } else if (historyStartDate) {
+        filterInfo.push(`Fecha: ${historyStartDate}`);
+      }
+      if (historyStatus !== 'all') {
+        filterInfo.push(`Estado: ${historyStatus.toUpperCase()}`);
+      }
+      if (historySearch) {
+        filterInfo.push(`Filtro: "${historySearch}"`);
+      }
+
+      const filterStr = filterInfo.length > 0 ? ` (${filterInfo.join(' | ')})` : '';
+      const totalAmt = (res.data?.stats?.total_approved_amount ?? historyData?.stats?.total_approved_amount ?? 0).toFixed(2);
+      const header = `📋 HISTORIAL DE VOUCHERS / RECARGAS${filterStr}\nTotal registros: ${list.length} | Monto aprobado: S/ ${totalAmt}\n\n`;
+      const textToCopy = header + lines.join('\n');
+
+      await navigator.clipboard.writeText(textToCopy);
+      toast.success(`Se copiaron ${list.length} recargas en una sola lista al portapapeles`);
+    } catch (e) {
+      toast.error('No se pudo copiar la lista completa');
+    } finally {
+      setIsCopyingAll(false);
+    }
+  };
   
   // Vouchers History filters & pagination
   const [historyPage, setHistoryPage] = useState(1);
@@ -743,21 +803,36 @@ export const AdminWalletsPage = () => {
                 </button>
               </div>
 
-              {(historySearch || historyStartDate || historyEndDate || historyStatus !== 'all') && (
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setHistorySearch('');
-                    setHistoryStartDate('');
-                    setHistoryEndDate('');
-                    setHistoryStatus('all');
-                    setHistoryPage(1);
-                  }}
-                  className="text-[11px] text-red-400 hover:text-red-300 font-bold flex items-center gap-1 transition-colors"
+                  onClick={copyFullHistoryList}
+                  disabled={isCopyingAll || !historyData?.data || historyData.data.length === 0}
+                  className="px-3.5 py-1.5 rounded-xl bg-lime-400 hover:bg-lime-500 text-slate-950 font-black text-xs transition-all shadow-md inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed border-0"
+                  title="Copiar todas las recargas de la lista en un solo texto para Yape o WhatsApp"
                 >
-                  <RotateCcw className="h-3 w-3" /> Limpiar filtros
+                  <Copy className="h-3.5 w-3.5" />
+                  <span>
+                    {isCopyingAll ? 'Copiando...' : `Copiar Lista Completa (${historyData?.stats?.total_count || historyData?.data?.length || 0})`}
+                  </span>
                 </button>
-              )}
+
+                {(historySearch || historyStartDate || historyEndDate || historyStatus !== 'all') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHistorySearch('');
+                      setHistoryStartDate('');
+                      setHistoryEndDate('');
+                      setHistoryStatus('all');
+                      setHistoryPage(1);
+                    }}
+                    className="text-[11px] text-red-400 hover:text-red-300 font-bold flex items-center gap-1 transition-colors px-2 py-1"
+                  >
+                    <RotateCcw className="h-3 w-3" /> Limpiar filtros
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
