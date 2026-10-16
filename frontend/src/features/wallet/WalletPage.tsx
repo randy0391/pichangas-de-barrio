@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Wallet, ArrowUpCircle, ArrowDownCircle, Clock, CheckCircle, XCircle, Upload, Plus } from 'lucide-react';
+import { Wallet, ArrowUpCircle, ArrowDownCircle, Clock, CheckCircle, XCircle, Upload, Plus, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
@@ -33,7 +33,15 @@ export const WalletPage = () => {
   const [showRechargeModal, setShowRechargeModal] = useState(false);
   const [amount, setAmount] = useState('');
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [copied, setCopied] = useState(false);
   const queryClient = useQueryClient();
+
+  const handleCopyNumber = () => {
+    navigator.clipboard.writeText('960735653');
+    setCopied(true);
+    toast.success('Numero de Yape copiado: 960735653');
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const { data, isLoading } = useQuery<WalletData>({
     queryKey: ['my-wallet'],
@@ -136,21 +144,75 @@ export const WalletPage = () => {
         </div>
       </motion.div>
 
+      {/* Datos oficiales de Yape / Plin */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-r from-purple-950/70 via-purple-900/40 to-slate-900 rounded-2xl p-5 border border-purple-500/40 shadow-xl relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-[#742284]/40 border border-purple-400/40 flex items-center justify-center shrink-0 shadow-inner">
+              <span className="text-2xl font-black text-purple-300">Y</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  📱 Yape / Plin Oficial
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">A nombre de:</p>
+              <p className="text-base font-black text-white tracking-wide">
+                MARCO ANTONIO LOPEZ LLANOS
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 bg-slate-950/80 px-4 py-2.5 rounded-xl border border-purple-500/40 w-full md:w-auto justify-between md:justify-start shadow-md">
+            <div>
+              <p className="text-[10px] uppercase font-bold text-purple-300 tracking-wider">Número de Yape</p>
+              <p className="text-2xl font-black font-mono text-white tracking-wider">960 735 653</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyNumber}
+              className="ml-2 bg-purple-600/30 hover:bg-purple-600 text-white p-2.5 rounded-xl border border-purple-400/30 transition-all flex items-center gap-1.5 text-xs font-bold active:scale-95"
+              title="Copiar número"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-4 w-4 text-lime-400" />
+                  <span className="text-lime-400 font-bold hidden sm:inline">Copiado</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4 text-purple-200" />
+                  <span className="text-purple-200 font-bold hidden sm:inline">Copiar</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
       {/* How it works */}
       <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800">
-        <p className="text-xs font-bold text-primary uppercase tracking-wider mb-3">Como funciona</p>
+        <p className="text-xs font-bold text-primary uppercase tracking-wider mb-3">Cómo funciona</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="flex items-start space-x-3">
-            <span className="text-lg">1.</span>
-            <p className="text-sm text-slate-400">Haz tu Yape o Plin al administrador</p>
+            <span className="text-lg font-bold text-purple-400">1.</span>
+            <p className="text-sm text-slate-400">
+              Yapea al <strong className="text-white font-mono">960 735 653</strong> a nombre de <strong className="text-white">Marco Lopez</strong>
+            </p>
           </div>
           <div className="flex items-start space-x-3">
-            <span className="text-lg">2.</span>
-            <p className="text-sm text-slate-400">Sube el comprobante aqui</p>
+            <span className="text-lg font-bold text-purple-400">2.</span>
+            <p className="text-sm text-slate-400">Presiona "Recargar Billetera" y sube tu comprobante</p>
           </div>
           <div className="flex items-start space-x-3">
-            <span className="text-lg">3.</span>
-            <p className="text-sm text-slate-400">El admin aprueba y se acredita tu saldo</p>
+            <span className="text-lg font-bold text-purple-400">3.</span>
+            <p className="text-sm text-slate-400">El admin aprueba tu recarga y tu saldo se acredita</p>
           </div>
         </div>
       </div>
@@ -204,10 +266,31 @@ export const WalletPage = () => {
             <h3 className="text-xl font-black text-white uppercase mb-4">Recargar Billetera</h3>
             
             {/* Yape/Plin info */}
-            <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 mb-4">
-              <p className="text-sm font-bold text-purple-400 mb-1">Yapea o Plin a:</p>
-              <p className="text-white font-mono text-lg">Consulta al administrador</p>
-              <p className="text-xs text-slate-400 mt-1">Luego sube tu comprobante aqui</p>
+            <div className="bg-gradient-to-r from-purple-950/70 to-purple-900/40 border border-purple-500/40 rounded-2xl p-4 mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-black uppercase tracking-wider text-purple-300">
+                  📱 Datos para Yapear
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyNumber}
+                  className="bg-purple-600/30 hover:bg-purple-600 text-purple-200 px-2.5 py-1 rounded-lg border border-purple-400/30 text-xs font-bold flex items-center gap-1 transition-colors"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5 text-lime-400" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? '¡Copiado!' : 'Copiar Número'}
+                </button>
+              </div>
+
+              <div className="space-y-1.5 pt-1">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs text-slate-400">Número Yape:</span>
+                  <span className="text-xl font-black font-mono text-white tracking-wider">960 735 653</span>
+                </div>
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs text-slate-400">A nombre de:</span>
+                  <span className="text-xs sm:text-sm font-black text-lime-400 text-right">MARCO ANTONIO LOPEZ LLANOS</span>
+                </div>
+              </div>
             </div>
 
             <form onSubmit={handleRecharge} className="space-y-4">
