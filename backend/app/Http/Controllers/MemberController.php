@@ -31,15 +31,34 @@ class MemberController extends Controller
             });
         }
 
-        if ($request->has('limit')) {
-            $limit = (int) $request->get('limit');
-            return UserResource::collection($query->orderBy('created_at', 'desc')->paginate($limit));
+        if ($request->boolean('all')) {
+            $users = $query->orderBy('nombres', 'asc')->orderBy('apellido_paterno', 'asc')->get();
+            return response()->json([
+                'data' => UserResource::collection($users),
+                'meta' => [
+                    'total' => $users->count(),
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => $users->count(),
+                ]
+            ]);
         }
 
-        if ($request->user() && $request->user()->role === 'admin') {
-            return UserResource::collection($query->orderBy('created_at', 'desc')->paginate(15));
+        $orderBy = $request->get('order_by', 'created_at');
+        $orderDir = $request->get('order_dir', 'desc');
+
+        if ($orderBy === 'name') {
+            $query->orderBy('nombres', 'asc')->orderBy('apellido_paterno', 'asc');
+        } else {
+            $query->orderBy($orderBy, $orderDir);
         }
-        return UserResource::collection($query->orderBy('created_at', 'desc')->paginate(15));
+
+        if ($request->has('limit')) {
+            $limit = min((int) $request->get('limit'), 1000);
+            return UserResource::collection($query->paginate($limit));
+        }
+
+        return UserResource::collection($query->paginate(15));
     }
 
     public function show($id)

@@ -13,6 +13,17 @@ export const useMembers = (page = 1, search = '', limit = 15) => {
   });
 };
 
+export const useAllMembers = () => {
+  return useQuery({
+    queryKey: ['members', 'all'],
+    queryFn: async () => {
+      const { data } = await api.get<{ data: User[] }>('/members?all=true');
+      return data.data || [];
+    },
+    staleTime: 1000 * 60 * 3,
+  });
+};
+
 export const useMember = (id: number) => {
   return useQuery({
     queryKey: ['members', id],

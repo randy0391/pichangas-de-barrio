@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useConvocatoria, useConfirmar, useAddPlayerToConvocatoria, useUpdatePlayerRole } from '@/hooks/useConvocatorias';
-import { useMembers } from '@/hooks/useMembers';
+import { useMembers, useAllMembers } from '@/hooks/useMembers';
 import { useAuthStore } from '@/stores/authStore';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { toast } from 'sonner';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
-import { Confirmacion } from '@/types';
-import { ArrowLeft, Users, Shield, MapPin, CalendarDays, Clock, User as UserIcon, Copy, Wallet } from 'lucide-react';
+import { Confirmacion, User } from '@/types';
+import { ArrowLeft, Users, Shield, MapPin, CalendarDays, Clock, User as UserIcon, Copy, Wallet, Search, X, Check, ChevronDown, UserPlus } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/axios';
 
@@ -22,7 +22,7 @@ export const ConvocatoriaDetailPage = () => {
     const { mutate: confirmar, isPending: isConfirming } = useConfirmar();
     const { mutate: addPlayer, isPending: isAddingPlayer } = useAddPlayerToConvocatoria();
     const { mutate: updateRole } = useUpdatePlayerRole();
-    const { data: membersData } = useMembers(1, '', 100);
+    const { data: allMembers = [], isLoading: loadingMembers } = useAllMembers();
     
     const [selectedRole, setSelectedRole] = useState<'jugador' | 'portero'>('jugador');
     const [paymentReceipt, setPaymentReceipt] = useState<File | null>(null);
@@ -30,6 +30,26 @@ export const ConvocatoriaDetailPage = () => {
     const [adminSelectedUserId, setAdminSelectedUserId] = useState<string>('');
     const [adminSelectedRole, setAdminSelectedRole] = useState<'jugador' | 'portero'>('jugador');
     const [adminSearch, setAdminSearch] = useState('');
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const searchContainerRef = useRef<HTMLDivElement>(null);
+
+    // Normalize accents and casing for robust search
+    const normalizeText = (text: string = '') =>
+        text
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+                setIsSearchOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const { data: walletData } = useQuery<{ wallet: { balance: string } }>({
         queryKey: ['my-wallet'],
@@ -106,10 +126,23 @@ export const ConvocatoriaDetailPage = () => {
             onSuccess: () => {
                 toast.success('Jugador añadido exitosamente');
                 setAdminSelectedUserId('');
+                setAdminSearch('');
+                setIsSearchOpen(false);
             },
             onError: (err: any) => toast.error(err?.response?.data?.message || 'Error al añadir jugador')
         });
     };
+
+    const availableMembers = (allMembers as User[]).filter((m: User) => !confirmados.some((conf: Confirmacion) => conf.user?.id === m.id));
+    const searchTerms = normalizeText(adminSearch).split(/\s+/).filter(Boolean);
+    const filteredMembers = availableMembers.filter((m: User) => {
+        if (searchTerms.length === 0) return true;
+        const target = normalizeText(
+            `${m.name || ''} ${m.nombres || ''} ${m.apellido_paterno || ''} ${m.apellido_materno || ''} ${m.nickname || ''} ${m.dni || ''} ${m.phone || ''} ${m.email || ''}`
+        );
+        return searchTerms.every(term => target.includes(term));
+    });
+    const selectedMember = (allMembers as User[]).find((m: User) => String(m.id) === adminSelectedUserId);
 
     return (
         <div className="container mx-auto px-4 py-12 max-w-5xl">
@@ -268,45 +301,208 @@ export const ConvocatoriaDetailPage = () => {
             {/* Admin Add Player */}
             {user?.role === 'admin' && c.status === 'abierta' && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-                    className="bg-indigo-50 dark:bg-indigo-950/30 rounded-3xl p-8 shadow-xl border border-indigo-200 dark:border-indigo-800 mb-8"
+                    className="bg-indigo-950/40 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border border-indigo-500/30 mb-8"
                 >
-                    <h2 className="text-xl font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-tight mb-4">👑 Panel Admin: Añadir Jugador Manualmente</h2>
-                    
-                    <div className="mb-4">
-                        <Input 
-                            placeholder="🔍 Buscar jugador por nombre o apodo..." 
-                            value={adminSearch}
-                            onChange={(e) => setAdminSearch(e.target.value)}
-                            className="w-full"
-                        />
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                        <div>
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5 mb-1">
+                                <Shield className="h-3.5 w-3.5 text-indigo-400" /> Control de Administrador
+                            </span>
+                            <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight">
+                                👑 Añadir Jugador Manualmente
+                            </h2>
+                        </div>
+                        <span className="text-xs text-indigo-300 font-bold bg-indigo-900/60 border border-indigo-700/50 px-3.5 py-1.5 rounded-full self-start sm:self-auto">
+                            {availableMembers.length} disponibles · {confirmados.length}/{c.max_players} confirmados
+                        </span>
                     </div>
 
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <select 
-                            value={adminSelectedUserId} 
-                            onChange={(e) => setAdminSelectedUserId(e.target.value)}
-                            className="flex-1 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
-                        >
-                            <option value="">Selecciona un miembro...</option>
-                            {membersData?.data?.filter((m: any) => !confirmados.some((conf: any) => conf.user?.id === m.id) && (m.name.toLowerCase().includes(adminSearch.toLowerCase()) || m.nickname?.toLowerCase().includes(adminSearch.toLowerCase()))).map((m: any) => (
-                                <option key={m.id} value={m.id}>{m.name} ({m.nickname || 'Sin apodo'})</option>
-                            ))}
-                        </select>
-                        <select 
-                            value={adminSelectedRole} 
-                            onChange={(e) => setAdminSelectedRole(e.target.value as any)}
-                            className="w-full md:w-48 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold"
-                        >
-                            <option value="jugador">Jugador</option>
-                            <option value="portero">Portero</option>
-                        </select>
-                        <Button 
-                            onClick={handleAdminAddPlayer} 
-                            disabled={isAddingPlayer || !adminSelectedUserId} 
-                            className="h-auto px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest rounded-xl"
-                        >
-                            {isAddingPlayer ? 'Añadiendo...' : 'Añadir'}
-                        </Button>
+                    <p className="text-xs text-slate-300 mb-4">
+                        Busca cualquier jugador registrado por su <strong>nombre, apellido, apodo o DNI</strong> para sumarlo a la convocatoria.
+                    </p>
+
+                    {/* Selected Member Preview Card OR Search Combobox */}
+                    {selectedMember ? (
+                        <div className="bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+                            <div className="flex items-center gap-3 w-full sm:w-auto">
+                                <div className="w-12 h-12 rounded-full bg-slate-800 text-lime-400 border border-indigo-500/50 flex items-center justify-center font-black text-base shrink-0 overflow-hidden">
+                                    {selectedMember.avatar ? (
+                                        <img src={selectedMember.avatar} alt={selectedMember.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        (selectedMember.name || 'J')[0].toUpperCase()
+                                    )}
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-base font-black text-white truncate">{selectedMember.name}</span>
+                                        {selectedMember.nickname && (
+                                            <span className="text-xs font-bold text-lime-400 bg-lime-400/10 border border-lime-400/20 px-2.5 py-0.5 rounded-full">
+                                                "{selectedMember.nickname}"
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-slate-400 font-mono mt-0.5">
+                                        {selectedMember.dni ? `DNI: ${selectedMember.dni}` : ''} {selectedMember.phone ? `| 📱 ${selectedMember.phone}` : ''} {selectedMember.position ? `| ⚽ ${selectedMember.position}` : ''}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setAdminSelectedUserId('');
+                                    setAdminSearch('');
+                                    setIsSearchOpen(true);
+                                }}
+                                className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition-colors inline-flex items-center justify-center gap-1.5 border border-slate-700"
+                            >
+                                <X className="h-4 w-4" /> Cambiar jugador
+                            </button>
+                        </div>
+                    ) : (
+                        <div ref={searchContainerRef} className="relative mb-4">
+                            {/* Search input with icons */}
+                            <div className="relative">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-indigo-400 pointer-events-none" />
+                                <input
+                                    type="text"
+                                    placeholder="🔍 Buscar por nombre, apellido, apodo o DNI..."
+                                    value={adminSearch}
+                                    onFocus={() => setIsSearchOpen(true)}
+                                    onChange={(e) => {
+                                        setAdminSearch(e.target.value);
+                                        setIsSearchOpen(true);
+                                    }}
+                                    className="w-full pl-12 pr-12 py-3.5 bg-slate-900 border border-indigo-400/40 rounded-2xl text-white placeholder-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-inner"
+                                />
+                                {adminSearch ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setAdminSearch('');
+                                            setIsSearchOpen(true);
+                                        }}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+                                        title="Limpiar búsqueda"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSearchOpen(!isSearchOpen)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-indigo-400 p-1"
+                                        title="Ver lista"
+                                    >
+                                        <ChevronDown className={`h-4 w-4 transition-transform ${isSearchOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Autocomplete Dropdown List */}
+                            {isSearchOpen && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900/98 backdrop-blur-xl border border-indigo-500/40 rounded-2xl shadow-2xl z-50 max-h-72 overflow-y-auto divide-y divide-slate-800/80">
+                                    <div className="p-2.5 bg-slate-950/80 text-[11px] font-bold text-indigo-300 uppercase tracking-wider flex items-center justify-between sticky top-0 border-b border-slate-800 z-10">
+                                        <span>
+                                            {adminSearch ? `Resultados (${filteredMembers.length})` : `Todos los jugadores (${filteredMembers.length})`}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 font-normal">
+                                            Clic para seleccionar
+                                        </span>
+                                    </div>
+
+                                    {loadingMembers ? (
+                                        <div className="py-8 flex justify-center"><FootballSpinner /></div>
+                                    ) : filteredMembers.length === 0 ? (
+                                        <div className="p-6 text-center text-slate-400">
+                                            <p className="text-sm font-bold text-slate-300">No se encontró ningún jugador</p>
+                                            <p className="text-xs text-slate-500 mt-1">
+                                                No hay resultados para "{adminSearch}". Verifica si el jugador ya está confirmado en la lista de abajo o regístralo si es nuevo.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        filteredMembers.map((m: User) => (
+                                            <button
+                                                key={m.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setAdminSelectedUserId(String(m.id));
+                                                    setIsSearchOpen(false);
+                                                }}
+                                                className="w-full text-left p-3 hover:bg-indigo-950/50 transition-colors flex items-center justify-between gap-3 group"
+                                            >
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div className="w-10 h-10 rounded-full bg-slate-800 text-lime-400 border border-slate-700 flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden group-hover:border-lime-400 transition-colors">
+                                                        {m.avatar ? (
+                                                            <img src={m.avatar} alt={m.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            (m.name || 'J')[0].toUpperCase()
+                                                        )}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                                            <span className="text-sm font-bold text-white group-hover:text-lime-400 transition-colors truncate">
+                                                                {m.name}
+                                                            </span>
+                                                            {m.nickname && (
+                                                                <span className="text-[11px] font-bold text-slate-400 group-hover:text-lime-300">
+                                                                    "{m.nickname}"
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono mt-0.5">
+                                                            {m.dni && <span>DNI: {m.dni}</span>}
+                                                            {m.phone && <span>📱 {m.phone}</span>}
+                                                            {m.position && (
+                                                                <span className="text-indigo-400 capitalize">
+                                                                    ⚽ {m.position}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="shrink-0">
+                                                    <span className="text-xs font-bold text-indigo-400 group-hover:text-lime-400 opacity-0 group-hover:opacity-100 transition-all inline-flex items-center gap-1">
+                                                        Elegir <Check className="h-3.5 w-3.5" />
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Action Bar: Role + Add Button */}
+                    <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                        <div className="w-full sm:w-56 shrink-0">
+                            <label className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider block mb-1">
+                                Rol en el Partido
+                            </label>
+                            <select 
+                                value={adminSelectedRole} 
+                                onChange={(e) => setAdminSelectedRole(e.target.value as any)}
+                                className="w-full p-3.5 rounded-xl border border-indigo-400/40 bg-slate-900 text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                                <option value="jugador">⚽ Jugador de Campo</option>
+                                <option value="portero">🧤 Portero</option>
+                            </select>
+                        </div>
+
+                        <div className="w-full flex-1 sm:self-end">
+                            <label className="text-[10px] text-transparent font-bold uppercase tracking-wider hidden sm:block mb-1 select-none">
+                                Acción
+                            </label>
+                            <Button 
+                                onClick={handleAdminAddPlayer} 
+                                disabled={isAddingPlayer || !adminSelectedUserId} 
+                                className="w-full h-12 bg-lime-400 hover:bg-lime-500 text-slate-950 font-black uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-lime-400/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm border-0"
+                            >
+                                <UserPlus className="h-4 w-4" />
+                                {isAddingPlayer ? 'Añadiendo a la convocatoria...' : 'Añadir a la Convocatoria'}
+                            </Button>
+                        </div>
                     </div>
                 </motion.div>
             )}
