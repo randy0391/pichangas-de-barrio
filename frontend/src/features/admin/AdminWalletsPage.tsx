@@ -7,7 +7,7 @@ import { motion } from 'motion/react';
 import { 
   Wallet, CheckCircle, Clock, Search, Eye, 
   Sliders, ExternalLink, History, ArrowUpCircle, ArrowDownCircle,
-  FileText, User as UserIcon, X, Calendar, RotateCcw
+  FileText, User as UserIcon, X, Calendar, RotateCcw, Copy, Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -72,7 +72,17 @@ export const AdminWalletsPage = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'all' | 'vouchers'>('all');
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
+  const [selectedReceipt, setSelectedReceipt] = useState<{
+    url: string;
+    playerName?: string;
+    amount?: string;
+  } | null>(null);
+
+  const copyToClipboard = (text: string, label: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copiado: "${text}"`);
+  };
   
   // Vouchers History filters & pagination
   const [historyPage, setHistoryPage] = useState(1);
@@ -359,9 +369,24 @@ export const AdminWalletsPage = () => {
                                   )}
                                 </div>
                                 <div className="min-w-0">
-                                  <span className="block truncate leading-tight font-bold text-white">
-                                    {w.user?.name || 'Desconocido'}
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="block truncate leading-tight font-bold text-white">
+                                      {w.user?.name || 'Desconocido'}
+                                    </span>
+                                    {w.user?.name && (
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          copyToClipboard(w.user!.name, 'Nombre');
+                                        }}
+                                        className="text-slate-500 hover:text-lime-400 p-0.5 rounded transition-colors"
+                                        title="Copiar nombre"
+                                      >
+                                        <Copy className="h-3 w-3" />
+                                      </button>
+                                    )}
+                                  </div>
                                   {w.user?.nickname && (
                                     <span className="text-[11px] text-primary font-medium block truncate">
                                       "{w.user.nickname}"
@@ -377,9 +402,22 @@ export const AdminWalletsPage = () => {
                               {w.user?.dni || '-'}
                             </td>
                             <td className="py-3.5 px-4 text-right font-black text-base whitespace-nowrap">
-                              <span className={bal > 0 ? 'text-lime-400' : bal < 0 ? 'text-red-400' : 'text-slate-400'}>
-                                S/ {bal.toFixed(2)}
-                              </span>
+                              <div className="flex items-center justify-end gap-1.5">
+                                <span className={bal > 0 ? 'text-lime-400' : bal < 0 ? 'text-red-400' : 'text-slate-400'}>
+                                  S/ {bal.toFixed(2)}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    copyToClipboard(bal.toFixed(2), 'Saldo');
+                                  }}
+                                  className="text-slate-500 hover:text-lime-400 p-0.5 rounded transition-colors"
+                                  title="Copiar saldo"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </button>
+                              </div>
                             </td>
                             <td className="py-3.5 px-4 text-center">
                               <div className="flex items-center justify-center gap-2">
@@ -460,9 +498,22 @@ export const AdminWalletsPage = () => {
 
                     <div>
                       <p className="text-xs text-slate-400 font-semibold uppercase">Jugador</p>
-                      <p className="text-base font-bold text-white leading-tight">
-                        {tx.user?.name || 'Desconocido'}
-                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-base font-bold text-white leading-tight truncate">
+                          {tx.user?.name || 'Desconocido'}
+                        </p>
+                        {tx.user?.name && (
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(tx.user!.name, 'Nombre')}
+                            className="text-slate-400 hover:text-lime-400 px-2 py-0.5 rounded-lg bg-slate-800 text-[11px] font-bold transition-colors flex items-center gap-1 shrink-0"
+                            title="Copiar nombre del jugador"
+                          >
+                            <Copy className="h-3 w-3" />
+                            <span>Copiar</span>
+                          </button>
+                        )}
+                      </div>
                       {tx.user?.phone && (
                         <p className="text-xs text-primary font-mono mt-0.5">📱 {tx.user.phone}</p>
                       )}
@@ -471,11 +522,25 @@ export const AdminWalletsPage = () => {
                     <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80 flex items-center justify-between">
                       <div>
                         <p className="text-[10px] text-slate-400 uppercase font-bold">Monto a Acreditar</p>
-                        <p className="text-2xl font-black text-lime-400">S/ {parseFloat(tx.amount).toFixed(2)}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-2xl font-black text-lime-400">S/ {parseFloat(tx.amount).toFixed(2)}</p>
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(parseFloat(tx.amount).toFixed(2), 'Monto')}
+                            className="text-slate-500 hover:text-lime-400 p-1 rounded transition-colors"
+                            title="Copiar monto"
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
                       {tx.receipt_path && (
                         <button
-                          onClick={() => setSelectedReceipt(tx.receipt_path)}
+                          onClick={() => setSelectedReceipt({
+                            url: tx.receipt_path!,
+                            playerName: tx.user?.name,
+                            amount: tx.amount
+                          })}
                           className="bg-slate-800 hover:bg-slate-700 text-white p-2.5 rounded-xl transition-colors flex items-center gap-1 text-xs font-bold"
                           title="Ver Comprobante"
                         >
@@ -750,9 +815,21 @@ export const AdminWalletsPage = () => {
                                   )}
                                 </div>
                                 <div className="min-w-0">
-                                  <span className="block truncate leading-tight font-bold text-white">
-                                    {tx.user?.name || 'Desconocido'}
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="block truncate leading-tight font-bold text-white">
+                                      {tx.user?.name || 'Desconocido'}
+                                    </span>
+                                    {tx.user?.name && (
+                                      <button
+                                        type="button"
+                                        onClick={() => copyToClipboard(tx.user!.name, 'Nombre')}
+                                        className="text-slate-500 hover:text-lime-400 p-0.5 rounded transition-colors"
+                                        title="Copiar nombre del jugador"
+                                      >
+                                        <Copy className="h-3 w-3" />
+                                      </button>
+                                    )}
+                                  </div>
                                   <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
                                     {tx.user?.nickname && (
                                       <span className="text-primary font-medium truncate">
@@ -768,13 +845,27 @@ export const AdminWalletsPage = () => {
                             </td>
 
                             <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-black text-base text-lime-400">
-                              S/ {numAmount.toFixed(2)}
+                              <div className="flex items-center justify-end gap-1.5">
+                                <span>S/ {numAmount.toFixed(2)}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(numAmount.toFixed(2), 'Monto')}
+                                  className="text-slate-500 hover:text-lime-400 p-0.5 rounded transition-colors"
+                                  title="Copiar monto"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </button>
+                              </div>
                             </td>
 
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
                               {tx.receipt_path ? (
                                 <button
-                                  onClick={() => setSelectedReceipt(tx.receipt_path)}
+                                  onClick={() => setSelectedReceipt({
+                                    url: tx.receipt_path!,
+                                    playerName: tx.user?.name,
+                                    amount: tx.amount
+                                  })}
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold transition-all shadow-sm group"
                                   title="Ver voucher a pantalla completa"
                                 >
@@ -830,15 +921,36 @@ export const AdminWalletsPage = () => {
                                   >
                                     Rechazar
                                   </button>
+                                  <button
+                                    onClick={() => copyToClipboard(`${tx.user?.name || 'Jugador'} - S/ ${numAmount.toFixed(2)}`, 'Nombre y monto')}
+                                    className="text-slate-400 hover:text-white p-1 rounded-lg bg-slate-800 transition-colors"
+                                    title="Copiar nombre y monto para verificar en Yape"
+                                  >
+                                    <Copy className="h-3.5 w-3.5" />
+                                  </button>
                                 </div>
                               ) : (
-                                <button
-                                  onClick={() => tx.receipt_path && setSelectedReceipt(tx.receipt_path)}
-                                  disabled={!tx.receipt_path}
-                                  className="text-xs text-slate-400 hover:text-white font-bold px-2.5 py-1 rounded-lg hover:bg-slate-800 transition-colors inline-flex items-center gap-1"
-                                >
-                                  <Eye className="h-3.5 w-3.5" /> Revisar
-                                </button>
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <button
+                                    onClick={() => tx.receipt_path && setSelectedReceipt({
+                                      url: tx.receipt_path,
+                                      playerName: tx.user?.name,
+                                      amount: tx.amount
+                                    })}
+                                    disabled={!tx.receipt_path}
+                                    className="text-xs text-slate-400 hover:text-white font-bold px-2.5 py-1 rounded-lg hover:bg-slate-800 transition-colors inline-flex items-center gap-1"
+                                    title="Ver comprobante"
+                                  >
+                                    <Eye className="h-3.5 w-3.5" /> Revisar
+                                  </button>
+                                  <button
+                                    onClick={() => copyToClipboard(`${tx.user?.name || 'Jugador'} - S/ ${numAmount.toFixed(2)}`, 'Nombre y monto')}
+                                    className="text-slate-400 hover:text-lime-400 p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 transition-colors border border-slate-700/60"
+                                    title="Copiar nombre y monto para verificar en Yape"
+                                  >
+                                    <Copy className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
                               )}
                             </td>
                           </tr>
@@ -959,7 +1071,11 @@ export const AdminWalletsPage = () => {
 
                         {tx.receipt_path && (
                           <button
-                            onClick={() => setSelectedReceipt(tx.receipt_path)}
+                            onClick={() => setSelectedReceipt({
+                              url: tx.receipt_path!,
+                              playerName: playerHistoryData?.user?.name || historyModalUser?.name,
+                              amount: tx.amount
+                            })}
                             className="text-[11px] font-bold text-primary hover:underline inline-flex items-center gap-1 mt-1"
                           >
                             <Eye className="h-3 w-3" /> Ver comprobante
@@ -1007,12 +1123,64 @@ export const AdminWalletsPage = () => {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="max-h-[70vh] overflow-auto rounded-2xl border border-slate-800 w-full flex justify-center bg-black">
-              <img src={selectedReceipt} alt="Comprobante" className="max-w-full h-auto object-contain" />
+
+            {/* Quick copy info bar */}
+            {(selectedReceipt.playerName || selectedReceipt.amount) && (
+              <div className="w-full bg-slate-950/80 border border-slate-800 rounded-2xl p-3 mb-3 flex flex-col sm:flex-row items-center justify-between gap-2">
+                <div className="flex-1 min-w-0 text-left w-full sm:w-auto">
+                  {selectedReceipt.playerName && (
+                    <div className="flex items-center justify-between sm:justify-start gap-2">
+                      <span className="text-xs text-slate-400 font-bold truncate">
+                        Jugador: <strong className="text-white">{selectedReceipt.playerName}</strong>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(selectedReceipt.playerName!, 'Nombre')}
+                        className="text-slate-400 hover:text-lime-400 px-2 py-0.5 rounded-lg bg-slate-800 text-[10px] font-bold transition-colors inline-flex items-center gap-1 shrink-0"
+                        title="Copiar nombre"
+                      >
+                        <Copy className="h-3 w-3" />
+                        <span>Copiar</span>
+                      </button>
+                    </div>
+                  )}
+                  {selectedReceipt.amount && (
+                    <div className="flex items-center justify-between sm:justify-start gap-2 mt-1">
+                      <span className="text-xs text-slate-400 font-bold">
+                        Monto: <strong className="text-lime-400 font-black font-mono">S/ {parseFloat(selectedReceipt.amount).toFixed(2)}</strong>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(parseFloat(selectedReceipt.amount!).toFixed(2), 'Monto')}
+                        className="text-slate-400 hover:text-lime-400 px-2 py-0.5 rounded-lg bg-slate-800 text-[10px] font-bold transition-colors inline-flex items-center gap-1 shrink-0"
+                        title="Copiar monto"
+                      >
+                        <Copy className="h-3 w-3" />
+                        <span>Copiar</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+                {selectedReceipt.playerName && selectedReceipt.amount && (
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(`${selectedReceipt.playerName} - S/ ${parseFloat(selectedReceipt.amount!).toFixed(2)}`, 'Nombre y monto')}
+                    className="w-full sm:w-auto px-3 py-1.5 bg-lime-400/10 hover:bg-lime-400/20 text-lime-400 border border-lime-400/30 rounded-xl text-xs font-black transition-colors inline-flex items-center justify-center gap-1.5 shrink-0"
+                    title="Copiar ambos datos para buscar y verificar en Yape o Plin"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    <span>Copiar Todo</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div className="max-h-[65vh] overflow-auto rounded-2xl border border-slate-800 w-full flex justify-center bg-black">
+              <img src={selectedReceipt.url} alt="Comprobante" className="max-w-full h-auto object-contain" />
             </div>
             <div className="flex gap-2 w-full mt-4">
               <a
-                href={selectedReceipt}
+                href={selectedReceipt.url}
                 target="_blank"
                 rel="noreferrer"
                 className="flex-1 inline-flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold py-2.5 rounded-xl transition-colors"
