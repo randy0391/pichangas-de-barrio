@@ -47,6 +47,43 @@ export const AdminAttendanceDialog: React.FC<AdminAttendanceDialogProps> = ({ co
         }
     }, [confirmados, hasInitialized]);
 
+    // Calculate live counters (unconditionally at top level)
+    const stats = useMemo(() => {
+        let presentes = 0;
+        let tardanzas = 0;
+        let faltas = 0;
+        let sinMarcar = 0;
+        let totalMultas = 0;
+
+        confirmados.forEach(c => {
+            const att = attendanceMap[c.id]?.attendance || 'pendiente';
+            const amt = attendanceMap[c.id]?.amount || 0;
+            if (att === 'presente') presentes++;
+            else if (att === 'tardanza') {
+                tardanzas++;
+                totalMultas += amt;
+            } else if (att === 'falta') {
+                faltas++;
+                totalMultas += amt;
+            } else {
+                sinMarcar++;
+            }
+        });
+
+        return { presentes, tardanzas, faltas, sinMarcar, totalMultas };
+    }, [confirmados, attendanceMap]);
+
+    // Filter players by name or nickname (unconditionally at top level)
+    const filteredConfirmados = useMemo(() => {
+        if (!searchFilter.trim()) return confirmados;
+        const q = searchFilter.toLowerCase();
+        return confirmados.filter(c =>
+            (c.user.name || '').toLowerCase().includes(q) ||
+            (c.user.nickname || '').toLowerCase().includes(q) ||
+            (c.user.dni || '').toLowerCase().includes(q)
+        );
+    }, [confirmados, searchFilter]);
+
     if (isLoading) {
         return ReactDOM.createPortal(
             <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -158,43 +195,6 @@ export const AdminAttendanceDialog: React.FC<AdminAttendanceDialogProps> = ({ co
             }
         });
     };
-
-    // Calculate live counters
-    const stats = useMemo(() => {
-        let presentes = 0;
-        let tardanzas = 0;
-        let faltas = 0;
-        let sinMarcar = 0;
-        let totalMultas = 0;
-
-        confirmados.forEach(c => {
-            const att = attendanceMap[c.id]?.attendance || 'pendiente';
-            const amt = attendanceMap[c.id]?.amount || 0;
-            if (att === 'presente') presentes++;
-            else if (att === 'tardanza') {
-                tardanzas++;
-                totalMultas += amt;
-            } else if (att === 'falta') {
-                faltas++;
-                totalMultas += amt;
-            } else {
-                sinMarcar++;
-            }
-        });
-
-        return { presentes, tardanzas, faltas, sinMarcar, totalMultas };
-    }, [confirmados, attendanceMap]);
-
-    // Filter players by name or nickname
-    const filteredConfirmados = useMemo(() => {
-        if (!searchFilter.trim()) return confirmados;
-        const q = searchFilter.toLowerCase();
-        return confirmados.filter(c =>
-            (c.user.name || '').toLowerCase().includes(q) ||
-            (c.user.nickname || '').toLowerCase().includes(q) ||
-            (c.user.dni || '').toLowerCase().includes(q)
-        );
-    }, [confirmados, searchFilter]);
 
     const exportCSV = () => {
         if (!convocatoria) return;
