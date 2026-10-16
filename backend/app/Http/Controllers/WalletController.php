@@ -92,6 +92,100 @@ class WalletController extends Controller
         }));
     }
 
+    public function adminRechargesHistory(Request $request)
+    {
+        $query = WalletTransaction::where('type', 'recarga')
+            ->whereNotNull('receipt_path')
+            ->with(['user', 'approver']);
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->get('start_date'));
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->get('end_date'));
+        }
+
+        if ($request->filled('status') && in_array($request->get('status'), ['pendiente', 'aprobado', 'rechazado'])) {
+            $query->where('status', $request->get('status'));
+        }
+
+        if ($request->filled('search')) {
+            $search = trim($request->get('search'));
+            $lowerSearch = mb_strtolower($search, 'UTF-8');
+            $words = preg_split('/\s+/', $lowerSearch, -1, PREG_SPLIT_NO_EMPTY);
+
+            $query->whereHas('user', function ($uq) use ($lowerSearch, $words) {
+                $uq->where(function ($sub) use ($lowerSearch, $words) {
+                    $sub->whereRaw("LOWER(COALESCE(dni, '')) LIKE ?", ["%{$lowerSearch}%"])
+                        ->orWhereRaw("LOWER(COALESCE(phone, '')) LIKE ?", ["%{$lowerSearch}%"])
+                        ->orWhereRaw("LOWER(COALESCE(nickname, '')) LIKE ?", ["%{$lowerSearch}%"]);
+
+                    if (!empty($words)) {
+                        $sub->orWhere(function ($wordsSub) use ($words) {
+                            foreach ($words as $word) {
+                                $wordsSub->whereRaw("LOWER(CONCAT_WS(' ', COALESCE(nombres, ''), COALESCE(apellido_paterno, ''), COALESCE(apellido_materno, ''), COALESCE(nickname, ''))) LIKE ?", ["%{$word}%"]);
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
+        $statsQuery = clone $query;
+        $totalApprovedAmount = floatval((clone $statsQuery)->where('status', 'aprobado')->sum('amount'));
+        $totalCount = (clone $statsQuery)->count();
+        $approvedCount = (clone $statsQuery)->where('status', 'aprobado')->count();
+        $pendingCount = (clone $statsQuery)->where('status', 'pendiente')->count();
+        $rejectedCount = (clone $statsQuery)->where('status', 'rechazado')->count();
+
+        $perPage = (int)$request->get('per_page', 15);
+        $paginator = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        $items = $paginator->getCollection()->map(function ($tx) {
+            $u = $tx->user;
+            $approver = $tx->approver;
+            return [
+                'id' => $tx->id,
+                'user_id' => $tx->user_id,
+                'user' => $u ? [
+                    'id' => $u->id,
+                    'name' => $u->full_name ?: $u->nombres,
+                    'nickname' => $u->nickname,
+                    'phone' => $u->phone,
+                    'dni' => $u->dni,
+                    'avatar' => ImageHelper::getUrl($u->avatar),
+                ] : null,
+                'type' => $tx->type,
+                'amount' => $tx->amount,
+                'balance_after' => $tx->balance_after,
+                'description' => $tx->description,
+                'receipt_path' => $tx->receipt_path ? ImageHelper::getUrl($tx->receipt_path) : null,
+                'status' => $tx->status,
+                'approved_at' => $tx->approved_at,
+                'approver_name' => $approver ? ($approver->full_name ?: $approver->nombres) : null,
+                'created_at' => $tx->created_at,
+            ];
+        });
+
+        return response()->json([
+            'data' => $items,
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+            'stats' => [
+                'total_approved_amount' => $totalApprovedAmount,
+                'total_count' => $totalCount,
+                'approved_count' => $approvedCount,
+                'pending_count' => $pendingCount,
+                'rejected_count' => $rejectedCount,
+            ]
+        ]);
+    }
+
     public function adminListAll(Request $request)
     {
         $query = User::with('wallet');

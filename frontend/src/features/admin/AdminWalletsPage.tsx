@@ -7,7 +7,7 @@ import { motion } from 'motion/react';
 import { 
   Wallet, CheckCircle, Clock, Search, Eye, 
   Sliders, ExternalLink, History, ArrowUpCircle, ArrowDownCircle,
-  FileText, User as UserIcon, X
+  FileText, User as UserIcon, X, Calendar, RotateCcw
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -29,12 +29,58 @@ interface PlayerHistoryTransaction {
   created_at: string;
 }
 
+interface RechargesHistoryItem {
+  id: number;
+  user_id: number;
+  user: {
+    id: number;
+    name: string;
+    nickname?: string;
+    phone?: string;
+    dni?: string;
+    avatar?: string | null;
+  } | null;
+  type: string;
+  amount: string;
+  balance_after: string;
+  description: string | null;
+  receipt_path: string | null;
+  status: 'pendiente' | 'aprobado' | 'rechazado';
+  approved_at: string | null;
+  approver_name: string | null;
+  created_at: string;
+}
+
+interface RechargesHistoryResponse {
+  data: RechargesHistoryItem[];
+  meta: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+  stats: {
+    total_approved_amount: number;
+    total_count: number;
+    approved_count: number;
+    pending_count: number;
+    rejected_count: number;
+  };
+}
+
 export const AdminWalletsPage = () => {
-  const [activeTab, setActiveTab] = useState<'pending' | 'all'>('all');
+  const [activeTab, setActiveTab] = useState<'pending' | 'all' | 'vouchers'>('all');
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
   
+  // Vouchers History filters & pagination
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historySearch, setHistorySearch] = useState('');
+  const [historyStatus, setHistoryStatus] = useState<'all' | 'aprobado' | 'pendiente' | 'rechazado'>('all');
+  const [historyStartDate, setHistoryStartDate] = useState('');
+  const [historyEndDate, setHistoryEndDate] = useState('');
+
   // Adjust modal state
   const [adjustModalUser, setAdjustModalUser] = useState<{ id: number; name: string; balance: string } | null>(null);
   const [adjustAmount, setAdjustAmount] = useState('');
@@ -92,6 +138,26 @@ export const AdminWalletsPage = () => {
     enabled: !!historyModalUser
   });
 
+  // Recharges / Vouchers history query
+  const { data: historyData, isLoading: loadingHistoryList } = useQuery<RechargesHistoryResponse>({
+    queryKey: ['admin-recharges-history', historyPage, historySearch, historyStatus, historyStartDate, historyEndDate],
+    queryFn: async () => {
+      const res = await api.get('/admin/wallets/recharges', {
+        params: {
+          page: historyPage,
+          search: historySearch.trim() || undefined,
+          status: historyStatus !== 'all' ? historyStatus : undefined,
+          start_date: historyStartDate || undefined,
+          end_date: historyEndDate || undefined,
+          per_page: 15
+        }
+      });
+      return res.data;
+    },
+    placeholderData: keepPreviousData,
+    enabled: activeTab === 'vouchers'
+  });
+
   // Mutations
   const approveMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -103,6 +169,7 @@ export const AdminWalletsPage = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-wallets-pending'] });
       queryClient.invalidateQueries({ queryKey: ['admin-wallets-all'] });
       queryClient.invalidateQueries({ queryKey: ['admin-player-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-recharges-history'] });
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.message || 'Error al aprobar recarga');
@@ -118,6 +185,7 @@ export const AdminWalletsPage = () => {
       toast.success('Recarga rechazada.');
       queryClient.invalidateQueries({ queryKey: ['admin-wallets-pending'] });
       queryClient.invalidateQueries({ queryKey: ['admin-player-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-recharges-history'] });
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.message || 'Error al rechazar recarga');
@@ -177,10 +245,10 @@ export const AdminWalletsPage = () => {
         </div>
 
         {/* Tab switcher */}
-        <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 self-start sm:self-auto">
+        <div className="flex flex-wrap bg-slate-900 p-1 rounded-xl border border-slate-800 self-start sm:self-auto gap-1">
           <button
             onClick={() => setActiveTab('all')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
               activeTab === 'all'
                 ? 'bg-lime-400 text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-white'
@@ -190,7 +258,7 @@ export const AdminWalletsPage = () => {
           </button>
           <button
             onClick={() => setActiveTab('pending')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all relative ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all relative ${
               activeTab === 'pending'
                 ? 'bg-lime-400 text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-white'
@@ -201,6 +269,17 @@ export const AdminWalletsPage = () => {
                 {pendingList.length}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => setActiveTab('vouchers')}
+            className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+              activeTab === 'vouchers'
+                ? 'bg-lime-400 text-slate-950 shadow-md'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Calendar className="h-3.5 w-3.5" />
+            <span>Historial de Vouchers</span>
           </button>
         </div>
       </div>
@@ -427,6 +506,359 @@ export const AdminWalletsPage = () => {
                 </div>
               ))}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* VOUCHERS HISTORY TAB */}
+      {activeTab === 'vouchers' && (
+        <div className="space-y-4">
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-lg">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Aprobado</p>
+              <p className="text-2xl font-black text-lime-400 mt-1">
+                S/ {(historyData?.stats?.total_approved_amount ?? 0).toFixed(2)}
+              </p>
+              <p className="text-[10px] text-slate-500 mt-0.5">En el periodo seleccionado</p>
+            </div>
+
+            <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-lg">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Vouchers Aprobados</p>
+              <p className="text-2xl font-black text-white mt-1">
+                {historyData?.stats?.approved_count ?? 0}
+              </p>
+              <p className="text-[10px] text-green-400 mt-0.5">Saldo acreditado</p>
+            </div>
+
+            <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-lg">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pendientes de Revision</p>
+              <p className="text-2xl font-black text-yellow-400 mt-1">
+                {historyData?.stats?.pending_count ?? 0}
+              </p>
+              <p className="text-[10px] text-yellow-500/80 mt-0.5">Por revisar o aprobar</p>
+            </div>
+
+            <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-lg">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Rechazados</p>
+              <p className="text-2xl font-black text-red-400 mt-1">
+                {historyData?.stats?.rejected_count ?? 0}
+              </p>
+              <p className="text-[10px] text-red-500/80 mt-0.5">Comprobantes no validos</p>
+            </div>
+          </div>
+
+          {/* Filter Bar */}
+          <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3 shadow-lg">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+              {/* Search */}
+              <div className="flex items-center gap-3 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 focus-within:border-lime-400/50 focus-within:ring-1 focus-within:ring-lime-400/30 transition-all flex-1">
+                <Search className="h-4 w-4 text-slate-400 shrink-0" />
+                <input
+                  type="text"
+                  autoComplete="off"
+                  placeholder="Buscar por jugador, apodo, DNI o celular..."
+                  value={historySearch}
+                  onChange={(e) => {
+                    setHistorySearch(e.target.value);
+                    setHistoryPage(1);
+                  }}
+                  className="bg-transparent border-0 outline-none focus:outline-none ring-0 focus:ring-0 text-white placeholder:text-slate-500 text-sm w-full h-7 p-0"
+                />
+                {historySearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHistorySearch('');
+                      setHistoryPage(1);
+                    }}
+                    className="text-slate-500 hover:text-white p-0.5 rounded-lg transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Date & Status filters */}
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">Desde:</span>
+                  <input
+                    type="date"
+                    value={historyStartDate}
+                    onChange={(e) => {
+                      setHistoryStartDate(e.target.value);
+                      setHistoryPage(1);
+                    }}
+                    className="bg-transparent text-white text-xs font-mono outline-none border-0 focus:ring-0 p-0"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">Hasta:</span>
+                  <input
+                    type="date"
+                    value={historyEndDate}
+                    onChange={(e) => {
+                      setHistoryEndDate(e.target.value);
+                      setHistoryPage(1);
+                    }}
+                    className="bg-transparent text-white text-xs font-mono outline-none border-0 focus:ring-0 p-0"
+                  />
+                </div>
+
+                <select
+                  value={historyStatus}
+                  onChange={(e) => {
+                    setHistoryStatus(e.target.value as any);
+                    setHistoryPage(1);
+                  }}
+                  className="bg-slate-950 border border-slate-800 text-xs font-bold text-white px-3 py-2 rounded-xl outline-none focus:border-lime-400/50"
+                >
+                  <option value="all">Todos los estados</option>
+                  <option value="aprobado">Solo Aprobados</option>
+                  <option value="pendiente">Solo Pendientes</option>
+                  <option value="rechazado">Solo Rechazados</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Quick date presets & reset */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/60">
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                <span className="text-slate-500 text-[11px] font-semibold mr-1">Accesos rápidos:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const today = new Date().toISOString().split('T')[0];
+                    setHistoryStartDate(today);
+                    setHistoryEndDate(today);
+                    setHistoryPage(1);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] transition-colors"
+                >
+                  Hoy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const d = new Date();
+                    d.setDate(d.getDate() - 7);
+                    setHistoryStartDate(d.toISOString().split('T')[0]);
+                    setHistoryEndDate(new Date().toISOString().split('T')[0]);
+                    setHistoryPage(1);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] transition-colors"
+                >
+                  Últimos 7 días
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const now = new Date();
+                    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                    setHistoryStartDate(firstDay);
+                    setHistoryEndDate(now.toISOString().split('T')[0]);
+                    setHistoryPage(1);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] transition-colors"
+                >
+                  Este mes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHistoryStartDate('');
+                    setHistoryEndDate('');
+                    setHistoryPage(1);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] transition-colors"
+                >
+                  Todas las fechas
+                </button>
+              </div>
+
+              {(historySearch || historyStartDate || historyEndDate || historyStatus !== 'all') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHistorySearch('');
+                    setHistoryStartDate('');
+                    setHistoryEndDate('');
+                    setHistoryStatus('all');
+                    setHistoryPage(1);
+                  }}
+                  className="text-[11px] text-red-400 hover:text-red-300 font-bold flex items-center gap-1 transition-colors"
+                >
+                  <RotateCcw className="h-3 w-3" /> Limpiar filtros
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Table / List */}
+          {loadingHistoryList ? (
+            <div className="py-20 flex justify-center"><FootballSpinner /></div>
+          ) : (historyData?.data || []).length === 0 ? (
+            <div className="text-center py-16 bg-slate-900 rounded-2xl border border-dashed border-slate-800">
+              <FileText className="h-12 w-12 text-slate-600 mx-auto mb-3" />
+              <p className="text-lg font-bold text-white">No se encontraron recargas ni vouchers</p>
+              <p className="text-slate-500 text-sm mt-1">Prueba cambiando el rango de fechas o los filtros seleccionados.</p>
+            </div>
+          ) : (
+            <>
+              <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-slate-950/50">
+                        <th className="py-3.5 px-4">Fecha y Hora</th>
+                        <th className="py-3.5 px-4">Jugador</th>
+                        <th className="py-3.5 px-4 text-right">Monto</th>
+                        <th className="py-3.5 px-4 text-center">Voucher / Comprobante</th>
+                        <th className="py-3.5 px-4 text-center">Estado</th>
+                        <th className="py-3.5 px-4 text-center">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800 text-sm">
+                      {historyData?.data.map((tx) => {
+                        const numAmount = parseFloat(tx.amount || '0');
+                        const dateStr = new Date(tx.created_at).toLocaleDateString('es-PE', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        });
+
+                        return (
+                          <tr key={tx.id} className="hover:bg-slate-800/40 transition-colors">
+                            <td className="py-3.5 px-4 font-mono text-xs text-slate-300 whitespace-nowrap">
+                              <div className="flex items-center gap-1.5">
+                                <Calendar className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                                <span>{dateStr}</span>
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4 font-bold text-white">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                                  {tx.user?.avatar ? (
+                                    <img src={tx.user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                                  ) : (
+                                    <UserIcon className="h-4 w-4 text-slate-400" />
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <span className="block truncate leading-tight font-bold text-white">
+                                    {tx.user?.name || 'Desconocido'}
+                                  </span>
+                                  <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
+                                    {tx.user?.nickname && (
+                                      <span className="text-primary font-medium truncate">
+                                        "{tx.user.nickname}"
+                                      </span>
+                                    )}
+                                    {tx.user?.phone && (
+                                      <span className="font-mono text-slate-500">📱 {tx.user.phone}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-black text-base text-lime-400">
+                              S/ {numAmount.toFixed(2)}
+                            </td>
+
+                            <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                              {tx.receipt_path ? (
+                                <button
+                                  onClick={() => setSelectedReceipt(tx.receipt_path)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold transition-all shadow-sm group"
+                                  title="Ver voucher a pantalla completa"
+                                >
+                                  <Eye className="h-3.5 w-3.5 text-purple-400 group-hover:scale-110 transition-transform" />
+                                  <span>Ver Voucher</span>
+                                </button>
+                              ) : (
+                                <span className="text-xs text-slate-500 italic">Sin comprobante</span>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                              {tx.status === 'aprobado' && (
+                                <div className="inline-flex flex-col items-center">
+                                  <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/30 flex items-center gap-1">
+                                    <CheckCircle className="h-3 w-3" /> Aprobado
+                                  </span>
+                                  {tx.approver_name && (
+                                    <span className="text-[10px] text-slate-500 mt-0.5">
+                                      por {tx.approver_name}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              {tx.status === 'pendiente' && (
+                                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 flex items-center justify-center gap-1">
+                                  <Clock className="h-3 w-3" /> Pendiente
+                                </span>
+                              )}
+                              {tx.status === 'rechazado' && (
+                                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 flex items-center justify-center gap-1">
+                                  <X className="h-3 w-3" /> Rechazado
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                              {tx.status === 'pendiente' ? (
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <button
+                                    onClick={() => approveMutation.mutate(tx.id)}
+                                    disabled={approveMutation.isPending || rejectMutation.isPending}
+                                    className="bg-lime-400 hover:bg-lime-500 text-slate-950 font-bold px-2.5 py-1 rounded-lg text-xs transition-colors"
+                                    title="Aprobar recarga"
+                                  >
+                                    Aprobar
+                                  </button>
+                                  <button
+                                    onClick={() => rejectMutation.mutate(tx.id)}
+                                    disabled={approveMutation.isPending || rejectMutation.isPending}
+                                    className="bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white font-bold px-2.5 py-1 rounded-lg text-xs transition-colors border border-red-500/30"
+                                    title="Rechazar recarga"
+                                  >
+                                    Rechazar
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => tx.receipt_path && setSelectedReceipt(tx.receipt_path)}
+                                  disabled={!tx.receipt_path}
+                                  className="text-xs text-slate-400 hover:text-white font-bold px-2.5 py-1 rounded-lg hover:bg-slate-800 transition-colors inline-flex items-center gap-1"
+                                >
+                                  <Eye className="h-3.5 w-3.5" /> Revisar
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {historyData && historyData.meta.last_page > 1 && (
+                <div className="pt-2">
+                  <Pagination
+                    currentPage={historyData.meta.current_page}
+                    lastPage={historyData.meta.last_page}
+                    onPageChange={(p) => setHistoryPage(p)}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
