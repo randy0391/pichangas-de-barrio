@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { usePublicEvents, useCreateEvent, useDeleteEvent, useUpdateEvent } from '@/hooks/useEvents';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -6,10 +6,11 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Event } from '@/types';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Trash2, Edit, Calendar, X, Users } from 'lucide-react';
+import { Plus, Trash2, Edit, Calendar, X, Users, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminEventRegistrationsModal } from './AdminEventRegistrationsModal';
 import { Pagination } from '@/components/ui/Pagination';
+import { compressImage, formatFileSize } from '@/lib/imageCompressor';
 
 export const AdminEventsPage = () => {
     const [page, setPage] = useState(1);
@@ -25,19 +26,66 @@ export const AdminEventsPage = () => {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [viewEventId, setViewEventId] = useState<number | null>(null);
     const [form, setForm] = useState({ title: '', description: '', location: '', event_date: '', event_time: '', max_participants: 50, cover_image: null as File | null });
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [isOptimizing, setIsOptimizing] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     if (isLoading && !events.length) return <div className="py-20 flex justify-center"><FootballSpinner /></div>;
 
     const openCreateForm = () => {
         setEditingId(null);
         setForm({ title: '', description: '', location: '', event_date: '', event_time: '', max_participants: 50, cover_image: null });
+        setPreviewUrl(null);
         setShowForm(true);
     };
 
     const openEditForm = (e: Event) => {
         setEditingId(e.id);
         setForm({ title: e.title, description: e.description, location: e.location, event_date: e.event_date, event_time: e.event_time, max_participants: e.max_participants || 50, cover_image: null });
+        setPreviewUrl(e.cover_image || null);
         setShowForm(true);
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const objectUrl = URL.createObjectURL(file);
+        setPreviewUrl(objectUrl);
+
+        if (file.size > 1.5 * 1024 * 1024) {
+            setIsOptimizing(true);
+            try {
+                const compressed = await compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 });
+                setForm(prev => ({ ...prev, cover_image: compressed }));
+                toast.info(`Foto optimizada de ${formatFileSize(file.size)} a ${formatFileSize(compressed.size)} para subida rapida.`);
+            } catch {
+                setForm(prev => ({ ...prev, cover_image: file }));
+            } finally {
+                setIsOptimizing(false);
+            }
+        } else {
+            setForm(prev => ({ ...prev, cover_image: file }));
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setForm(prev => ({ ...prev, cover_image: null }));
+        setPreviewUrl(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const getErrorMessage = (err: any, fallback: string) => {
+        const errors = err?.response?.data?.errors;
+        if (errors && typeof errors === 'object') {
+            const firstKey = Object.keys(errors)[0];
+            if (firstKey && Array.isArray(errors[firstKey]) && errors[firstKey][0]) {
+                return errors[firstKey][0];
+            }
+        }
+        return err?.response?.data?.message || fallback;
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -58,7 +106,7 @@ export const AdminEventsPage = () => {
                     toast.success('Evento actualizado con éxito');
                     setShowForm(false);
                 },
-                onError: () => toast.error('Error al actualizar el evento')
+                onError: (err: any) => toast.error(getErrorMessage(err, 'Error al actualizar el evento'))
             });
         } else {
             createEvent(fd as any, {
@@ -66,7 +114,7 @@ export const AdminEventsPage = () => {
                     toast.success('Evento creado con éxito');
                     setShowForm(false);
                 },
-                onError: () => toast.error('Error al crear el evento')
+                onError: (err: any) => toast.error(getErrorMessage(err, 'Error al crear el evento'))
             });
         }
     };
@@ -78,7 +126,7 @@ export const AdminEventsPage = () => {
                 onClick: () => {
                     deleteEvent(id, {
                         onSuccess: () => toast.success('Evento eliminado'),
-                        onError: () => toast.error('Error al eliminar')
+                        onError: (err: any) => toast.error(getErrorMessage(err, 'Error al eliminar'))
                     });
                 }
             },
@@ -134,21 +182,56 @@ export const AdminEventsPage = () => {
                                     <Input type="number" min={1} value={form.max_participants || ''} onChange={e => setForm({...form, max_participants: e.target.value ? parseInt(e.target.value) : 0})} required className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-12 rounded-xl" />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">📸 Imagen de Portada (Opcional)</label>
+                                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                                        <span>📸 Imagen de Portada (Opcional - hasta 15MB)</span>
+                                        {isOptimizing && (
+                                            <span className="text-cyan-500 flex items-center text-xs normal-case">
+                                                <Sparkles size={14} className="mr-1 animate-spin" /> Optimizando...
+                                            </span>
+                                        )}
+                                    </label>
                                     <Input 
                                         type="file" 
-                                        accept="image/*"
-                                        onChange={e => {
-                                            const file = e.target.files?.[0];
-                                            if (file) setForm({...form, cover_image: file as any});
-                                        }}
-                                        className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-12 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100" 
+                                        accept="image/jpeg,image/png,image/webp,image/gif"
+                                        ref={fileInputRef}
+                                        onChange={handleFileChange}
+                                        className="bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white h-12 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 cursor-pointer" 
                                     />
+
+                                    {previewUrl && (
+                                        <div className="mt-3 flex items-center gap-4 p-3 bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 rounded-2xl">
+                                            <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700">
+                                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-bold text-slate-800 dark:text-white truncate">
+                                                    {form.cover_image?.name || 'Portada actual del evento'}
+                                                </p>
+                                                {form.cover_image && (
+                                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                                        Tamaño: <span className="font-semibold text-emerald-500">{formatFileSize(form.cover_image.size)}</span>
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <Button 
+                                                type="button" 
+                                                variant="outline" 
+                                                onClick={handleRemoveImage}
+                                                className="shrink-0 h-9 px-3 rounded-xl border-red-200 dark:border-red-900/40 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 text-xs font-bold"
+                                            >
+                                                <Trash2 size={14} className="mr-1" /> Quitar
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             
-                            <Button type="submit" disabled={isCreating || isUpdating} className="w-full h-14 bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-black uppercase tracking-widest rounded-xl shadow-lg border-0 text-lg">
-                                {isCreating || isUpdating ? 'Guardando...' : (editingId ? '💾 Guardar Cambios' : '🎉 Crear Evento')}
+                            <Button 
+                                type="submit" 
+                                disabled={isCreating || isUpdating || isOptimizing} 
+                                className="w-full h-14 bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-black uppercase tracking-widest rounded-xl shadow-lg border-0 text-lg disabled:opacity-50"
+                            >
+                                {isOptimizing ? '✨ Optimizando foto...' : (isCreating || isUpdating ? 'Guardando...' : (editingId ? '💾 Guardar Cambios' : '🎉 Crear Evento'))}
                             </Button>
                         </form>
                     </motion.div>
@@ -170,9 +253,15 @@ export const AdminEventsPage = () => {
                                 <motion.tr initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} key={e.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <td className="p-5">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-cyan-400/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
-                                                <Calendar size={20} />
-                                            </div>
+                                            {e.cover_image ? (
+                                                <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700">
+                                                    <img src={e.cover_image} alt="" className="w-full h-full object-cover" />
+                                                </div>
+                                            ) : (
+                                                <div className="w-10 h-10 rounded-xl bg-cyan-400/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+                                                    <Calendar size={20} />
+                                                </div>
+                                            )}
                                             <span className="font-bold text-slate-900 dark:text-white line-clamp-1">{e.title}</span>
                                         </div>
                                     </td>

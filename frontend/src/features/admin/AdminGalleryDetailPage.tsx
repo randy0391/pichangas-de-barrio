@@ -6,6 +6,7 @@ import { FootballSpinner } from '@/components/ui/FootballSpinner';
 import { motion, AnimatePresence } from 'motion/react';
 import { Upload, Trash2, ArrowLeft, Image as ImageIcon, Video } from 'lucide-react';
 import { toast } from 'sonner';
+import { compressImage } from '@/lib/imageCompressor';
 
 export const AdminGalleryDetailPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -26,25 +27,36 @@ export const AdminGalleryDetailPage = () => {
         
         let successCount = 0;
         let errorCount = 0;
+        let lastErrorMessage = '';
 
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
+            let fileToUpload = file;
+            if (file.type.startsWith('image/') && file.size > 1.5 * 1024 * 1024) {
+                try {
+                    fileToUpload = await compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 });
+                } catch {
+                    fileToUpload = file;
+                }
+            }
+
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', fileToUpload);
             formData.append('gallery_id', galleryId.toString());
             
             try {
                 await uploadMediaAsync(formData);
                 successCount++;
-            } catch (err) {
+            } catch (err: any) {
                 errorCount++;
+                lastErrorMessage = err?.response?.data?.errors?.file?.[0] || err?.response?.data?.message || '';
             }
         }
 
         if (errorCount === 0) {
             toast.success(`${successCount} archivo(s) subido(s) correctamente`, { id: toastId });
         } else {
-            toast.error(`${successCount} subidos, ${errorCount} fallaron`, { id: toastId });
+            toast.error(`${successCount} subidos, ${errorCount} fallaron${lastErrorMessage ? ': ' + lastErrorMessage : ''}`, { id: toastId });
         }
         
         if (fileInputRef.current) fileInputRef.current.value = '';
