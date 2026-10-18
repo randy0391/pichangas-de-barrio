@@ -31,6 +31,37 @@ class MemberController extends Controller
             });
         }
 
+        if ($request->filled('role')) {
+            $query->where('role', $request->get('role'));
+        }
+
+        if ($request->filled('position')) {
+            $pos = $request->get('position');
+            $query->whereRaw("LOWER(COALESCE(position, '')) = ?", [mb_strtolower($pos, 'UTF-8')]);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->get('status'));
+        }
+
+        if ($request->filled('is_approved')) {
+            $val = $request->get('is_approved');
+            if ($val === 'pending' || $val === '0' || $val === 'false') {
+                $query->where(function ($q) {
+                    $q->where('is_approved', false)
+                      ->orWhereNull('is_approved')
+                      ->orWhere('is_approved', '0')
+                      ->orWhere('is_approved', 'false');
+                });
+            } else if ($val === 'approved' || $val === '1' || $val === 'true') {
+                $query->where(function ($q) {
+                    $q->where('is_approved', true)
+                      ->orWhere('is_approved', '1')
+                      ->orWhere('is_approved', 'true');
+                });
+            }
+        }
+
         if ($request->boolean('all')) {
             $users = $query->orderBy('nombres', 'asc')->orderBy('apellido_paterno', 'asc')->get();
             return response()->json([

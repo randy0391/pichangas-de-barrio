@@ -2,11 +2,28 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import api from '@/lib/axios';
 import { User, PaginatedResponse } from '@/types';
 
-export const useMembers = (page = 1, search = '', limit = 15) => {
+export interface MemberFilters {
+  role?: string;
+  position?: string;
+  status?: string;
+  is_approved?: string;
+}
+
+export const useMembers = (page = 1, search = '', limit = 15, filters?: MemberFilters) => {
   return useQuery({
-    queryKey: ['members', page, search, limit],
+    queryKey: ['members', page, search, limit, filters],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<User>>(`/members?page=${page}&search=${search}&limit=${limit}`);
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+      if (search.trim()) params.append('search', search.trim());
+      if (filters?.role) params.append('role', filters.role);
+      if (filters?.position) params.append('position', filters.position);
+      if (filters?.status) params.append('status', filters.status);
+      if (filters?.is_approved) params.append('is_approved', filters.is_approved);
+
+      const { data } = await api.get<PaginatedResponse<User>>(`/members?${params.toString()}`);
       return data;
     },
     placeholderData: keepPreviousData,

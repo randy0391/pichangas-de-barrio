@@ -36,8 +36,40 @@ export const AdminMembersPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterTab, setFilterTab] = useState<'todos' | 'jugadores' | 'admins' | 'porteros' | 'pendientes' | 'inactivos'>('todos');
 
-    const { data: response, isLoading } = useMembers(page, searchQuery);
     const { data: allMembers = [] } = useAllMembers();
+
+    // Métricas globales calculadas sobre la totalidad de miembros registrados
+    const stats = useMemo(() => {
+        const total = allMembers.length;
+        const admins = allMembers.filter(m => m.role === 'admin').length;
+        const jugadores = allMembers.filter(m => m.role === 'member').length;
+        const porteros = allMembers.filter(m => (m.position || '').toLowerCase() === 'portero').length;
+        const pendientes = allMembers.filter(m => !m.is_approved || String(m.is_approved) === 'false' || String(m.is_approved) === '0').length;
+        const inactivos = allMembers.filter(m => m.status === 'inactive').length;
+        const activos = allMembers.filter(m => m.status === 'active' && (m.is_approved === true || String(m.is_approved) === 'true' || String(m.is_approved) === '1')).length;
+
+        return { total, admins, jugadores, porteros, pendientes, inactivos, activos };
+    }, [allMembers]);
+
+    // Filtros activos para enviar al backend
+    const currentFilters = useMemo(() => {
+        switch (filterTab) {
+            case 'jugadores':
+                return { role: 'member' };
+            case 'admins':
+                return { role: 'admin' };
+            case 'porteros':
+                return { position: 'portero' };
+            case 'pendientes':
+                return { is_approved: 'pending' };
+            case 'inactivos':
+                return { status: 'inactive' };
+            default:
+                return {};
+        }
+    }, [filterTab]);
+
+    const { data: response, isLoading } = useMembers(page, searchQuery, 15, currentFilters);
     const { mutate: updateMember } = useUpdateMember();
     const { mutate: deleteMember, isPending: isDeleting } = useDeleteMember();
 
@@ -49,28 +81,10 @@ export const AdminMembersPage = () => {
     const members = response?.data || [];
     const meta = response?.meta;
 
-    // Métricas globales calculadas
-    const stats = useMemo(() => {
-        const total = meta?.total || allMembers.length || members.length;
-        const admins = allMembers.filter(m => m.role === 'admin').length;
-        const porteros = allMembers.filter(m => m.position === 'portero').length;
-        const pendientes = allMembers.filter(m => !m.is_approved).length;
-        const activos = allMembers.filter(m => m.status === 'active' && m.is_approved).length;
-
-        return { total, admins, porteros, pendientes, activos };
-    }, [allMembers, meta, members]);
-
-    // Filtrar miembros según pestaña
-    const filteredMembers = useMemo(() => {
-        return members.filter(m => {
-            if (filterTab === 'jugadores') return m.role === 'member';
-            if (filterTab === 'admins') return m.role === 'admin';
-            if (filterTab === 'porteros') return m.position === 'portero';
-            if (filterTab === 'pendientes') return !m.is_approved;
-            if (filterTab === 'inactivos') return m.status === 'inactive';
-            return true;
-        });
-    }, [members, filterTab]);
+    const handleSelectTab = (tab: typeof filterTab) => {
+        setFilterTab(tab);
+        setPage(1);
+    };
 
     if (isLoading && !members.length) return <div className="py-20 flex justify-center"><FootballSpinner /></div>;
 
@@ -107,21 +121,50 @@ export const AdminMembersPage = () => {
         return `https://wa.me/${clean}?text=${msg}`;
     };
 
-    // Copiar lista de teléfonos para grupo de WhatsApp
+    // Copiar lista completa de teléfonos usando allMembers (los 150+ miembros)
     const copyContactsList = () => {
-        const withPhone = members.filter(m => m.phone);
+        let targetList = [...allMembers];
+
+        // Aplicar filtro de tab activo
+        if (filterTab === 'jugadores') {
+            targetList = targetList.filter(m => m.role === 'member');
+        } else if (filterTab === 'admins') {
+            targetList = targetList.filter(m => m.role === 'admin');
+        } else if (filterTab === 'porteros') {
+            targetList = targetList.filter(m => (m.position || '').toLowerCase() === 'portero');
+        } else if (filterTab === 'pendientes') {
+            targetList = targetList.filter(m => !m.is_approved || String(m.is_approved) === 'false' || String(m.is_approved) === '0');
+        } else if (filterTab === 'inactivos') {
+            targetList = targetList.filter(m => m.status === 'inactive');
+        }
+
+        // Aplicar búsqueda si existe
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase().trim();
+            targetList = targetList.filter(m => {
+                const fullName = `${m.nombres || ''} ${m.apellido_paterno || ''} ${m.apellido_materno || ''} ${m.name || ''}`.toLowerCase();
+                const phone = (m.phone || '').toLowerCase();
+                const dni = (m.dni || '').toLowerCase();
+                const nickname = (m.nickname || '').toLowerCase();
+                return fullName.includes(q) || phone.includes(q) || dni.includes(q) || nickname.includes(q);
+            });
+        }
+
+        const withPhone = targetList.filter(m => m.phone && m.phone.trim().length >= 6);
         if (withPhone.length === 0) {
-            toast.info('No hay teléfonos para copiar');
+            toast.info('No se encontraron teléfonos para copiar con este filtro');
             return;
         }
 
         const lines = withPhone.map((m, idx) => {
-            const name = m.full_name || m.name || m.nombres;
-            return `${idx + 1}. ${name}: ${m.phone}`;
+            const name = (m.full_name || `${m.nombres || ''} ${m.apellido_paterno || ''}`.trim() || m.name || 'Sin nombre').trim();
+            const nickname = m.nickname ? ` "${m.nickname}"` : '';
+            return `${idx + 1}. ${name}${nickname}: ${m.phone}`;
         });
 
-        navigator.clipboard.writeText(`📲 Directorio Telefónico - Pichangas de Barrio:\n\n${lines.join('\n')}`);
-        toast.success('Lista de contactos copiada al portapapeles');
+        const tabLabel = filterTab === 'todos' ? 'Todos los Miembros' : filterTab.toUpperCase();
+        navigator.clipboard.writeText(`📲 Directorio Telefónico (${tabLabel} - ${withPhone.length} contactos) - Pichangas de Barrio:\n\n${lines.join('\n')}`);
+        toast.success(`¡${withPhone.length} teléfonos copiados al portapapeles!`);
     };
 
     return (
@@ -183,69 +226,87 @@ export const AdminMembersPage = () => {
             {/* Barra de Filtros y Búsqueda */}
             <div className="bg-white dark:bg-slate-900 p-4 md:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
                 <div className="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-center">
-                    {/* Tabs de Filtro */}
+                    {/* Tabs de Filtro con Conteos Reales */}
                     <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
                         <button
-                            onClick={() => setFilterTab('todos')}
-                            className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                            onClick={() => handleSelectTab('todos')}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                                 filterTab === 'todos'
                                     ? 'bg-slate-900 dark:bg-slate-800 text-white shadow-md'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
                         >
-                            Todos
+                            <span>Todos</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${filterTab === 'todos' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
+                                {stats.total}
+                            </span>
                         </button>
                         <button
-                            onClick={() => setFilterTab('jugadores')}
-                            className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                            onClick={() => handleSelectTab('jugadores')}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                                 filterTab === 'jugadores'
                                     ? 'bg-blue-600 text-white shadow-md'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
                         >
-                            ⚽ Jugadores
+                            <span>⚽ Jugadores</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${filterTab === 'jugadores' ? 'bg-white/25 text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
+                                {stats.jugadores}
+                            </span>
                         </button>
                         <button
-                            onClick={() => setFilterTab('admins')}
-                            className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                            onClick={() => handleSelectTab('admins')}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                                 filterTab === 'admins'
                                     ? 'bg-amber-500 text-slate-950 font-black shadow-md'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
                         >
-                            🛡️ Admins
+                            <span>🛡️ Admins</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${filterTab === 'admins' ? 'bg-slate-950/20 text-slate-950' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'}`}>
+                                {stats.admins}
+                            </span>
                         </button>
                         <button
-                            onClick={() => setFilterTab('porteros')}
-                            className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                            onClick={() => handleSelectTab('porteros')}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                                 filterTab === 'porteros'
                                     ? 'bg-amber-400 text-amber-950 font-black shadow-md'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
                         >
-                            🧤 Porteros
+                            <span>🧤 Porteros</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${filterTab === 'porteros' ? 'bg-amber-950/20 text-amber-950' : 'bg-amber-400/15 text-amber-600 dark:text-amber-400'}`}>
+                                {stats.porteros}
+                            </span>
                         </button>
                         {stats.pendientes > 0 && (
                             <button
-                                onClick={() => setFilterTab('pendientes')}
-                                className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                                onClick={() => handleSelectTab('pendientes')}
+                                className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                                     filterTab === 'pendientes'
                                         ? 'bg-orange-500 text-white shadow-md'
                                         : 'text-orange-500 hover:bg-orange-500/10'
                                 }`}
                             >
-                                ⏳ Pendientes ({stats.pendientes})
+                                <span>⏳ Pendientes</span>
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${filterTab === 'pendientes' ? 'bg-white/20 text-white' : 'bg-orange-500/15 text-orange-600'}`}>
+                                    {stats.pendientes}
+                                </span>
                             </button>
                         )}
                         <button
-                            onClick={() => setFilterTab('inactivos')}
-                            className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                            onClick={() => handleSelectTab('inactivos')}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
                                 filterTab === 'inactivos'
                                     ? 'bg-red-500 text-white shadow-md'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
                         >
-                            Inactivos
+                            <span>Inactivos</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${filterTab === 'inactivos' ? 'bg-white/20 text-white' : 'bg-red-500/15 text-red-600 dark:text-red-400'}`}>
+                                {stats.inactivos}
+                            </span>
                         </button>
                     </div>
 
@@ -261,7 +322,7 @@ export const AdminMembersPage = () => {
                         />
                         {searchQuery && (
                             <button 
-                                onClick={() => setSearchQuery('')} 
+                                onClick={() => { setSearchQuery(''); setPage(1); }} 
                                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white text-xs font-bold"
                             >
                                 Limpiar
@@ -286,7 +347,7 @@ export const AdminMembersPage = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {filteredMembers.map((m, i) => {
+                            {members.map((m, i) => {
                                 const playerName = m.full_name || m.name || `${m.nombres || ''} ${m.apellido_paterno || ''}`.trim();
                                 const pos = getPositionBadge(m.position);
                                 const whatsappUrl = getWhatsAppUrl(m.phone, playerName);
@@ -481,7 +542,7 @@ export const AdminMembersPage = () => {
                                 );
                             })}
 
-                            {filteredMembers.length === 0 && (
+                            {members.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="p-12 text-center text-slate-500">
                                         <Users size={36} className="mx-auto mb-2 opacity-40" />
