@@ -211,6 +211,26 @@ class WalletController extends Controller
             });
         }
 
+        if ($request->filled('balance_filter')) {
+            $bf = $request->get('balance_filter');
+            if ($bf === 'positive') {
+                $query->whereHas('wallet', function ($wq) {
+                    $wq->where('balance', '>', 0);
+                });
+            } elseif ($bf === 'zero') {
+                $query->where(function ($q) {
+                    $q->whereDoesntHave('wallet')
+                      ->orWhereHas('wallet', function ($wq) {
+                          $wq->where('balance', '<=', 0);
+                      });
+                });
+            } elseif ($bf === 'negative') {
+                $query->whereHas('wallet', function ($wq) {
+                    $wq->where('balance', '<', 0);
+                });
+            }
+        }
+
         $perPage = (int)$request->get('per_page', 15);
         $users = $query->orderBy('nombres', 'asc')->paginate($perPage);
 
@@ -219,13 +239,19 @@ class WalletController extends Controller
             if (!$wallet) {
                 $wallet = Wallet::firstOrCreate(['user_id' => $u->id], ['balance' => 0]);
             }
+
+            $uName = $u->full_name ?: trim("{$u->nombres} {$u->apellido_paterno} {$u->apellido_materno}");
+            if (empty($uName)) {
+                $uName = $u->name ?: ($u->nickname ?: ($u->dni ? "DNI: {$u->dni}" : 'Jugador'));
+            }
+
             return [
                 'id' => $wallet->id,
                 'user_id' => $u->id,
                 'balance' => $wallet->balance,
                 'user' => [
                     'id' => $u->id,
-                    'name' => $u->full_name ?: $u->nombres,
+                    'name' => $uName,
                     'nickname' => $u->nickname,
                     'phone' => $u->phone,
                     'dni' => $u->dni,
@@ -237,6 +263,11 @@ class WalletController extends Controller
             ];
         });
 
+        $totalBalanceCirculation = (float)Wallet::sum('balance');
+        $positiveCount = Wallet::where('balance', '>', 0)->count();
+        $pendingRechargesCount = WalletTransaction::where('status', 'pendiente')->where('type', 'recarga')->count();
+        $totalWallets = User::count();
+
         return response()->json([
             'data' => $data,
             'meta' => [
@@ -244,6 +275,12 @@ class WalletController extends Controller
                 'last_page' => $users->lastPage(),
                 'per_page' => $users->perPage(),
                 'total' => $users->total(),
+            ],
+            'stats' => [
+                'total_balance_circulation' => $totalBalanceCirculation,
+                'positive_wallets_count' => $positiveCount,
+                'pending_recharges_count' => $pendingRechargesCount,
+                'total_wallets_count' => $totalWallets,
             ]
         ]);
     }

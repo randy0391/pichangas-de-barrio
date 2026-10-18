@@ -108,4 +108,13 @@ class User extends Authenticatable
         $parts = array_filter([$this->nombres, $this->apellido_paterno, $this->apellido_materno]);
         return implode(' ', $parts);
     }
+
+    public function getNameAttribute()
+    {
+        $fullName = $this->full_name;
+        if (!empty($fullName)) return $fullName;
+        $parts = array_filter([$this->nombres, $this->apellido_paterno, $this->apellido_materno]);
+        if (!empty($parts)) return implode(' ', $parts);
+        return $this->nickname ?: ($this->dni ? "DNI: {$this->dni}" : 'Jugador');
+    }
 }

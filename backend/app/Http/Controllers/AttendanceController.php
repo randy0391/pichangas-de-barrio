@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Confirmacion;
 use App\Models\Multa;
+use App\Models\Convocatoria;
+use App\Helpers\ImageHelper;
 use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
@@ -132,17 +134,57 @@ class AttendanceController extends Controller
     {
         if (!$request->user()->isAdmin()) return response()->json(['message' => 'Unauthorized'], 403);
 
-        $confirmaciones = Confirmacion::with(['user', 'convocatoria'])
-            ->whereHas('convocatoria', function($q) {
-                // only matches that have finished or are closed, or maybe all
-            })
-            ->orderBy('id', 'desc')
-            ->get();
+        $query = Confirmacion::with(['user', 'convocatoria'])
+            ->whereHas('convocatoria')
+            ->orderBy('id', 'desc');
+
+        if ($request->filled('convocatoria_id')) {
+            $query->where('convocatoria_id', $request->get('convocatoria_id'));
+        }
+
+        if ($request->filled('attendance')) {
+            $att = $request->get('attendance');
+            if ($att === 'sin_marcar' || $att === 'pendiente') {
+                $query->where(function ($q) {
+                    $q->whereNull('attendance')
+                      ->orWhere('attendance', 'pendiente')
+                      ->orWhere('attendance', '');
+                });
+            } else {
+                $query->where('attendance', $att);
+            }
+        }
+
+        if ($request->filled('search')) {
+            $search = trim($request->get('search'));
+            $lower = mb_strtolower($search, 'UTF-8');
+            $query->where(function ($q) use ($lower) {
+                $q->whereHas('user', function ($uq) use ($lower) {
+                    $uq->whereRaw("LOWER(COALESCE(nombres, '')) LIKE ?", ["%{$lower}%"])
+                       ->orWhereRaw("LOWER(COALESCE(apellido_paterno, '')) LIKE ?", ["%{$lower}%"])
+                       ->orWhereRaw("LOWER(COALESCE(apellido_materno, '')) LIKE ?", ["%{$lower}%"])
+                       ->orWhereRaw("LOWER(COALESCE(nickname, '')) LIKE ?", ["%{$lower}%"])
+                       ->orWhereRaw("LOWER(COALESCE(dni, '')) LIKE ?", ["%{$lower}%"])
+                       ->orWhereRaw("LOWER(COALESCE(phone, '')) LIKE ?", ["%{$lower}%"]);
+                })->orWhereHas('convocatoria', function ($cq) use ($lower) {
+                    $cq->whereRaw("LOWER(COALESCE(title, '')) LIKE ?", ["%{$lower}%"])
+                       ->orWhereRaw("LOWER(COALESCE(location, '')) LIKE ?", ["%{$lower}%"]);
+                });
+            });
+        }
+
+        $allConfirmaciones = Confirmacion::whereHas('convocatoria')->get();
+        $totalCount = $allConfirmaciones->count();
+        $presenteCount = $allConfirmaciones->where('attendance', 'presente')->count();
+        $tardanzaCount = $allConfirmaciones->where('attendance', 'tardanza')->count();
+        $faltaCount = $allConfirmaciones->where('attendance', 'falta')->count();
+        $sinMarcarCount = $allConfirmaciones->whereIn('attendance', [null, '', 'pendiente'])->count();
+
+        $confirmaciones = $query->get();
 
         $report = $confirmaciones->map(function ($c) {
             $date = '';
             if ($c->convocatoria && $c->convocatoria->match_date) {
-                // Try to format it if it's a date object or string
                 try {
                     $date = \Carbon\Carbon::parse($c->convocatoria->match_date)->format('d/m/Y');
                 } catch (\Exception $e) {
@@ -150,14 +192,55 @@ class AttendanceController extends Controller
                 }
             }
 
+            $user = $c->user;
+            $userName = 'Jugador';
+            $userNickname = null;
+            $userPhone = null;
+            $userDni = null;
+            $userAvatar = null;
+
+            if ($user) {
+                $fullName = trim("{$user->nombres} {$user->apellido_paterno} {$user->apellido_materno}");
+                $userName = $fullName ?: ($user->name ?: ($user->nickname ?: ($user->dni ? "DNI: {$user->dni}" : 'Jugador')));
+                $userNickname = $user->nickname;
+                $userPhone = $user->phone;
+                $userDni = $user->dni;
+                $userAvatar = $user->avatar ? ImageHelper::getUrl($user->avatar) : null;
+            }
+
             return [
-                'user_name' => $c->user->name ?? 'Desconocido',
-                'convocatoria_title' => $c->convocatoria->title ?? 'Sin título',
+                'id' => $c->id,
+                'user_id' => $c->user_id,
+                'user_name' => $userName,
+                'user_nickname' => $userNickname,
+                'user_phone' => $userPhone,
+                'user_dni' => $userDni,
+                'user_avatar' => $userAvatar,
+                'match_role' => $c->match_role ?? 'jugador',
+                'convocatoria_id' => $c->convocatoria_id,
+                'convocatoria_title' => $c->convocatoria->title ?? 'Sin titulo',
+                'convocatoria_location' => $c->convocatoria->location ?? '',
                 'match_date' => $date,
-                'attendance' => $c->attendance ?? 'pendiente'
+                'raw_match_date' => $c->convocatoria->match_date ?? '',
+                'attendance' => $c->attendance ?: 'pendiente'
             ];
         });
 
-        return response()->json($report);
+        $convocatoriasList = Convocatoria::select('id', 'title', 'match_date')
+            ->orderBy('match_date', 'desc')
+            ->get();
+
+        return response()->json([
+            'data' => $report,
+            'stats' => [
+                'total_count' => $totalCount,
+                'presente_count' => $presenteCount,
+                'tardanza_count' => $tardanzaCount,
+                'falta_count' => $faltaCount,
+                'sin_marcar_count' => $sinMarcarCount,
+                'attendance_rate' => $totalCount > 0 ? round(($presenteCount / $totalCount) * 100, 1) : 0,
+            ],
+            'convocatorias' => $convocatoriasList
+        ]);
     }
 }

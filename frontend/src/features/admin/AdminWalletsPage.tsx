@@ -7,7 +7,8 @@ import { motion } from 'motion/react';
 import { 
   Wallet, CheckCircle, Clock, Search, Eye, 
   Sliders, ExternalLink, History, ArrowUpCircle, ArrowDownCircle,
-  FileText, User as UserIcon, X, Calendar, RotateCcw, Copy, Check
+  FileText, User as UserIcon, X, Calendar, RotateCcw, Copy, Check,
+  TrendingUp, AlertCircle, DollarSign, Users, Phone, ArrowUpRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -72,6 +73,7 @@ export const AdminWalletsPage = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'all' | 'vouchers'>('all');
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [balanceFilter, setBalanceFilter] = useState<'all' | 'positive' | 'zero' | 'negative'>('all');
   const [selectedReceipt, setSelectedReceipt] = useState<{
     url: string;
     playerName?: string;
@@ -85,6 +87,43 @@ export const AdminWalletsPage = () => {
   };
 
   const [isCopyingAll, setIsCopyingAll] = useState(false);
+  const [isCopyingBalances, setIsCopyingBalances] = useState(false);
+
+  // Copiar lista completa de saldos para WhatsApp
+  const copyAllBalancesList = async () => {
+    try {
+      setIsCopyingBalances(true);
+      const res = await api.get('/admin/wallets', {
+        params: {
+          all: true,
+          per_page: 500,
+          search: searchQuery.trim() || undefined,
+          balance_filter: balanceFilter !== 'all' ? balanceFilter : undefined,
+        }
+      });
+      const items: WalletType[] = (res.data as any).data || [];
+      if (items.length === 0) {
+        toast.error('No hay jugadores con los filtros seleccionados');
+        return;
+      }
+      const lines = items.map((w, idx) => {
+        const name = w.user?.name || 'Jugador';
+        const nickname = w.user?.nickname ? ` "${w.user.nickname}"` : '';
+        const bal = parseFloat(w.balance || '0').toFixed(2);
+        const phone = w.user?.phone ? ` | 📱 ${w.user.phone}` : '';
+        return `${idx + 1}. ${name}${nickname}: S/ ${bal}${phone}`;
+      });
+
+      const filterTag = balanceFilter === 'positive' ? 'CON SALDO A FAVOR' : balanceFilter === 'negative' ? 'EN DEUDA' : 'TODOS';
+      const header = `💰 REPORTE DE SALDOS DE BILLETERAS (${filterTag} - ${items.length} jugadores) - PICHANGAS DE BARRIO:\n\n`;
+      await navigator.clipboard.writeText(header + lines.join('\n'));
+      toast.success(`¡Saldos de ${items.length} jugadores copiados al portapapeles!`);
+    } catch {
+      toast.error('No se pudo copiar la lista de saldos');
+    } finally {
+      setIsCopyingBalances(false);
+    }
+  };
 
   const copyFullHistoryList = async () => {
     try {
@@ -179,13 +218,20 @@ export const AdminWalletsPage = () => {
       per_page: number;
       total: number;
     };
+    stats?: {
+      total_balance_circulation: number;
+      positive_wallets_count: number;
+      pending_recharges_count: number;
+      total_wallets_count: number;
+    };
   }>({
-    queryKey: ['admin-wallets-all', page, searchQuery],
+    queryKey: ['admin-wallets-all', page, searchQuery, balanceFilter],
     queryFn: async () => {
       const res = await api.get('/admin/wallets', {
         params: {
           page,
           search: searchQuery.trim() || undefined,
+          balance_filter: balanceFilter !== 'all' ? balanceFilter : undefined,
           per_page: 15
         }
       });
@@ -313,53 +359,127 @@ export const AdminWalletsPage = () => {
           </h1>
           <p className="text-slate-400 mt-1">Controla los saldos, aprueba recargas y revisa el historial de movimientos de cada jugador</p>
         </div>
+      </div>
 
-        {/* Tab switcher */}
-        <div className="flex flex-wrap bg-slate-900 p-1 rounded-xl border border-slate-800 self-start sm:self-auto gap-1">
-          <button
-            onClick={() => setActiveTab('all')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-              activeTab === 'all'
-                ? 'bg-lime-400 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Todas las Billeteras ({meta?.total ?? allWallets.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('pending')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all relative ${
-              activeTab === 'pending'
-                ? 'bg-lime-400 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Recargas Pendientes {pendingList.length > 0 && (
-              <span className="ml-1 bg-red-500 text-white rounded-full px-1.5 py-0.2 text-[10px] font-black">
-                {pendingList.length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('vouchers')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
-              activeTab === 'vouchers'
-                ? 'bg-lime-400 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Calendar className="h-3.5 w-3.5" />
-            <span>Historial de Vouchers</span>
-          </button>
+      {/* Financial KPIs Banner */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-slate-900/90 border border-lime-500/20 rounded-2xl p-4 relative overflow-hidden backdrop-blur-sm shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saldo en Circulación</span>
+            <div className="p-2 rounded-xl bg-lime-400/10 text-lime-400">
+              <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            S/ {(allWalletsData?.stats?.total_balance_circulation ?? 0).toFixed(2)}
+          </div>
+          <p className="text-[11px] text-lime-400/80 font-medium mt-1">Total disponible en billeteras</p>
         </div>
+
+        <div className="bg-slate-900/90 border border-emerald-500/20 rounded-2xl p-4 relative overflow-hidden backdrop-blur-sm shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Con Saldo a Favor</span>
+            <div className="p-2 rounded-xl bg-emerald-400/10 text-emerald-400">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-emerald-400 tracking-tight">
+            {allWalletsData?.stats?.positive_wallets_count ?? 0}
+          </div>
+          <p className="text-[11px] text-slate-400 font-medium mt-1">Jugadores listos para pichanguear</p>
+        </div>
+
+        <div 
+          onClick={() => setActiveTab('pending')}
+          className={`border rounded-2xl p-4 relative overflow-hidden backdrop-blur-sm cursor-pointer transition-all shadow-lg ${
+            (pendingList.length > 0 || (allWalletsData?.stats?.pending_recharges_count ?? 0) > 0)
+              ? 'bg-amber-500/10 border-amber-500/30 hover:border-amber-400'
+              : 'bg-slate-900/90 border-slate-800 hover:border-slate-700'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Recargas por Validar</span>
+            <div className={`p-2 rounded-xl ${
+              (pendingList.length > 0 || (allWalletsData?.stats?.pending_recharges_count ?? 0) > 0)
+                ? 'bg-amber-500/20 text-amber-400 animate-pulse'
+                : 'bg-slate-800 text-slate-400'
+            }`}>
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+          </div>
+          <div className={`text-xl sm:text-2xl font-black tracking-tight ${
+            (pendingList.length > 0 || (allWalletsData?.stats?.pending_recharges_count ?? 0) > 0)
+              ? 'text-amber-400'
+              : 'text-white'
+          }`}>
+            {allWalletsData?.stats?.pending_recharges_count ?? pendingList.length ?? 0}
+          </div>
+          <p className="text-[11px] text-slate-400 font-medium mt-1 flex items-center gap-1">
+            <span>Vouchers pendientes</span>
+            <ArrowUpRight className="h-3 w-3 text-slate-400" />
+          </p>
+        </div>
+
+        <div className="bg-slate-900/90 border border-cyan-500/20 rounded-2xl p-4 relative overflow-hidden backdrop-blur-sm shadow-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Billeteras</span>
+            <div className="p-2 rounded-xl bg-cyan-400/10 text-cyan-400">
+              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-cyan-400 tracking-tight">
+            {allWalletsData?.stats?.total_wallets_count ?? meta?.total ?? allWallets.length}
+          </div>
+          <p className="text-[11px] text-slate-400 font-medium mt-1">Usuarios registrados en el sistema</p>
+        </div>
+      </div>
+
+      {/* Tab switcher */}
+      <div className="flex flex-wrap bg-slate-900 p-1 rounded-xl border border-slate-800 self-start sm:self-auto gap-1">
+        <button
+          onClick={() => setActiveTab('all')}
+          className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+            activeTab === 'all'
+              ? 'bg-lime-400 text-slate-950 shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          Todas las Billeteras ({meta?.total ?? allWallets.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('pending')}
+          className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all relative ${
+            activeTab === 'pending'
+              ? 'bg-lime-400 text-slate-950 shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          Recargas Pendientes {pendingList.length > 0 && (
+            <span className="ml-1 bg-red-500 text-white rounded-full px-1.5 py-0.2 text-[10px] font-black">
+              {pendingList.length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('vouchers')}
+          className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+            activeTab === 'vouchers'
+              ? 'bg-lime-400 text-slate-950 shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <Calendar className="h-3.5 w-3.5" />
+          <span>Historial de Vouchers</span>
+        </button>
       </div>
 
       {/* ALL WALLETS TAB */}
       {activeTab === 'all' && (
         <div className="space-y-4">
-          {/* Search bar & total indicator */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3 bg-slate-900 px-3 py-2 rounded-xl border border-slate-800 focus-within:border-lime-400/50 focus-within:ring-1 focus-within:ring-lime-400/30 transition-all w-full sm:max-w-md">
+          {/* Search bar, balance filter pills & Export Button */}
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+            {/* Search */}
+            <div className="flex items-center gap-3 bg-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-800 focus-within:border-lime-400/50 focus-within:ring-1 focus-within:ring-lime-400/30 transition-all w-full xl:max-w-md shadow-sm">
               <Search className="h-4 w-4 text-slate-400 shrink-0" />
               <input
                 type="text"
@@ -386,8 +506,79 @@ export const AdminWalletsPage = () => {
                 </button>
               )}
             </div>
-            <div className="text-xs font-bold text-slate-400 bg-slate-900/60 px-3 py-2 rounded-xl border border-slate-800/80 self-start sm:self-auto">
-              Total Jugadores: <span className="text-white font-black">{meta?.total ?? allWallets.length}</span>
+
+            {/* Filter Pills & Copy button */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800 gap-1">
+                <button
+                  type="button"
+                  onClick={() => { setBalanceFilter('all'); setPage(1); }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    balanceFilter === 'all'
+                      ? 'bg-slate-800 text-white shadow'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Todas
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setBalanceFilter('positive'); setPage(1); }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    balanceFilter === 'positive'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow'
+                      : 'text-slate-400 hover:text-emerald-300'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  Con Saldo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setBalanceFilter('zero'); setPage(1); }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    balanceFilter === 'zero'
+                      ? 'bg-slate-700 text-white shadow'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+                  S/ 0.00
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setBalanceFilter('negative'); setPage(1); }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    balanceFilter === 'negative'
+                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow'
+                      : 'text-slate-400 hover:text-rose-300'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+                  En Deuda
+                </button>
+              </div>
+
+              {/* Copy all balances for WhatsApp */}
+              <Button
+                type="button"
+                onClick={copyAllBalancesList}
+                disabled={isCopyingBalances}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 h-auto rounded-xl flex items-center gap-1.5 shadow-md shadow-emerald-950/40 transition-all shrink-0"
+                title="Copiar lista de saldos para WhatsApp"
+              >
+                {isCopyingBalances ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Copiando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" />
+                    <span>Copiar Saldos (WhatsApp)</span>
+                  </>
+                )}
+              </Button>
             </div>
           </div>
 
@@ -410,18 +601,19 @@ export const AdminWalletsPage = () => {
                   <tbody className="divide-y divide-slate-800 text-sm">
                     {allWallets.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="py-8 text-center text-slate-500 font-medium">
-                          No se encontraron jugadores
+                        <td colSpan={5} className="py-12 text-center text-slate-500 font-medium">
+                          No se encontraron billeteras para los filtros seleccionados
                         </td>
                       </tr>
                     ) : (
                       allWallets.map((w) => {
                         const bal = parseFloat(w.balance || '0');
+                        const phoneDigits = w.user?.phone ? w.user.phone.replace(/\D/g, '') : '';
                         return (
                           <tr key={w.id} className="hover:bg-slate-800/40 transition-colors">
-                            <td className="py-3.5 px-4 font-bold text-white">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                            <td className="py-3 px-4 font-bold text-white">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
                                   {w.user?.avatar ? (
                                     <img src={w.user.avatar} alt="Avatar" className="w-full h-full object-cover" />
                                   ) : (
@@ -448,22 +640,73 @@ export const AdminWalletsPage = () => {
                                     )}
                                   </div>
                                   {w.user?.nickname && (
-                                    <span className="text-[11px] text-primary font-medium block truncate">
+                                    <span className="text-[11px] text-lime-400 font-semibold block truncate">
                                       "{w.user.nickname}"
                                     </span>
                                   )}
                                 </div>
                               </div>
                             </td>
-                            <td className="py-3.5 px-4 text-slate-400 font-mono text-xs">
-                              {w.user?.phone || '-'}
+                            <td className="py-3 px-4">
+                              {w.user?.phone ? (
+                                <div className="flex items-center gap-1.5">
+                                  <a 
+                                    href={`https://wa.me/51${phoneDigits}`} 
+                                    target="_blank" 
+                                    rel="noreferrer"
+                                    className="text-xs font-mono text-slate-300 hover:text-emerald-400 flex items-center gap-1 transition-colors"
+                                    title="Chatear por WhatsApp"
+                                  >
+                                    <Phone className="h-3 w-3 text-emerald-400" />
+                                    <span>{w.user.phone}</span>
+                                  </a>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      copyToClipboard(w.user!.phone!, 'Celular');
+                                    }}
+                                    className="text-slate-500 hover:text-lime-400 p-0.5 rounded transition-colors"
+                                    title="Copiar celular"
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <span className="text-slate-600 text-xs">-</span>
+                              )}
                             </td>
-                            <td className="py-3.5 px-4 text-slate-400 font-mono text-xs">
-                              {w.user?.dni || '-'}
+                            <td className="py-3 px-4">
+                              {w.user?.dni ? (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-mono text-slate-400 bg-slate-950/60 px-2 py-0.5 rounded border border-slate-800">
+                                    {w.user.dni}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      copyToClipboard(w.user!.dni!, 'DNI');
+                                    }}
+                                    className="text-slate-500 hover:text-lime-400 p-0.5 rounded transition-colors"
+                                    title="Copiar DNI"
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <span className="text-slate-600 text-xs">-</span>
+                              )}
                             </td>
-                            <td className="py-3.5 px-4 text-right font-black text-base whitespace-nowrap">
-                              <div className="flex items-center justify-end gap-1.5">
-                                <span className={bal > 0 ? 'text-lime-400' : bal < 0 ? 'text-red-400' : 'text-slate-400'}>
+                            <td className="py-3 px-4 text-right whitespace-nowrap">
+                              <div className="flex items-center justify-end gap-2">
+                                <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-black border ${
+                                  bal > 0 
+                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
+                                    : bal < 0 
+                                    ? 'bg-rose-500/10 text-rose-400 border-rose-500/30' 
+                                    : 'bg-slate-800/80 text-slate-400 border-slate-700/60'
+                                }`}>
                                   S/ {bal.toFixed(2)}
                                 </span>
                                 <button
@@ -472,14 +715,14 @@ export const AdminWalletsPage = () => {
                                     e.stopPropagation();
                                     copyToClipboard(bal.toFixed(2), 'Saldo');
                                   }}
-                                  className="text-slate-500 hover:text-lime-400 p-0.5 rounded transition-colors"
+                                  className="text-slate-500 hover:text-lime-400 p-1 rounded transition-colors"
                                   title="Copiar saldo"
                                 >
-                                  <Copy className="h-3 w-3" />
+                                  <Copy className="h-3.5 w-3.5" />
                                 </button>
                               </div>
                             </td>
-                            <td className="py-3.5 px-4 text-center">
+                            <td className="py-3 px-4 text-center">
                               <div className="flex items-center justify-center gap-2">
                                 <Button
                                   onClick={() => setHistoryModalUser({
@@ -501,7 +744,7 @@ export const AdminWalletsPage = () => {
                                   className="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white px-3 py-1.5 h-auto text-xs font-bold rounded-lg border border-slate-700 transition-colors"
                                   title="Aumentar o quitar saldo manualmente"
                                 >
-                                  <Sliders className="h-3.5 w-3.5 mr-1 text-primary" /> Ajustar
+                                  <Sliders className="h-3.5 w-3.5 mr-1 text-lime-400" /> Ajustar
                                 </Button>
                               </div>
                             </td>
