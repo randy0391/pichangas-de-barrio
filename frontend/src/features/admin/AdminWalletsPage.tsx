@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
@@ -359,6 +360,15 @@ export const AdminWalletsPage = () => {
           </h1>
           <p className="text-slate-400 mt-1">Controla los saldos, aprueba recargas y revisa el historial de movimientos de cada jugador</p>
         </div>
+
+        <Link
+          to="/billetera"
+          className="self-start sm:self-auto px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-lime-400 hover:text-lime-300 border border-lime-400/30 hover:border-lime-400 font-bold text-xs flex items-center gap-2 transition-all shadow-sm"
+          title="Ver mi propia billetera personal"
+        >
+          <Wallet className="h-4 w-4" />
+          <span>Ver Mi Billetera Personal</span>
+        </Link>
       </div>
 
       {/* Financial KPIs Banner */}

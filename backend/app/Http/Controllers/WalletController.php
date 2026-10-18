@@ -15,13 +15,33 @@ class WalletController extends Controller
     {
         $wallet = $request->user()->getOrCreateWallet();
         
-        $transactions = $wallet->transactions()->paginate(20);
+        $transactions = $wallet->transactions()->paginate(30);
+
+        $pendingRecharge = $wallet->transactions()
+            ->where('type', 'recarga')
+            ->where('status', 'pendiente')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $stats = [
+            'total_recharged' => (float) $wallet->transactions()->where('type', 'recarga')->where('status', 'aprobado')->sum('amount'),
+            'total_spent' => abs((float) $wallet->transactions()->where('type', 'descuento')->where('status', 'aprobado')->sum('amount')),
+            'total_refunded' => (float) $wallet->transactions()->where('type', 'devolucion')->where('status', 'aprobado')->sum('amount'),
+            'pending_count' => (int) $wallet->transactions()->where('type', 'recarga')->where('status', 'pendiente')->count(),
+            'pending_recharge' => $pendingRecharge ? [
+                'id' => $pendingRecharge->id,
+                'amount' => $pendingRecharge->amount,
+                'created_at' => $pendingRecharge->created_at,
+                'receipt_path' => $pendingRecharge->receipt_path ? ImageHelper::getUrl($pendingRecharge->receipt_path) : null,
+            ] : null,
+        ];
 
         return response()->json([
             'wallet' => [
                 'id' => $wallet->id,
                 'balance' => $wallet->balance,
             ],
+            'stats' => $stats,
             'transactions' => $transactions->through(function ($tx) {
                 return [
                     'id' => $tx->id,

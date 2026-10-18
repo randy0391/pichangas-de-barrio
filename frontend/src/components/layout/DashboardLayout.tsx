@@ -97,7 +97,6 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
   const { user, isLoading, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const sections = user?.role === 'admin' ? adminSections : userSections;
   const mobileTabs = user?.role === 'admin' ? adminMobileTabs : userMobileTabs;
 
   const isActive = (path: string) => {
@@ -129,6 +128,27 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
     enabled: !!user
   });
 
+  const { data: pendingWallets } = useQuery<{ data: any[] }>({
+    queryKey: ['admin-wallets-pending'],
+    queryFn: async () => {
+      const res = await api.get('/admin/wallets/pending');
+      return (res.data as any).data ? res.data : { data: res.data };
+    },
+    enabled: user?.role === 'admin'
+  });
+
+  const pendingCount = pendingWallets?.data?.length || 0;
+
+  const sections = (user?.role === 'admin' ? adminSections : userSections).map(section => ({
+    ...section,
+    links: section.links.map(link => {
+      if (link.name === 'Billeteras' && user?.role === 'admin' && pendingCount > 0) {
+        return { ...link, badge: String(pendingCount) };
+      }
+      return link;
+    })
+  }));
+
   const walletBalance = walletData?.wallet?.balance !== undefined 
     ? parseFloat(walletData.wallet.balance).toFixed(2) 
     : null;
@@ -147,11 +167,17 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
           </Link>
 
           {/* Right: User info + Logout */}
-          <div className="flex items-center space-x-3">
-            {/* Wallet balance badge */}
-            <Link to="/billetera" className="hidden sm:flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-full transition-colors border border-slate-700/60 shadow-sm" title="Ver mi Billetera">
-              <Wallet className="h-4 w-4 text-lime-400" />
-              <span className="text-sm font-black text-lime-400">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Wallet balance badge (visible on desktop and mobile) */}
+            <Link 
+              to="/billetera" 
+              className="flex items-center space-x-1.5 bg-slate-900/90 hover:bg-slate-800 px-2.5 sm:px-3.5 py-1.5 rounded-full transition-all border border-lime-400/30 hover:border-lime-400 shadow-sm shadow-lime-950/20 group" 
+              title="Ver mi Billetera Digital"
+            >
+              <div className="p-1 rounded-full bg-lime-400/10 group-hover:bg-lime-400/20 transition-colors">
+                <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-lime-400" />
+              </div>
+              <span className="text-xs sm:text-sm font-black text-white tracking-tight group-hover:text-lime-300 transition-colors">
                 {walletBalance !== null ? `S/ ${walletBalance}` : 'S/ ...'}
               </span>
             </Link>
@@ -314,16 +340,26 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
           {mobileTabs.map((tab) => {
             const Icon = tab.icon;
             const active = isActive(tab.path);
+            const isWalletTab = tab.name === 'Billeteras' || tab.name === 'Billetera';
+            const showBadge = isWalletTab && user.role === 'admin' && pendingCount > 0;
+
             return (
               <Link
                 key={tab.path}
                 to={tab.path}
                 className={cn(
-                  'flex flex-col items-center justify-center space-y-1 flex-1 py-1 transition-colors',
+                  'flex flex-col items-center justify-center space-y-1 flex-1 py-1 transition-colors relative',
                   active ? 'text-lime-400' : 'text-slate-500'
                 )}
               >
-                <Icon className={cn("h-5 w-5", active && "drop-shadow-[0_0_6px_rgba(163,230,53,0.4)]")} />
+                <div className="relative">
+                  <Icon className={cn("h-5 w-5", active && "drop-shadow-[0_0_6px_rgba(163,230,53,0.4)]")} />
+                  {showBadge && (
+                    <span className="absolute -top-1.5 -right-2.5 bg-red-500 text-white text-[9px] font-black rounded-full h-4 min-w-4 px-1 flex items-center justify-center border border-slate-950 animate-pulse">
+                      {pendingCount}
+                    </span>
+                  )}
+                </div>
                 <span className="text-[10px] font-bold tracking-wide">{tab.name}</span>
                 {active && <div className="w-1 h-1 rounded-full bg-lime-400"></div>}
               </Link>
