@@ -91,6 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/multas/{id}/approve', [\App\Http\Controllers\MultaController::class, 'approve']);
         Route::post('/multas/{id}/reject', [\App\Http\Controllers\MultaController::class, 'reject']);
+        Route::delete('/multas/{id}', [\App\Http\Controllers\MultaController::class, 'destroy']);
         
         Route::post('/confirmaciones/{id}/attendance', [\App\Http\Controllers\AttendanceController::class, 'mark']);
         Route::post('/convocatorias/{id}/attendance-batch', [\App\Http\Controllers\AttendanceController::class, 'batchMark']);

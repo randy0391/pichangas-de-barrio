@@ -56,6 +56,19 @@ export const useRejectMulta = () => {
   });
 };
 
+export const useDeleteMulta = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await api.delete(`/multas/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['multas'] });
+    }
+  });
+};
+
 export const useMarkAttendance = () => {
   const queryClient = useQueryClient();
   return useMutation({
