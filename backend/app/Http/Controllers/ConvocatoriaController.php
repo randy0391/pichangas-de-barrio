@@ -232,23 +232,50 @@ class ConvocatoriaController extends Controller
         $confirmacion = Confirmacion::where('convocatoria_id', $id)->where('user_id', $userId)->first();
 
         if ($confirmacion) {
-            $cost = floatval($convocatoria->cost_per_player ?? 0);
-            if ($cost > 0) {
+            // Solo devolver saldo si hubo un descuento previo de billetera para esta convocatoria
+            $deductedAmount = abs((float) \App\Models\WalletTransaction::where('user_id', $userId)
+                ->where('reference_type', 'convocatoria')
+                ->where('reference_id', $convocatoria->id)
+                ->where('type', 'descuento')
+                ->where('status', 'aprobado')
+                ->sum('amount'));
+
+            $refundedAmount = (float) \App\Models\WalletTransaction::where('user_id', $userId)
+                ->where('reference_type', 'convocatoria')
+                ->where('reference_id', $convocatoria->id)
+                ->where('type', 'devolucion')
+                ->where('status', 'aprobado')
+                ->sum('amount');
+
+            $refundableAmount = max(0, $deductedAmount - $refundedAmount);
+
+            if ($refundableAmount > 0) {
                 $targetUser = \App\Models\User::find($userId);
                 if ($targetUser) {
                     $wallet = $targetUser->getOrCreateWallet();
                     $wallet->refund(
-                        $cost,
+                        $refundableAmount,
                         'Devolucion por cancelacion en convocatoria: ' . $convocatoria->title,
                         'convocatoria',
                         $convocatoria->id
                     );
                 }
             }
+
             $confirmacion->delete();
+
+            $msg = $refundableAmount > 0
+                ? 'Reserva eliminada y saldo devuelto a su billetera (S/ ' . number_format($refundableAmount, 2) . ')'
+                : 'Reserva eliminada. No se realizo devolucion ya que el jugador no tuvo descuento de saldo previo.';
+
+            return response()->json([
+                'message' => $msg,
+                'refunded' => $refundableAmount > 0,
+                'refunded_amount' => $refundableAmount,
+            ]);
         }
 
-        return response()->json(['message' => 'Reserva eliminada y saldo devuelto si correspondia']);
+        return response()->json(['message' => 'No se encontro la confirmacion del jugador'], 404);
     }
 
     public function addPlayer(Request $request, $id)
@@ -285,7 +312,8 @@ class ConvocatoriaController extends Controller
         $convocatoria->confirmaciones()->create([
             'user_id' => $request->user_id,
             'match_role' => $request->match_role,
-            'status' => 'confirmado'
+            'status' => 'confirmado',
+            'notes' => 'Anadido manualmente por administrador'
         ]);
 
         return response()->json(['message' => 'Jugador anadido exitosamente']);

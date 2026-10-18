@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useConvocatoria, useConfirmar, useAddPlayerToConvocatoria, useUpdatePlayerRole } from '@/hooks/useConvocatorias';
+import { useConvocatoria, useConfirmar, useAddPlayerToConvocatoria, useUpdatePlayerRole, useRemoveConfirmacion } from '@/hooks/useConvocatorias';
 import { useAllMembers } from '@/hooks/useMembers';
 import { useAuthStore } from '@/stores/authStore';
 import { motion } from 'motion/react';
@@ -28,7 +28,8 @@ import {
     ExternalLink,
     Trophy,
     Sparkles,
-    Flame
+    Flame,
+    Trash2
 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/axios';
@@ -41,6 +42,7 @@ export const ConvocatoriaDetailPage = () => {
     const { data: c, isLoading } = useConvocatoria(Number(id));
     const { mutate: confirmar, isPending: isConfirming } = useConfirmar();
     const { mutate: addPlayer, isPending: isAddingPlayer } = useAddPlayerToConvocatoria();
+    const { mutate: removeConfirmacion } = useRemoveConfirmacion();
     const { mutate: updateRole } = useUpdatePlayerRole();
     const { data: allMembers = [], isLoading: loadingMembers } = useAllMembers();
     
@@ -925,11 +927,31 @@ export const ConvocatoriaDetailPage = () => {
                                                             </div>
                                                         </div>
 
-                                                        {p.user?.jersey_number && (
-                                                            <span className="text-xs font-black text-slate-700 dark:text-slate-300 font-mono bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded-lg">
-                                                                #{p.user.jersey_number}
-                                                            </span>
-                                                        )}
+                                                        <div className="flex items-center gap-2 shrink-0">
+                                                            {user?.role === 'admin' && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        toast(`¿Eliminar la reserva de ${pName}?`, {
+                                                                            action: {
+                                                                                label: 'Eliminar',
+                                                                                onClick: () => removeConfirmacion({ id: c.id, userId: p.user.id })
+                                                                            },
+                                                                            cancel: { label: 'Cancelar', onClick: () => {} }
+                                                                        });
+                                                                    }}
+                                                                    className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
+                                                                    title="Eliminar de la convocatoria"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+                                                            )}
+                                                            {p.user?.jersey_number && (
+                                                                <span className="text-xs font-black text-slate-700 dark:text-slate-300 font-mono bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                                                                    #{p.user.jersey_number}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 );
                                             })}
@@ -978,15 +1000,35 @@ export const ConvocatoriaDetailPage = () => {
                                                             </div>
                                                         </div>
 
-                                                        {p.user?.jersey_number ? (
-                                                            <span className="text-xs font-black text-slate-700 dark:text-slate-300 font-mono bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded-lg">
-                                                                #{p.user.jersey_number}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-[11px] font-mono text-slate-400">
-                                                                #{teamGoalkeepers.length + idx + 1}
-                                                            </span>
-                                                        )}
+                                                        <div className="flex items-center gap-2 shrink-0">
+                                                            {user?.role === 'admin' && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        toast(`¿Eliminar la reserva de ${pName}?`, {
+                                                                            action: {
+                                                                                label: 'Eliminar',
+                                                                                onClick: () => removeConfirmacion({ id: c.id, userId: p.user.id })
+                                                                            },
+                                                                            cancel: { label: 'Cancelar', onClick: () => {} }
+                                                                        });
+                                                                    }}
+                                                                    className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
+                                                                    title="Eliminar de la convocatoria"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+                                                            )}
+                                                            {p.user?.jersey_number ? (
+                                                                <span className="text-xs font-black text-slate-700 dark:text-slate-300 font-mono bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                                                                    #{p.user.jersey_number}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[11px] font-mono text-slate-400">
+                                                                    #{teamGoalkeepers.length + idx + 1}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 );
                                             })}
@@ -1108,9 +1150,29 @@ export const ConvocatoriaDetailPage = () => {
                                                     </div>
                                                 </div>
 
-                                                <span className="text-xs font-mono font-bold text-slate-400 shrink-0">
-                                                    #{idx + 1}
-                                                </span>
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    {user?.role === 'admin' && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                toast(`¿Eliminar la reserva de ${pName}?`, {
+                                                                    action: {
+                                                                        label: 'Eliminar',
+                                                                        onClick: () => removeConfirmacion({ id: c.id, userId: p.user.id })
+                                                                    },
+                                                                    cancel: { label: 'Cancelar', onClick: () => {} }
+                                                                });
+                                                            }}
+                                                            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
+                                                            title="Eliminar de la convocatoria"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    )}
+                                                    <span className="text-xs font-mono font-bold text-slate-400">
+                                                        #{idx + 1}
+                                                    </span>
+                                                </div>
                                             </div>
                                         );
                                     })}

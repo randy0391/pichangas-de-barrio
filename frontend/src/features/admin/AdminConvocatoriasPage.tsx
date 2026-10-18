@@ -187,9 +187,7 @@ const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
                                         toast(`¿Eliminar la reserva de ${name}?`, {
                                             action: {
                                                 label: 'Eliminar',
-                                                onClick: () => removeConfirmacion({ id: convocatoriaId, userId: p.user.id }, {
-                                                    onSuccess: () => toast.success('Reserva eliminada')
-                                                })
+                                                onClick: () => removeConfirmacion({ id: convocatoriaId, userId: p.user.id })
                                             },
                                             cancel: { label: 'Cancelar', onClick: () => {} }
                                         });
@@ -295,9 +293,7 @@ const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
                                                     toast(`¿Eliminar la reserva de ${name}?`, {
                                                         action: {
                                                             label: 'Eliminar',
-                                                            onClick: () => removeConfirmacion({ id: convocatoriaId, userId: p.user.id }, {
-                                                                onSuccess: () => toast.success('Reserva eliminada')
-                                                            })
+                                                            onClick: () => removeConfirmacion({ id: convocatoriaId, userId: p.user.id })
                                                         },
                                                         cancel: { label: 'Cancelar', onClick: () => {} }
                                                     });

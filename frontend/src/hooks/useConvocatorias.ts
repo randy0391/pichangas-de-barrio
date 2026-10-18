@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/axios';
+import { toast } from 'sonner';
 import { Convocatoria, PaginatedResponse } from '@/types';
 
 export const useConvocatorias = (page = 1) => {
@@ -125,15 +126,24 @@ export const useRemoveConfirmacion = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, userId }: { id: number; userId: number }) => {
-      await api.delete(`/convocatorias/${id}/confirmaciones/${userId}`);
+      const res = await api.delete(`/convocatorias/${id}/confirmaciones/${userId}`);
+      return res.data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['convocatorias'] });
       queryClient.invalidateQueries({ queryKey: ['convocatoria'] });
       queryClient.invalidateQueries({ queryKey: ['convocatoria', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['mis-convocatorias'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-wallets-all'] });
+      queryClient.invalidateQueries({ queryKey: ['my-wallet'] });
+      if (data?.message) {
+        toast.success(data.message);
+      }
     },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || 'Error al eliminar jugador de la convocatoria');
+    }
   });
 };
 
