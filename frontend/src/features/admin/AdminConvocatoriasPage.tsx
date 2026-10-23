@@ -319,7 +319,7 @@ const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
 
 export const AdminConvocatoriasPage = () => {
     const [page, setPage] = useState(1);
-    const { data: response, isLoading } = useConvocatorias(page);
+    const { data: response, isLoading } = useConvocatorias(page, 100);
     const { mutate: crear, isPending: isCreating } = useCreateConvocatoria();
     const { mutate: eliminar } = useDeleteConvocatoria();
     const { mutate: sortear, isPending: isSorting } = useSortearEquipos();

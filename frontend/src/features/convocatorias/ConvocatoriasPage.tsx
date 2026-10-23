@@ -42,7 +42,7 @@ const formatDayLabel = (date: Date) => {
 
 export const ConvocatoriasPage = () => {
     const [page] = useState(1);
-    const { data: response, isLoading } = useConvocatorias(page);
+    const { data: response, isLoading } = useConvocatorias(page, 100);
 
     // Filters
     const [periodFilter, setPeriodFilter] = useState<'todos' | 'esta_semana' | 'proxima_semana' | 'futuro'>('todos');

@@ -3,12 +3,55 @@ import api from '@/lib/axios';
 import { toast } from 'sonner';
 import { Convocatoria, PaginatedResponse, RecurringSchedule } from '@/types';
 
-export const useConvocatorias = (page = 1) => {
+export const useConvocatorias = (page = 1, perPage = 100) => {
   return useQuery({
-    queryKey: ['convocatorias', page],
+    queryKey: ['convocatorias', page, perPage],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<Convocatoria>>(`/convocatorias?page=${page}`);
-      return data;
+      try {
+        const { data } = await api.get<PaginatedResponse<Convocatoria>>(`/convocatorias?page=${page}&per_page=${perPage}`);
+        
+        // If server paginated with a smaller limit (e.g. 12 items per page) and there are multiple pages:
+        // Automatically fetch remaining pages so the player/admin sees ALL matches without any missing!
+        if (data?.meta?.last_page && data.meta.last_page > 1 && page === 1) {
+          const promises = [];
+          for (let p = 2; p <= data.meta.last_page; p++) {
+            promises.push(
+              api.get<PaginatedResponse<Convocatoria>>(`/convocatorias?page=${p}&per_page=${perPage}`)
+                .catch(() => null)
+            );
+          }
+          const results = await Promise.all(promises);
+          let allItems = [...(data.data || [])];
+          for (const res of results) {
+            if (res?.data?.data && Array.isArray(res.data.data)) {
+              allItems = allItems.concat(res.data.data);
+            }
+          }
+          // Deduplicate by ID
+          const seen = new Set<number>();
+          const uniqueItems = allItems.filter(item => {
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+          });
+
+          return {
+            ...data,
+            data: uniqueItems,
+            meta: {
+              ...data.meta,
+              total: uniqueItems.length,
+              per_page: uniqueItems.length,
+              last_page: 1,
+            }
+          };
+        }
+
+        return data;
+      } catch (err) {
+        console.error('Error fetching convocatorias:', err);
+        return { data: [], meta: { current_page: 1, last_page: 1, total: 0 } } as any;
+      }
     },
   });
 };

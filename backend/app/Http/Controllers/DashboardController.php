@@ -18,13 +18,14 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        // Próximas convocatorias abiertas
+        // Proximas convocatorias abiertas
         $upcomingConvocatorias = Convocatoria::where('status', 'abierta')
             ->where('match_date', '>=', now()->toDateString())
             ->with('creator')
             ->withCount(['confirmaciones as confirmed_count' => function($q) { $q->where('status', 'confirmado'); }])
-            ->orderBy('match_date')
-            ->take(5)
+            ->orderBy('match_date', 'asc')
+            ->orderBy('match_time', 'asc')
+            ->take(30)
             ->get();
 
         // Eventos próximos donde el usuario está registrado

@@ -16,8 +16,8 @@ class ConvocatoriaController extends Controller
         if ($request->query('upcoming') === 'true') {
             $query->where('match_date', '>=', now()->toDateString());
         }
-        $query->orderBy('match_date', 'asc');
-        $perPage = (int) $request->query('per_page', 50);
+        $query->orderBy('match_date', 'asc')->orderBy('match_time', 'asc');
+        $perPage = (int) $request->query('per_page', 100);
         return ConvocatoriaResource::collection($query->paginate($perPage));
     }
 
