@@ -47,6 +47,7 @@ export const ConvocatoriasPage = () => {
     // Filters
     const [periodFilter, setPeriodFilter] = useState<'todos' | 'esta_semana' | 'proxima_semana' | 'futuro'>('todos');
     const [dayFilter, setDayFilter] = useState<'todos' | 'martes' | 'jueves' | 'sabado'>('todos');
+    const [selectedDate, setSelectedDate] = useState<string>('');
     const [onlyMySignups, setOnlyMySignups] = useState(false);
 
     const rawConvocatorias = (response?.data || []) as Convocatoria[];
@@ -111,6 +112,9 @@ export const ConvocatoriasPage = () => {
     // Apply active filters
     const filteredMatches = useMemo(() => {
         return categorizedMatches.filter(item => {
+            if (selectedDate && item.match_date !== selectedDate) {
+                return false;
+            }
             if (periodFilter !== 'todos' && item.periodCategory !== periodFilter) {
                 return false;
             }
@@ -122,14 +126,14 @@ export const ConvocatoriasPage = () => {
             }
             return true;
         });
-    }, [categorizedMatches, periodFilter, dayFilter, onlyMySignups]);
+    }, [categorizedMatches, periodFilter, dayFilter, selectedDate, onlyMySignups]);
 
     // Grouping for "Todos" view
     const estaSemana = filteredMatches.filter(m => m.periodCategory === 'esta_semana');
     const proximaSemana = filteredMatches.filter(m => m.periodCategory === 'proxima_semana');
     const futuro = filteredMatches.filter(m => m.periodCategory === 'futuro');
 
-    const shouldGroup = periodFilter === 'todos' && dayFilter === 'todos' && !onlyMySignups;
+    const shouldGroup = periodFilter === 'todos' && dayFilter === 'todos' && !selectedDate && !onlyMySignups;
 
     if (isLoading && !rawConvocatorias.length) {
         return (
@@ -361,7 +365,7 @@ export const ConvocatoriasPage = () => {
                                 <span className="text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center gap-1">
                                     ⚽ Martes
                                 </span>
-                                <p className="text-xs text-slate-300 font-medium">8:00 PM • Cancha Sintética</p>
+                                <p className="text-xs text-slate-300 font-medium">9:00 PM • Cancha Sintética</p>
                             </div>
                             <div className="text-right">
                                 <span className="text-base font-black font-mono text-cyan-400">S/ 15.00</span>
@@ -375,7 +379,7 @@ export const ConvocatoriasPage = () => {
                                 <span className="text-xs font-black uppercase tracking-wider text-lime-400 flex items-center gap-1">
                                     ⚽ Jueves
                                 </span>
-                                <p className="text-xs text-slate-300 font-medium">8:00 PM • Cancha Sintética</p>
+                                <p className="text-xs text-slate-300 font-medium">9:00 PM • Cancha Sintética</p>
                             </div>
                             <div className="text-right">
                                 <span className="text-base font-black font-mono text-lime-400">S/ 15.00</span>
@@ -389,7 +393,7 @@ export const ConvocatoriasPage = () => {
                                 <span className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1">
                                     🏆 Sábados
                                 </span>
-                                <p className="text-xs text-slate-300 font-medium">6:00 PM • Cancha Sintética</p>
+                                <p className="text-xs text-slate-300 font-medium">6:00 AM • Cancha Sintética</p>
                             </div>
                             <div className="text-right">
                                 <span className="text-base font-black font-mono text-amber-400">S/ 18.00</span>
@@ -447,7 +451,7 @@ export const ConvocatoriasPage = () => {
                         </button>
                     </div>
 
-                    {/* Day filter pills */}
+                    {/* Day filter pills and date picker */}
                     <div className="flex flex-wrap items-center gap-2">
                         <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
                             <button
@@ -484,6 +488,27 @@ export const ConvocatoriasPage = () => {
                             </button>
                         </div>
 
+                        {/* Selector interactivo de Fecha */}
+                        <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300">
+                            <Calendar className="w-3.5 h-3.5 text-lime-400 shrink-0" />
+                            <span className="text-[11px] text-slate-400 font-bold whitespace-nowrap">Fecha:</span>
+                            <input 
+                                type="date" 
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                className="bg-transparent text-white font-bold text-xs outline-none cursor-pointer [color-scheme:dark]"
+                            />
+                            {selectedDate && (
+                                <button 
+                                    onClick={() => setSelectedDate('')}
+                                    title="Quitar filtro de fecha"
+                                    className="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-rose-500 rounded-full w-4 h-4 flex items-center justify-center transition-colors font-bold ml-1"
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+
                         {/* My signups filter */}
                         <button
                             onClick={() => setOnlyMySignups(!onlyMySignups)}
@@ -511,7 +536,7 @@ export const ConvocatoriasPage = () => {
                         </p>
                     </div>
                     <Button 
-                        onClick={() => { setPeriodFilter('todos'); setDayFilter('todos'); setOnlyMySignups(false); }}
+                        onClick={() => { setPeriodFilter('todos'); setDayFilter('todos'); setOnlyMySignups(false); setSelectedDate(''); }}
                         variant="outline"
                         className="border-slate-700 text-slate-300 hover:bg-slate-800"
                     >

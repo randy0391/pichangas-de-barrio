@@ -185,8 +185,8 @@ export const defaultFallbackSchedules: RecurringSchedule[] = [
     day_of_week: 2,
     day_name: 'Martes',
     title: 'Pichanga de los Martes',
-    description: 'Pichanga oficial de los Martes en Pichangas de Barrio FC. Costo por cupo: S/ 15.00.',
-    match_time: '20:00:00',
+    description: 'Pichanga oficial de los Martes a las 9:00 PM en Pichangas de Barrio FC. Costo por cupo: S/ 15.00.',
+    match_time: '21:00:00',
     cost_per_player: 15,
     location: 'Cancha Sintética Oficial',
     maps_url: null,
@@ -200,8 +200,8 @@ export const defaultFallbackSchedules: RecurringSchedule[] = [
     day_of_week: 4,
     day_name: 'Jueves',
     title: 'Pichanga de los Jueves',
-    description: 'Pichanga oficial de los Jueves en Pichangas de Barrio FC. Costo por cupo: S/ 15.00.',
-    match_time: '20:00:00',
+    description: 'Pichanga oficial de los Jueves a las 9:00 PM en Pichangas de Barrio FC. Costo por cupo: S/ 15.00.',
+    match_time: '21:00:00',
     cost_per_player: 15,
     location: 'Cancha Sintética Oficial',
     maps_url: null,
@@ -215,8 +215,8 @@ export const defaultFallbackSchedules: RecurringSchedule[] = [
     day_of_week: 6,
     day_name: 'Sábado',
     title: 'Pichanga de los Sábados',
-    description: 'Pichanga estelar de los Sábados en Pichangas de Barrio FC. Costo por cupo: S/ 18.00.',
-    match_time: '18:00:00',
+    description: 'Pichanga matutina de los Sábados a las 6:00 AM en Pichangas de Barrio FC. Costo por cupo: S/ 18.00.',
+    match_time: '06:00:00',
     cost_per_player: 18,
     location: 'Cancha Sintética Oficial',
     maps_url: null,
@@ -276,9 +276,9 @@ async function generateClientSideRecurringConvocatorias(weeks: number) {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   const templates = [
-    { dayOfWeek: 2, dayName: 'Martes', title: 'Pichanga de los Martes', time: '20:00', cost: 15 },
-    { dayOfWeek: 4, dayName: 'Jueves', title: 'Pichanga de los Jueves', time: '20:00', cost: 15 },
-    { dayOfWeek: 6, dayName: 'Sábado', title: 'Pichanga de los Sábados', time: '18:00', cost: 18 },
+    { dayOfWeek: 2, dayName: 'Martes', title: 'Pichanga de los Martes', time: '21:00', cost: 15 },
+    { dayOfWeek: 4, dayName: 'Jueves', title: 'Pichanga de los Jueves', time: '21:00', cost: 15 },
+    { dayOfWeek: 6, dayName: 'Sábado', title: 'Pichanga de los Sábados', time: '06:00', cost: 18 },
   ];
 
   for (let w = 0; w <= weeks; w++) {

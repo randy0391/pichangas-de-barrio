@@ -334,6 +334,7 @@ export const AdminConvocatoriasPage = () => {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'todas' | 'abierta' | 'cerrada' | 'completada' | 'cancelada' | 'martes' | 'jueves' | 'sabado'>('todas');
+    const [filterDate, setFilterDate] = useState<string>('');
     const [showRecurringDialog, setShowRecurringDialog] = useState(false);
 
     const initialForm = { 
@@ -341,7 +342,7 @@ export const AdminConvocatoriasPage = () => {
         description: '', 
         location: '', 
         match_date: '', 
-        match_time: '20:00', 
+        match_time: '21:00', 
         max_players: 14, 
         num_teams: 2, 
         rival: '', 
@@ -366,6 +367,10 @@ export const AdminConvocatoriasPage = () => {
     // Filtrar convocatorias
     const filteredConvs = useMemo(() => {
         return convs.filter(c => {
+            if (filterDate && c.match_date !== filterDate) {
+                return false;
+            }
+
             if (statusFilter !== 'todas') {
                 if (statusFilter === 'completada' && c.status !== 'completada' && c.status !== 'cerrada') return false;
                 if (statusFilter === 'abierta' && c.status !== 'abierta') return false;
@@ -394,7 +399,7 @@ export const AdminConvocatoriasPage = () => {
 
             return true;
         });
-    }, [convs, statusFilter, searchTerm]);
+    }, [convs, statusFilter, filterDate, searchTerm]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -891,23 +896,47 @@ export const AdminConvocatoriasPage = () => {
                         </button>
                     </div>
 
-                    {/* Buscador */}
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                        <Input
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                            placeholder="Buscar por título, cancha, fecha o rival..."
-                            className="pl-11 h-12 rounded-2xl bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
-                        />
-                        {searchTerm && (
-                            <button 
-                                onClick={() => setSearchTerm('')} 
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white text-xs font-bold"
-                            >
-                                Limpiar
-                            </button>
-                        )}
+                    {/* Filtro por Fecha y Buscador */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 max-w-xl">
+                        {/* Selector interactivo de Fecha */}
+                        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-950 px-3.5 h-12 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
+                            <Calendar className="w-4 h-4 text-emerald-500 shrink-0" />
+                            <span className="text-xs text-slate-500 font-bold whitespace-nowrap">Fecha:</span>
+                            <input 
+                                type="date" 
+                                value={filterDate}
+                                onChange={(e) => setFilterDate(e.target.value)}
+                                className="bg-transparent text-slate-900 dark:text-white font-bold text-xs outline-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
+                            />
+                            {filterDate && (
+                                <button 
+                                    onClick={() => setFilterDate('')} 
+                                    title="Quitar filtro de fecha"
+                                    className="text-[11px] text-slate-400 hover:text-white bg-slate-200 dark:bg-slate-800 hover:bg-rose-500 dark:hover:bg-rose-500 rounded-full w-5 h-5 flex items-center justify-center transition-colors font-bold ml-1"
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Buscador */}
+                        <div className="relative flex-1">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                            <Input
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                placeholder="Buscar por título, cancha, fecha o rival..."
+                                className="pl-11 h-12 rounded-2xl bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
+                            />
+                            {searchTerm && (
+                                <button 
+                                    onClick={() => setSearchTerm('')} 
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white text-xs font-bold"
+                                >
+                                    Limpiar
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
