@@ -20,6 +20,7 @@ Route::get('/galleries/{id}', [GalleryController::class, 'show']);
 
 // Home Data
 Route::get('/home-data', [\App\Http\Controllers\PublicHomeController::class, 'index']);
+Route::get('/recurring-schedules', [\App\Http\Controllers\RecurringScheduleController::class, 'index']);
 
 
 

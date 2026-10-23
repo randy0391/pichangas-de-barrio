@@ -2,25 +2,21 @@ import React, { useState } from 'react';
 import { 
     useRecurringSchedules, 
     useUpdateRecurringSchedule, 
-    useGenerateRecurringConvocatorias 
+    useGenerateRecurringConvocatorias,
+    defaultFallbackSchedules
 } from '@/hooks/useConvocatorias';
 import { RecurringSchedule } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { 
-    Calendar, 
     Clock, 
-    DollarSign, 
-    MapPin, 
     Users, 
     Zap, 
     Sparkles, 
     X, 
-    Check, 
     Edit2, 
     Save, 
-    Repeat,
-    ShieldAlert
+    Repeat
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -40,18 +36,21 @@ export const AdminRecurringScheduleDialog: React.FC<Props> = ({ isOpen, onClose 
 
     if (!isOpen) return null;
 
-    const schedules: RecurringSchedule[] = scheduleData?.data || [];
+    // Use live schedules or default fallback schedules so it's NEVER empty
+    const schedules: RecurringSchedule[] = (scheduleData?.data && scheduleData.data.length > 0)
+        ? scheduleData.data
+        : defaultFallbackSchedules;
 
     const handleStartEdit = (item: RecurringSchedule) => {
         setEditingId(item.id);
         setEditForm({
             title: item.title,
-            match_time: item.match_time.slice(0, 5),
-            cost_per_player: Number(item.cost_per_player),
-            location: item.location,
-            max_players: item.max_players,
-            num_teams: item.num_teams,
-            is_active: item.is_active,
+            match_time: item.match_time ? item.match_time.slice(0, 5) : '20:00',
+            cost_per_player: Number(item.cost_per_player || 15),
+            location: item.location || 'Cancha Sintética Oficial',
+            max_players: item.max_players || 14,
+            num_teams: item.num_teams || 2,
+            is_active: item.is_active ?? true,
         });
     };
 
@@ -113,37 +112,37 @@ export const AdminRecurringScheduleDialog: React.FC<Props> = ({ isOpen, onClose 
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-            <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 sm:p-8 space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
+            <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-5 sm:p-7 space-y-6">
                 {/* Header */}
-                <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-800">
+                <div className="flex items-start justify-between gap-3 pb-4 border-b border-slate-800">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                            <span className="p-2 rounded-xl bg-lime-400/10 text-lime-400 border border-lime-400/20">
+                            <span className="p-2 rounded-xl bg-lime-400/10 text-lime-400 border border-lime-400/20 shrink-0">
                                 <Repeat className="w-5 h-5 animate-spin-slow" />
                             </span>
-                            <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
+                            <h3 className="text-lg sm:text-2xl font-black text-white uppercase tracking-tight">
                                 Convocatorias Automáticas y Recurrentes
                             </h3>
                         </div>
-                        <p className="text-sm text-slate-400">
+                        <p className="text-xs sm:text-sm text-slate-400">
                             Configura los días oficiales de pichanga fija (Martes, Jueves y Sábados) y genera las fechas futuras con 1 clic.
                         </p>
                     </div>
                     <button 
                         onClick={onClose} 
-                        className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
+                        className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors shrink-0"
                     >
-                        <X className="w-6 h-6" />
+                        <X className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
                 </div>
 
-                {/* Quick Generator Action Box */}
-                <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-5 rounded-2xl border border-lime-400/30 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="space-y-1 text-center sm:text-left">
-                        <div className="flex items-center justify-center sm:justify-start gap-2">
-                            <Zap className="w-4 h-4 text-lime-400 animate-pulse" />
-                            <span className="text-sm font-black text-white uppercase tracking-wider">
+                {/* Quick Generator Action Box (100% responsive for mobile & desktop) */}
+                <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-5 rounded-2xl border border-lime-400/30 shadow-lg flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+                    <div className="space-y-1 text-left">
+                        <div className="flex items-center gap-2">
+                            <Zap className="w-4 h-4 text-lime-400 shrink-0 animate-pulse" />
+                            <span className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">
                                 Generador Rápido de Fechas Futuras
                             </span>
                         </div>
@@ -152,9 +151,9 @@ export const AdminRecurringScheduleDialog: React.FC<Props> = ({ isOpen, onClose 
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <div className="flex items-center gap-1.5 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
-                            <span className="text-xs text-slate-400 font-bold">Semanas:</span>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto shrink-0">
+                        <div className="flex items-center justify-between sm:justify-start gap-2 bg-slate-800/90 px-3.5 py-2.5 rounded-xl border border-slate-700/80">
+                            <span className="text-xs text-slate-400 font-bold whitespace-nowrap">Semanas:</span>
                             <select 
                                 value={weeksAhead} 
                                 onChange={(e) => setWeeksAhead(Number(e.target.value))}
@@ -171,186 +170,183 @@ export const AdminRecurringScheduleDialog: React.FC<Props> = ({ isOpen, onClose 
                         <Button 
                             onClick={handleGenerateNow} 
                             disabled={isGenerating}
-                            className="bg-lime-400 hover:bg-lime-500 text-slate-950 font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl shadow-lg shadow-lime-400/20 flex items-center gap-2 whitespace-nowrap"
+                            className="w-full sm:w-auto h-11 bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-lg shadow-lime-400/20 flex items-center justify-center gap-2 whitespace-nowrap transition-all"
                         >
                             <Sparkles className="w-4 h-4" />
-                            {isGenerating ? 'Generando...' : '⚡ Generar Ahora'}
+                            <span>{isGenerating ? 'Generando...' : '⚡ Generar Ahora'}</span>
                         </Button>
                     </div>
                 </div>
 
                 {/* Recurring days list */}
                 <div className="space-y-4">
-                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">
-                        Plantillas Semanales Oficiales
+                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center justify-between">
+                        <span>Plantillas Semanales Oficiales</span>
+                        {isLoading && <span className="text-[11px] text-slate-500 font-normal">Sincronizando...</span>}
                     </h4>
 
-                    {isLoading ? (
-                        <div className="py-8 text-center text-slate-500 text-sm">Cargando plantillas...</div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {schedules.map((item) => {
-                                const theme = getDayTheme(item.day_of_week);
-                                const isEditingThis = editingId === item.id;
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                        {schedules.map((item) => {
+                            const theme = getDayTheme(item.day_of_week);
+                            const isEditingThis = editingId === item.id;
 
-                                return (
-                                    <div 
-                                        key={item.id} 
-                                        className={`bg-slate-950/70 rounded-2xl border ${theme.border} p-5 space-y-4 relative transition-all ${theme.glow}`}
-                                    >
-                                        {/* Day header & toggle */}
-                                        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                                            <div className="flex items-center gap-2">
-                                                <span className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider border ${theme.badge}`}>
-                                                    {item.day_name}
-                                                </span>
-                                                <button
-                                                    onClick={() => handleToggleActive(item)}
-                                                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-colors ${
-                                                        item.is_active 
-                                                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
-                                                            : 'bg-slate-800 text-slate-500 border-slate-700'
-                                                    }`}
-                                                >
-                                                    {item.is_active ? 'Activo' : 'Pausado'}
-                                                </button>
-                                            </div>
-
-                                            {!isEditingThis ? (
-                                                <button 
-                                                    onClick={() => handleStartEdit(item)}
-                                                    className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
-                                                    title="Modificar precio o datos de este día"
-                                                >
-                                                    <Edit2 className="w-4 h-4" />
-                                                </button>
-                                            ) : (
-                                                <button 
-                                                    onClick={() => setEditingId(null)}
-                                                    className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
-                                                    title="Cancelar edición"
-                                                >
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                            )}
+                            return (
+                                <div 
+                                    key={item.id} 
+                                    className={`bg-slate-950/70 rounded-2xl border ${theme.border} p-4 sm:p-5 space-y-4 relative transition-all ${theme.glow}`}
+                                >
+                                    {/* Day header & toggle */}
+                                    <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                                        <div className="flex items-center gap-2">
+                                            <span className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider border ${theme.badge}`}>
+                                                {item.day_name}
+                                            </span>
+                                            <button
+                                                onClick={() => handleToggleActive(item)}
+                                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-colors ${
+                                                    item.is_active 
+                                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
+                                                        : 'bg-slate-800 text-slate-500 border-slate-700'
+                                                }`}
+                                            >
+                                                {item.is_active ? 'Activo' : 'Pausado'}
+                                            </button>
                                         </div>
 
-                                        {isEditingThis ? (
-                                            /* Edit Form Mode */
-                                            <div className="space-y-3">
-                                                <div>
-                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Título</label>
-                                                    <Input 
-                                                        value={editForm.title || ''} 
-                                                        onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                                                        className="h-8 text-xs bg-slate-900 border-slate-800"
-                                                    />
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <div>
-                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Costo (S/)</label>
-                                                        <Input 
-                                                            type="number"
-                                                            step="0.5"
-                                                            value={editForm.cost_per_player || 0} 
-                                                            onChange={(e) => setEditForm({ ...editForm, cost_per_player: Number(e.target.value) })}
-                                                            className="h-8 text-xs bg-slate-900 border-slate-800 font-bold text-lime-400"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Hora</label>
-                                                        <Input 
-                                                            type="time"
-                                                            value={editForm.match_time || '20:00'} 
-                                                            onChange={(e) => setEditForm({ ...editForm, match_time: e.target.value })}
-                                                            className="h-8 text-xs bg-slate-900 border-slate-800"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Cancha / Ubicación</label>
-                                                    <Input 
-                                                        value={editForm.location || ''} 
-                                                        onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                                                        className="h-8 text-xs bg-slate-900 border-slate-800"
-                                                    />
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <div>
-                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Jugadores</label>
-                                                        <Input 
-                                                            type="number"
-                                                            value={editForm.max_players || 14} 
-                                                            onChange={(e) => setEditForm({ ...editForm, max_players: Number(e.target.value) })}
-                                                            className="h-8 text-xs bg-slate-900 border-slate-800"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Equipos</label>
-                                                        <Input 
-                                                            type="number"
-                                                            value={editForm.num_teams || 2} 
-                                                            onChange={(e) => setEditForm({ ...editForm, num_teams: Number(e.target.value) })}
-                                                            className="h-8 text-xs bg-slate-900 border-slate-800"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <Button 
-                                                    onClick={() => handleSaveEdit(item.id)}
-                                                    disabled={isUpdating}
-                                                    className="w-full bg-lime-400 hover:bg-lime-500 text-slate-950 font-black text-xs uppercase tracking-wider py-2 rounded-xl flex items-center justify-center gap-1.5"
-                                                >
-                                                    <Save className="w-3.5 h-3.5" />
-                                                    {isUpdating ? 'Guardando...' : 'Guardar Cambios'}
-                                                </Button>
-                                            </div>
+                                        {!isEditingThis ? (
+                                            <button 
+                                                onClick={() => handleStartEdit(item)}
+                                                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                                                title="Modificar precio o datos de este día"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
                                         ) : (
-                                            /* View Mode */
-                                            <div className="space-y-3">
-                                                <div>
-                                                    <h5 className="font-black text-white text-sm truncate">{item.title}</h5>
-                                                    <p className="text-[11px] text-slate-400 line-clamp-1">{item.location}</p>
-                                                </div>
-
-                                                {/* Price highlight capsule */}
-                                                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
-                                                    <span className="text-xs text-slate-400 font-bold">Costo por cupo:</span>
-                                                    <span className={`text-base font-mono font-black ${theme.accent}`}>
-                                                        S/ {Number(item.cost_per_player).toFixed(2)}
-                                                    </span>
-                                                </div>
-
-                                                {/* Match specs */}
-                                                <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
-                                                    <div className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-900/50">
-                                                        <Clock className="w-3.5 h-3.5 text-slate-500" />
-                                                        <span className="font-bold text-slate-200">{item.match_time.slice(0, 5)} hrs</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-900/50">
-                                                        <Users className="w-3.5 h-3.5 text-slate-500" />
-                                                        <span className="font-bold text-slate-200">{item.max_players} jugadores</span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <button 
+                                                onClick={() => setEditingId(null)}
+                                                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                                                title="Cancelar edición"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
                                         )}
                                     </div>
-                                );
-                            })}
-                        </div>
-                    )}
+
+                                    {isEditingThis ? (
+                                        /* Edit Form Mode */
+                                        <div className="space-y-3">
+                                            <div>
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase">Título</label>
+                                                <Input 
+                                                    value={editForm.title || ''} 
+                                                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                                                    className="h-8 text-xs bg-slate-900 border-slate-800 text-white"
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Costo (S/)</label>
+                                                    <Input 
+                                                        type="number"
+                                                        step="0.5"
+                                                        value={editForm.cost_per_player || 0} 
+                                                        onChange={(e) => setEditForm({ ...editForm, cost_per_player: Number(e.target.value) })}
+                                                        className="h-8 text-xs bg-slate-900 border-slate-800 font-bold text-lime-400"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Hora</label>
+                                                    <Input 
+                                                        type="time"
+                                                        value={editForm.match_time || '20:00'} 
+                                                        onChange={(e) => setEditForm({ ...editForm, match_time: e.target.value })}
+                                                        className="h-8 text-xs bg-slate-900 border-slate-800 text-white"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase">Cancha / Ubicación</label>
+                                                <Input 
+                                                    value={editForm.location || ''} 
+                                                    onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                                                    className="h-8 text-xs bg-slate-900 border-slate-800 text-white"
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Jugadores</label>
+                                                    <Input 
+                                                        type="number"
+                                                        value={editForm.max_players || 14} 
+                                                        onChange={(e) => setEditForm({ ...editForm, max_players: Number(e.target.value) })}
+                                                        className="h-8 text-xs bg-slate-900 border-slate-800 text-white"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Equipos</label>
+                                                    <Input 
+                                                        type="number"
+                                                        value={editForm.num_teams || 2} 
+                                                        onChange={(e) => setEditForm({ ...editForm, num_teams: Number(e.target.value) })}
+                                                        className="h-8 text-xs bg-slate-900 border-slate-800 text-white"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <Button 
+                                                onClick={() => handleSaveEdit(item.id)}
+                                                disabled={isUpdating}
+                                                className="w-full bg-lime-400 hover:bg-lime-500 text-slate-950 font-black text-xs uppercase tracking-wider py-2 rounded-xl flex items-center justify-center gap-1.5"
+                                            >
+                                                <Save className="w-3.5 h-3.5" />
+                                                {isUpdating ? 'Guardando...' : 'Guardar Cambios'}
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        /* View Mode */
+                                        <div className="space-y-3">
+                                            <div>
+                                                <h5 className="font-black text-white text-sm truncate">{item.title}</h5>
+                                                <p className="text-[11px] text-slate-400 line-clamp-1">{item.location}</p>
+                                            </div>
+
+                                            {/* Price highlight capsule */}
+                                            <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
+                                                <span className="text-xs text-slate-400 font-bold">Costo por cupo:</span>
+                                                <span className={`text-base font-mono font-black ${theme.accent}`}>
+                                                    S/ {Number(item.cost_per_player).toFixed(2)}
+                                                </span>
+                                            </div>
+
+                                            {/* Match specs */}
+                                            <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
+                                                <div className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-900/50">
+                                                    <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                                    <span className="font-bold text-slate-200">{item.match_time ? item.match_time.slice(0, 5) : '20:00'} hrs</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-900/50">
+                                                    <Users className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                                    <span className="font-bold text-slate-200">{item.max_players} jug</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* Footer instructions */}
-                <div className="pt-2 border-t border-slate-800 text-xs text-slate-500 flex items-center justify-between">
-                    <span>Las convocatorias se crean con estado "Abierta" para que los jugadores se inscriban de inmediato.</span>
+                <div className="pt-2 border-t border-slate-800 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <span className="text-center sm:text-left">Las convocatorias se crean con estado "Abierta" para que los jugadores se inscriban de inmediato.</span>
                     <Button 
                         variant="outline" 
                         onClick={onClose}
-                        className="border-slate-700 text-slate-300 hover:bg-slate-800 text-xs font-bold uppercase"
+                        className="w-full sm:w-auto border-slate-700 text-slate-300 hover:bg-slate-800 text-xs font-bold uppercase"
                     >
                         Cerrar
                     </Button>

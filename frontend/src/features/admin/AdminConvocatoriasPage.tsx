@@ -499,20 +499,20 @@ export const AdminConvocatoriasPage = () => {
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-3">
+                    <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-3">
                         Gestionar Convocatorias
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400">
+                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                         Crea pichangas, controla la asistencia, define equipos y sortea las alineaciones.
                     </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto shrink-0">
                     <Button 
                         type="button"
                         onClick={() => setShowRecurringDialog(true)}
-                        className="bg-slate-900 hover:bg-slate-800 text-lime-400 border border-lime-400/40 hover:border-lime-400 font-black uppercase tracking-wider rounded-xl shadow-lg h-12 px-5 flex items-center gap-2 text-sm"
+                        className="h-11 sm:h-12 bg-slate-900 hover:bg-slate-800 text-lime-400 border border-lime-400/40 hover:border-lime-400 font-black uppercase tracking-wider rounded-2xl shadow-md px-4 sm:px-5 flex items-center justify-center gap-2 text-xs sm:text-sm transition-all flex-1 sm:flex-initial"
                     >
                         <Repeat className="h-4 w-4 text-lime-400" />
                         <span>⚡ Convocatorias Automáticas</span>
@@ -526,9 +526,10 @@ export const AdminConvocatoriasPage = () => {
                                 setShowForm(!showForm);
                             }
                         }} 
-                        className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0 font-black uppercase tracking-wider rounded-xl shadow-lg h-12 px-6 flex items-center gap-2 text-sm"
+                        className="h-11 sm:h-12 bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-slate-950 font-black uppercase tracking-wider rounded-2xl shadow-lg shadow-lime-400/20 px-5 flex items-center justify-center gap-2 text-xs sm:text-sm transition-all flex-1 sm:flex-initial"
                     >
-                        <Plus className="h-5 w-5" /> Nueva Convocatoria
+                        <Plus className="h-5 w-5" />
+                        <span>Nueva Convocatoria</span>
                     </Button>
                 </div>
             </div>
