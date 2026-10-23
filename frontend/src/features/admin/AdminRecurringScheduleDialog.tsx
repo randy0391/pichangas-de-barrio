@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
 import { 
     useRecurringSchedules, 
     useUpdateRecurringSchedule, 
@@ -35,6 +36,7 @@ export const AdminRecurringScheduleDialog: React.FC<Props> = ({ isOpen, onClose 
     const [weeksAhead, setWeeksAhead] = useState(4);
 
     if (!isOpen) return null;
+    if (typeof document === 'undefined') return null;
 
     // Use live schedules or default fallback schedules so it's NEVER empty
     const schedules: RecurringSchedule[] = (scheduleData?.data && scheduleData.data.length > 0)
@@ -43,9 +45,10 @@ export const AdminRecurringScheduleDialog: React.FC<Props> = ({ isOpen, onClose 
 
     const handleStartEdit = (item: RecurringSchedule) => {
         setEditingId(item.id);
+        const defaultTime = item.day_of_week === 6 ? '06:00' : '21:00';
         setEditForm({
             title: item.title,
-            match_time: item.match_time ? item.match_time.slice(0, 5) : '20:00',
+            match_time: item.match_time ? item.match_time.slice(0, 5) : defaultTime,
             cost_per_player: Number(item.cost_per_player || 15),
             location: item.location || 'Cancha Sintética Oficial',
             max_players: item.max_players || 14,
@@ -57,21 +60,13 @@ export const AdminRecurringScheduleDialog: React.FC<Props> = ({ isOpen, onClose 
     const handleSaveEdit = (id: number) => {
         updateSchedule({ id, data: editForm }, {
             onSuccess: () => {
-                toast.success('Horario recurrente guardado correctamente.');
                 setEditingId(null);
-            },
-            onError: (err: any) => {
-                toast.error(err?.response?.data?.message || 'Error al actualizar horario.');
             }
         });
     };
 
     const handleToggleActive = (item: RecurringSchedule) => {
-        updateSchedule({ id: item.id, data: { is_active: !item.is_active } }, {
-            onSuccess: () => {
-                toast.success(`${item.day_name}: ${!item.is_active ? 'Activado' : 'Desactivado'}`);
-            }
-        });
+        updateSchedule({ id: item.id, data: { is_active: !item.is_active } });
     };
 
     const handleGenerateNow = () => {
@@ -111,9 +106,9 @@ export const AdminRecurringScheduleDialog: React.FC<Props> = ({ isOpen, onClose 
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
-            <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-5 sm:p-7 space-y-6">
+    return ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+            <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-5 sm:p-7 space-y-6 my-auto">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-3 pb-4 border-b border-slate-800">
                     <div className="space-y-1">
@@ -259,9 +254,9 @@ export const AdminRecurringScheduleDialog: React.FC<Props> = ({ isOpen, onClose 
                                                     <label className="text-[10px] font-bold text-slate-400 uppercase">Hora</label>
                                                     <Input 
                                                         type="time"
-                                                        value={editForm.match_time || '20:00'} 
+                                                        value={editForm.match_time || (item.day_of_week === 6 ? '06:00' : '21:00')} 
                                                         onChange={(e) => setEditForm({ ...editForm, match_time: e.target.value })}
-                                                        className="h-8 text-xs bg-slate-900 border-slate-800 text-white"
+                                                        className="h-8 text-xs bg-slate-900 border-slate-800 text-white font-mono"
                                                     />
                                                 </div>
                                             </div>
@@ -325,7 +320,7 @@ export const AdminRecurringScheduleDialog: React.FC<Props> = ({ isOpen, onClose 
                                             <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
                                                 <div className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-900/50">
                                                     <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                                                    <span className="font-bold text-slate-200">{item.match_time ? item.match_time.slice(0, 5) : '20:00'} hrs</span>
+                                                    <span className="font-bold text-slate-200">{item.match_time ? item.match_time.slice(0, 5) : (item.day_of_week === 6 ? '06:00' : '21:00')} hrs</span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 p-2 rounded-xl bg-slate-900/50">
                                                     <Users className="w-3.5 h-3.5 text-slate-500 shrink-0" />
@@ -352,6 +347,7 @@ export const AdminRecurringScheduleDialog: React.FC<Props> = ({ isOpen, onClose 
                     </Button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

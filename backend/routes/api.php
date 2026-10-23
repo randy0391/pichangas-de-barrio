@@ -116,7 +116,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/convocatorias/{id}/confirmaciones/{userId}', [ConvocatoriaController::class, 'removeConfirmacion']);
         Route::put('/convocatorias/{id}/confirmaciones/{userId}/role', [ConvocatoriaController::class, 'updatePlayerRole']);
         Route::get('/admin/recurring-schedules', [\App\Http\Controllers\RecurringScheduleController::class, 'index']);
-        Route::put('/admin/recurring-schedules/{id}', [\App\Http\Controllers\RecurringScheduleController::class, 'update']);
+        Route::match(['put', 'patch', 'post'], '/admin/recurring-schedules/{id}', [\App\Http\Controllers\RecurringScheduleController::class, 'update']);
+        Route::match(['put', 'patch', 'post'], '/recurring-schedules/{id}', [\App\Http\Controllers\RecurringScheduleController::class, 'update']);
         Route::post('/admin/convocatorias/generate-recurring', [\App\Http\Controllers\RecurringScheduleController::class, 'generate']);
 
         Route::post('/galleries', [GalleryController::class, 'store']);

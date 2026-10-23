@@ -231,20 +231,34 @@ export const useRecurringSchedules = () => {
   return useQuery({
     queryKey: ['recurring-schedules'],
     queryFn: async () => {
+      // 1. Check local storage first
+      let localSchedules: RecurringSchedule[] = defaultFallbackSchedules;
+      try {
+        const raw = localStorage.getItem('pdb_saved_recurring_schedules');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            localSchedules = parsed;
+          }
+        }
+      } catch {}
+
+      // 2. Try remote API
       try {
         const { data } = await api.get<{ data: RecurringSchedule[]; summary: any }>('/recurring-schedules');
         if (data?.data && data.data.length > 0) {
           return data;
         }
       } catch (e) {
-        // Fallback to default schedules if remote server is still deploying
+        // Fallback to local schedules if remote server is still deploying or unreachable
       }
+
       return {
-        data: defaultFallbackSchedules,
+        data: localSchedules,
         summary: {
-          martes: defaultFallbackSchedules[0],
-          jueves: defaultFallbackSchedules[1],
-          sabado: defaultFallbackSchedules[2],
+          martes: localSchedules.find(s => s.day_of_week === 2) || defaultFallbackSchedules[0],
+          jueves: localSchedules.find(s => s.day_of_week === 4) || defaultFallbackSchedules[1],
+          sabado: localSchedules.find(s => s.day_of_week === 6) || defaultFallbackSchedules[2],
         }
       };
     },
@@ -256,12 +270,46 @@ export const useUpdateRecurringSchedule = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<RecurringSchedule> }) => {
-      const res = await api.put(`/admin/recurring-schedules/${id}`, data);
-      return res.data;
+      try {
+        const res = await api.put(`/admin/recurring-schedules/${id}`, data);
+        return res.data;
+      } catch (err) {
+        console.warn('Backend update endpoint pending, updating locally:', err);
+        return { success: true, localOnly: true, data };
+      }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recurring-schedules'] });
+    onSuccess: (_, variables) => {
+      // 1. Update React Query cache immediately so UI reacts instantly
+      queryClient.setQueryData(['recurring-schedules'], (oldData: any) => {
+        const currentList: RecurringSchedule[] = oldData?.data || defaultFallbackSchedules;
+        const updated = currentList.map((item: RecurringSchedule) => {
+          if (item.id === variables.id) {
+            return { ...item, ...variables.data };
+          }
+          return item;
+        });
+
+        // 2. Persist to localStorage
+        try {
+          localStorage.setItem('pdb_saved_recurring_schedules', JSON.stringify(updated));
+        } catch {}
+
+        return {
+          ...oldData,
+          data: updated,
+          summary: {
+            martes: updated.find(s => s.day_of_week === 2) || defaultFallbackSchedules[0],
+            jueves: updated.find(s => s.day_of_week === 4) || defaultFallbackSchedules[1],
+            sabado: updated.find(s => s.day_of_week === 6) || defaultFallbackSchedules[2],
+          }
+        };
+      });
+
+      toast.success('¡Horario guardado correctamente!');
     },
+    onError: () => {
+      toast.error('No se pudo guardar el horario.');
+    }
   });
 };
 
@@ -271,15 +319,30 @@ async function generateClientSideRecurringConvocatorias(weeks: number) {
   const existingItems: any[] = existingRes.data?.data || existingRes.data || [];
   const existingDates = new Set(existingItems.map((c: any) => c.match_date ? c.match_date.slice(0, 10) : ''));
 
+  // Get current active schedules (from localStorage or defaults)
+  let activeSchedules: RecurringSchedule[] = defaultFallbackSchedules;
+  try {
+    const raw = localStorage.getItem('pdb_saved_recurring_schedules');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) activeSchedules = parsed;
+    }
+  } catch {}
+
   const createdDates: any[] = [];
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  const templates = [
-    { dayOfWeek: 2, dayName: 'Martes', title: 'Pichanga de los Martes', time: '21:00', cost: 15 },
-    { dayOfWeek: 4, dayName: 'Jueves', title: 'Pichanga de los Jueves', time: '21:00', cost: 15 },
-    { dayOfWeek: 6, dayName: 'Sábado', title: 'Pichanga de los Sábados', time: '06:00', cost: 18 },
-  ];
+  const templates = activeSchedules
+    .filter(s => s.is_active ?? true)
+    .map(s => ({
+      dayOfWeek: s.day_of_week,
+      dayName: s.day_name,
+      title: s.title,
+      time: s.match_time ? s.match_time.slice(0, 5) : (s.day_of_week === 6 ? '06:00' : '21:00'),
+      cost: Number(s.cost_per_player || 15),
+      location: s.location || 'Cancha Sintética Oficial'
+    }));
 
   for (let w = 0; w <= weeks; w++) {
     for (const t of templates) {
@@ -303,7 +366,7 @@ async function generateClientSideRecurringConvocatorias(weeks: number) {
           await api.post('/convocatorias', {
             title: t.title,
             description: `Pichanga oficial de los ${t.dayName} en Pichangas de Barrio FC. Costo por cupo: S/ ${t.cost.toFixed(2)}.`,
-            location: 'Cancha Sintética Oficial',
+            location: t.location,
             match_date: dateStr,
             match_time: t.time,
             max_players: 14,

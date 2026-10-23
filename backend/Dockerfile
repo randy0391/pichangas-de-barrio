@@ -35,8 +35,5 @@ RUN echo 'opcache.enable=1' >> /usr/local/etc/php/conf.d/opcache.ini && \
     echo 'opcache.max_accelerated_files=10000' >> /usr/local/etc/php/conf.d/opcache.ini && \
     echo 'opcache.validate_timestamps=0' >> /usr/local/etc/php/conf.d/opcache.ini
 
-RUN php artisan route:cache && \
-    php artisan view:cache
-
-# config:cache runs at startup (not build) so Render env vars are available
-CMD php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan migrate --force && apache2-foreground
+# Cache config, routes and views at startup when Render env vars are injected
+CMD php artisan config:cache && php artisan route:clear && php artisan route:cache && php artisan view:cache && php artisan migrate --force && apache2-foreground
