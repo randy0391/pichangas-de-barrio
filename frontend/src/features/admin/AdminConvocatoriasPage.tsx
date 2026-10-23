@@ -39,11 +39,13 @@ import {
     Trophy, 
     ClipboardCheck,
     Calendar,
-    Zap
+    Zap,
+    Repeat
 } from 'lucide-react';
 import { Pagination } from '@/components/ui/Pagination';
 import { Link } from 'react-router-dom';
 import { AdminAttendanceDialog } from './AdminAttendanceDialog';
+import { AdminRecurringScheduleDialog } from './AdminRecurringScheduleDialog';
 
 const getPlayerName = (user: any) => {
     if (!user) return 'Jugador';
@@ -331,7 +333,8 @@ export const AdminConvocatoriasPage = () => {
     const [attendanceDialogId, setAttendanceDialogId] = useState<number | null>(null);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'todas' | 'abierta' | 'cerrada' | 'completada' | 'cancelada'>('todas');
+    const [statusFilter, setStatusFilter] = useState<'todas' | 'abierta' | 'cerrada' | 'completada' | 'cancelada' | 'martes' | 'jueves' | 'sabado'>('todas');
+    const [showRecurringDialog, setShowRecurringDialog] = useState(false);
 
     const initialForm = { 
         title: '', 
@@ -365,7 +368,19 @@ export const AdminConvocatoriasPage = () => {
         return convs.filter(c => {
             if (statusFilter !== 'todas') {
                 if (statusFilter === 'completada' && c.status !== 'completada' && c.status !== 'cerrada') return false;
-                if (statusFilter !== 'completada' && c.status !== statusFilter) return false;
+                if (statusFilter === 'abierta' && c.status !== 'abierta') return false;
+                if (statusFilter === 'martes') {
+                    const d = new Date(c.match_date + 'T12:00:00');
+                    if (d.getDay() !== 2) return false;
+                }
+                if (statusFilter === 'jueves') {
+                    const d = new Date(c.match_date + 'T12:00:00');
+                    if (d.getDay() !== 4) return false;
+                }
+                if (statusFilter === 'sabado') {
+                    const d = new Date(c.match_date + 'T12:00:00');
+                    if (d.getDay() !== 6) return false;
+                }
             }
 
             if (searchTerm.trim() !== '') {
@@ -493,19 +508,29 @@ export const AdminConvocatoriasPage = () => {
                         Crea pichangas, controla la asistencia, define equipos y sortea las alineaciones.
                     </p>
                 </div>
-                <Button 
-                    onClick={() => {
-                        if (showForm && editingId) {
-                            setEditingId(null);
-                            setForm(initialForm);
-                        } else {
-                            setShowForm(!showForm);
-                        }
-                    }} 
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0 font-black uppercase tracking-wider rounded-xl shadow-lg h-12 px-6 flex items-center gap-2 text-sm"
-                >
-                    <Plus className="h-5 w-5" /> Nueva Convocatoria
-                </Button>
+                <div className="flex flex-wrap items-center gap-3">
+                    <Button 
+                        type="button"
+                        onClick={() => setShowRecurringDialog(true)}
+                        className="bg-slate-900 hover:bg-slate-800 text-lime-400 border border-lime-400/40 hover:border-lime-400 font-black uppercase tracking-wider rounded-xl shadow-lg h-12 px-5 flex items-center gap-2 text-sm"
+                    >
+                        <Repeat className="h-4 w-4 text-lime-400" />
+                        <span>⚡ Convocatorias Automáticas</span>
+                    </Button>
+                    <Button 
+                        onClick={() => {
+                            if (showForm && editingId) {
+                                setEditingId(null);
+                                setForm(initialForm);
+                            } else {
+                                setShowForm(!showForm);
+                            }
+                        }} 
+                        className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0 font-black uppercase tracking-wider rounded-xl shadow-lg h-12 px-6 flex items-center gap-2 text-sm"
+                    >
+                        <Plus className="h-5 w-5" /> Nueva Convocatoria
+                    </Button>
+                </div>
             </div>
 
             {/* Tarjetas de Métricas Rápidas */}
@@ -824,6 +849,36 @@ export const AdminConvocatoriasPage = () => {
                             Abiertas ({stats.abiertas})
                         </button>
                         <button
+                            onClick={() => setStatusFilter('martes')}
+                            className={`px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                                statusFilter === 'martes'
+                                    ? 'bg-cyan-500 text-slate-950 font-black shadow-md'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-cyan-400'
+                            }`}
+                        >
+                            Martes
+                        </button>
+                        <button
+                            onClick={() => setStatusFilter('jueves')}
+                            className={`px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                                statusFilter === 'jueves'
+                                    ? 'bg-lime-400 text-slate-950 font-black shadow-md'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-lime-400'
+                            }`}
+                        >
+                            Jueves
+                        </button>
+                        <button
+                            onClick={() => setStatusFilter('sabado')}
+                            className={`px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                                statusFilter === 'sabado'
+                                    ? 'bg-amber-400 text-slate-950 font-black shadow-md'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-amber-400'
+                            }`}
+                        >
+                            Sábados
+                        </button>
+                        <button
                             onClick={() => setStatusFilter('completada')}
                             className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                                 statusFilter === 'completada'
@@ -1111,6 +1166,12 @@ export const AdminConvocatoriasPage = () => {
                     onClose={() => setAttendanceDialogId(null)} 
                 />
             )}
+
+            {/* Diálogo de Horarios Recurrentes y Convocatorias Automáticas */}
+            <AdminRecurringScheduleDialog 
+                isOpen={showRecurringDialog} 
+                onClose={() => setShowRecurringDialog(false)} 
+            />
         </div>
     );
 };

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
-import { Convocatoria, PaginatedResponse } from '@/types';
+import { Convocatoria, PaginatedResponse, RecurringSchedule } from '@/types';
 
 export const useConvocatorias = (page = 1) => {
   return useQuery({
@@ -178,3 +178,47 @@ export const useUpdatePlayerRole = () => {
         }
     });
 };
+
+export const useRecurringSchedules = () => {
+  return useQuery({
+    queryKey: ['recurring-schedules'],
+    queryFn: async () => {
+      const { data } = await api.get<{ data: RecurringSchedule[]; summary: any }>('/recurring-schedules');
+      return data;
+    },
+  });
+};
+
+export const useUpdateRecurringSchedule = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<RecurringSchedule> }) => {
+      const res = await api.put(`/admin/recurring-schedules/${id}`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recurring-schedules'] });
+    },
+  });
+};
+
+export const useGenerateRecurringConvocatorias = () => {
+  const queryClient = useQueryClient();
+  return useMutation<any, Error, number | void>({
+    mutationFn: async (weeks = 4) => {
+      const { data } = await api.post('/admin/convocatorias/generate-recurring', { weeks: weeks || 4 });
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['convocatorias'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      if (data?.message) {
+        toast.success(data.message);
+      }
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || 'Error al generar convocatorias');
+    }
+  });
+};
+

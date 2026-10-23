@@ -61,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/convocatorias/mis-convocatorias', [ConvocatoriaController::class, 'misConvocatorias']);
     Route::get('/convocatorias/{id}', [ConvocatoriaController::class, 'show']);
     Route::post('/convocatorias/{id}/confirmar', [ConvocatoriaController::class, 'confirmar']);
+    Route::get('/recurring-schedules', [\App\Http\Controllers\RecurringScheduleController::class, 'index']);
 
 
     // Members
@@ -113,6 +114,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/convocatorias/{id}/add-player', [ConvocatoriaController::class, 'addPlayer']);
         Route::delete('/convocatorias/{id}/confirmaciones/{userId}', [ConvocatoriaController::class, 'removeConfirmacion']);
         Route::put('/convocatorias/{id}/confirmaciones/{userId}/role', [ConvocatoriaController::class, 'updatePlayerRole']);
+        Route::get('/admin/recurring-schedules', [\App\Http\Controllers\RecurringScheduleController::class, 'index']);
+        Route::put('/admin/recurring-schedules/{id}', [\App\Http\Controllers\RecurringScheduleController::class, 'update']);
+        Route::post('/admin/convocatorias/generate-recurring', [\App\Http\Controllers\RecurringScheduleController::class, 'generate']);
 
         Route::post('/galleries', [GalleryController::class, 'store']);
         Route::put('/galleries/{id}', [GalleryController::class, 'update']);

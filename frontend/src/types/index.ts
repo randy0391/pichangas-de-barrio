@@ -90,21 +90,42 @@ export interface Convocatoria {
   location: string;
   match_date: string;
   match_time: string;
+  day_name?: string;
   max_players: number;
   num_teams: number;
   rival: string | null;
-  status: 'abierta' | 'cerrada' | 'completada' | 'cancelada';
+  status: 'abierta' | 'cerrada' | 'completada' | 'cancelada' | 'finalizada';
   creator: User;
   confirmed_count: number;
   rejected_count: number;
   pending_count: number;
   porteros_count: number;
+  spots_remaining?: number;
+  is_full?: boolean;
+  is_user_confirmed?: boolean;
+  user_match_role?: 'jugador' | 'portero' | null;
   has_teams?: boolean;
   maps_url?: string;
   cost_per_player?: string | number;
   confirmaciones?: Confirmacion[];
   my_confirmation?: Confirmacion | null;
   created_at: string;
+}
+
+export interface RecurringSchedule {
+  id: number;
+  day_of_week: number;
+  day_name: string;
+  title: string;
+  description: string | null;
+  match_time: string;
+  cost_per_player: string | number;
+  location: string;
+  maps_url: string | null;
+  max_players: number;
+  num_teams: number;
+  is_active: boolean;
+  weeks_ahead: number;
 }
 
 export interface WalletTransaction {
