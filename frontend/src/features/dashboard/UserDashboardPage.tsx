@@ -5,8 +5,10 @@ import { useConvocatorias } from '@/hooks/useConvocatorias';
 import { useAuthStore } from '@/stores/authStore';
 import { DashboardStats, Convocatoria } from '@/types';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
-import { CalendarDays, Trophy, Activity, MapPin, ChevronRight, CheckCircle2, Clock } from 'lucide-react';
+import { CalendarDays, Trophy, Activity, MapPin, ChevronRight, CheckCircle2, Clock, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/Button';
+import { DashboardPhotoGallery } from './DashboardPhotoGallery';
 
 const parseLocalDate = (dateStr?: string, timeStr?: string) => {
     if (!dateStr) return new Date();
@@ -48,27 +50,64 @@ export const UserDashboardPage = () => {
 
     return (
         <div className="space-y-8">
+            {/* VIP Player Welcome Banner */}
             <motion.div 
-                initial={{ opacity: 0, y: 20 }} 
+                initial={{ opacity: 0, y: 15 }} 
                 animate={{ opacity: 1, y: 0 }} 
-                className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden"
+                className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-6 sm:p-7 text-white shadow-xl border border-slate-800 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6"
             >
-                <div className="absolute right-0 top-0 w-64 h-full bg-primary/10 -skew-x-12 transform origin-top translate-x-10"></div>
-                <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
-                    <div className="w-24 h-24 bg-slate-800 rounded-full border-4 border-primary flex items-center justify-center overflow-hidden">
-                        {user?.avatar ? (
-                            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                        ) : (
-                            <span className="text-4xl">🧑‍🚀</span>
+                <div className="absolute right-0 top-0 w-80 h-full bg-lime-400/5 -skew-x-12 transform origin-top pointer-events-none"></div>
+                <div className="relative z-10 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+                    <div className="relative">
+                        <div className="w-20 h-20 sm:w-22 sm:h-22 bg-slate-800 rounded-2xl border-2 border-lime-400/50 flex items-center justify-center overflow-hidden shadow-lg shadow-lime-400/10">
+                            {user?.avatar ? (
+                                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-3xl font-black text-lime-400">{user?.name?.charAt(0)}</span>
+                            )}
+                        </div>
+                        {user?.jersey_number && (
+                            <span className="absolute -bottom-2 -right-2 w-7 h-7 bg-lime-400 text-slate-950 rounded-full font-black text-xs flex items-center justify-center shadow-md font-mono border-2 border-slate-900">
+                                #{user.jersey_number}
+                            </span>
                         )}
                     </div>
-                    <div className="text-center sm:text-left">
-                        <h2 className="text-sm uppercase tracking-widest text-primary font-bold mb-1">Perfil del Jugador</h2>
-                        <h1 className="text-4xl sm:text-5xl font-black tracking-tight">{user?.name}</h1>
-                        <p className="text-slate-400 mt-2">{user?.email}</p>
+                    <div className="space-y-1">
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                            <span className="text-[11px] uppercase tracking-widest text-lime-400 font-black px-2.5 py-0.5 rounded-full bg-lime-400/10 border border-lime-400/20">
+                                {user?.nickname ? `"${user.nickname}"` : 'Jugador Oficial'}
+                            </span>
+                            {user?.position && (
+                                <span className="text-[11px] uppercase tracking-wider text-slate-300 font-bold px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700">
+                                    ⚽ {user.position}
+                                </span>
+                            )}
+                        </div>
+                        <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+                            ¡Hola, {user?.name?.split(' ')[0]}!
+                        </h1>
+                        <p className="text-slate-400 text-xs sm:text-sm">
+                            Bienvenido a tu panel de Pichangas de Barrio FC.
+                        </p>
                     </div>
                 </div>
+
+                <div className="relative z-10 flex items-center gap-3 w-full sm:w-auto justify-center">
+                    <Link to="/billetera">
+                        <Button className="bg-slate-800 hover:bg-slate-700 text-lime-400 border border-lime-400/30 hover:border-lime-400 font-bold text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-2">
+                            <Wallet className="w-4 h-4" /> Mi Billetera
+                        </Button>
+                    </Link>
+                    <Link to="/convocatorias">
+                        <Button className="bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-1.5 shadow-lime-400/20">
+                            <Trophy className="w-4 h-4" /> Convocatorias
+                        </Button>
+                    </Link>
+                </div>
             </motion.div>
+
+            {/* ===== Official Photo Gallery Showcase (First Screen for Players) ===== */}
+            <DashboardPhotoGallery />
             
             {/* Scoreboard Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

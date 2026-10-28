@@ -23,6 +23,91 @@ export const useGallery = (id: number) => {
   });
 };
 
+export interface ClubPhoto {
+  id: string | number;
+  url: string;
+  galleryId: number;
+  galleryTitle: string;
+  galleryDescription?: string | null;
+  caption?: string | null;
+  createdAt: string;
+  type?: 'foto' | 'video';
+}
+
+export const useClubPhotos = () => {
+  return useQuery({
+    queryKey: ['club-photos'],
+    queryFn: async () => {
+      try {
+        const { data: res } = await api.get<PaginatedResponse<Gallery>>('/galleries?per_page=20');
+        const galleries: Gallery[] = (res as any)?.data || res || [];
+
+        // For galleries that have media_count > 0 but media array was not returned in list
+        const detailedGalleries = await Promise.all(
+          galleries.map(async (g) => {
+            if (g.media && g.media.length > 0) return g;
+            if (g.media_count && g.media_count > 0) {
+              try {
+                const { data: full } = await api.get<Gallery>(`/galleries/${g.id}`);
+                return (full as any)?.data || full || g;
+              } catch {
+                return g;
+              }
+            }
+            return g;
+          })
+        );
+
+        const photos: ClubPhoto[] = [];
+        const seenUrls = new Set<string>();
+
+        detailedGalleries.forEach((g) => {
+          if (g.media && g.media.length > 0) {
+            g.media.forEach((m) => {
+              if (m.file_path && !seenUrls.has(m.file_path)) {
+                seenUrls.add(m.file_path);
+                photos.push({
+                  id: `m-${m.id}`,
+                  url: m.file_path,
+                  galleryId: g.id,
+                  galleryTitle: g.title,
+                  galleryDescription: g.description,
+                  caption: m.caption || m.title || g.title,
+                  createdAt: (m as any).created_at || g.created_at,
+                  type: m.type || 'foto'
+                });
+              }
+            });
+          }
+
+          if (g.cover_image && !seenUrls.has(g.cover_image)) {
+            seenUrls.add(g.cover_image);
+            photos.push({
+              id: `cover-${g.id}`,
+              url: g.cover_image,
+              galleryId: g.id,
+              galleryTitle: g.title,
+              galleryDescription: g.description,
+              caption: g.title,
+              createdAt: g.created_at,
+              type: 'foto'
+            });
+          }
+        });
+
+        return {
+          photos,
+          galleries: detailedGalleries
+        };
+      } catch (err) {
+        console.error('Error fetching club photos:', err);
+        return { photos: [], galleries: [] };
+      }
+    },
+    staleTime: 1000 * 60 * 3,
+  });
+};
+
 export const useCreateGallery = () => {
   const queryClient = useQueryClient();
   return useMutation({
