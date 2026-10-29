@@ -764,6 +764,26 @@ export const AdminConvocatoriasPage = () => {
                                                 className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white h-12 rounded-xl font-black text-lg" 
                                             />
                                         </div>
+
+                                        {/* Dynamic quota breakdown indicator */}
+                                        <div className="sm:col-span-2 p-3.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 space-y-2">
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                                                    <Trophy size={14} className="text-amber-500" /> Cupos Oficiales por Rol:
+                                                </span>
+                                                <span className="font-mono text-emerald-600 dark:text-emerald-400 font-black text-xs">
+                                                    {Math.floor(form.max_players / form.num_teams)} jugadores por equipo {form.max_players % form.num_teams !== 0 && `(+${form.max_players % form.num_teams} suplente)`}
+                                                </span>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                                <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1.5">
+                                                    🧤 <span><strong>{form.num_teams} Arqueros</strong> (1 por equipo)</span>
+                                                </div>
+                                                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+                                                    ⚽ <span><strong>{Math.max(0, form.max_players - form.num_teams)} Jugadores de Campo</strong></span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1064,9 +1084,14 @@ export const AdminConvocatoriasPage = () => {
                                                     </span>
                                                 )}
                                             </span>
-                                            <span className="font-black text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                                                <Shield size={14} /> {c.porteros_count} / {c.num_teams} porteros
-                                            </span>
+                                            <div className="flex items-center gap-3 font-black text-xs">
+                                                <span className="text-amber-500 flex items-center gap-1">
+                                                    🧤 {c.porteros_count || 0}/{c.max_porteros || c.num_teams || 2} arqueros
+                                                </span>
+                                                <span className="text-emerald-500 flex items-center gap-1">
+                                                    ⚽ {c.jugadores_count ?? Math.max(0, (c.confirmed_count || 0) - (c.porteros_count || 0))}/{c.max_jugadores ?? Math.max(0, c.max_players - (c.num_teams || 2))} campo
+                                                </span>
+                                            </div>
                                         </div>
 
                                         {/* Barra visual de llenado */}

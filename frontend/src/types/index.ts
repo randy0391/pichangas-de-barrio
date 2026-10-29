@@ -100,6 +100,13 @@ export interface Convocatoria {
   rejected_count: number;
   pending_count: number;
   porteros_count: number;
+  max_porteros?: number;
+  max_jugadores?: number;
+  jugadores_count?: number;
+  porteros_remaining?: number;
+  jugadores_remaining?: number;
+  is_porteros_full?: boolean;
+  is_jugadores_full?: boolean;
   spots_remaining?: number;
   is_full?: boolean;
   is_user_confirmed?: boolean;

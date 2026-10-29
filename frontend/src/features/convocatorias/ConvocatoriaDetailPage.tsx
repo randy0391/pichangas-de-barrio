@@ -104,14 +104,24 @@ export const ConvocatoriaDetailPage = () => {
     const myConfirmation = confirmados.find((p: Confirmacion) => p.user?.id === user?.id);
     const isConfirmed = !!myConfirmation;
     
-    const porterosMax = c.num_teams || 2;
-    const porterosActuales = c.porteros_count || confirmados.filter((p: Confirmacion) => p.match_role === 'portero').length;
+    const porterosMax = c.max_porteros || c.num_teams || 2;
+    const porterosActuales = c.porteros_count ?? confirmados.filter((p: Confirmacion) => p.match_role === 'portero').length;
     const porterosLlenos = porterosActuales >= porterosMax;
-    const cupoLleno = c.confirmed_count >= c.max_players;
 
-    const jugadoresMax = Math.max(0, c.max_players - porterosMax);
-    const jugadoresActuales = Math.max(0, c.confirmed_count - porterosActuales);
+    const jugadoresMax = c.max_jugadores ?? Math.max(0, c.max_players - porterosMax);
+    const jugadoresActuales = c.jugadores_count ?? Math.max(0, c.confirmed_count - porterosActuales);
+    const jugadoresLlenos = jugadoresActuales >= jugadoresMax;
+    const cupoLleno = c.confirmed_count >= c.max_players || (porterosLlenos && jugadoresLlenos);
     const fillPercent = Math.min(100, Math.round((c.confirmed_count / (c.max_players || 1)) * 100));
+
+    // Ajustar rol por defecto automáticamente según disponibilidad
+    useEffect(() => {
+        if (jugadoresLlenos && !porterosLlenos) {
+            setSelectedRole('portero');
+        } else if (porterosLlenos && !jugadoresLlenos) {
+            setSelectedRole('jugador');
+        }
+    }, [jugadoresLlenos, porterosLlenos]);
 
     // Formateo de fecha amigable en español
     const formattedDate = (() => {
@@ -171,6 +181,18 @@ export const ConvocatoriaDetailPage = () => {
     ];
 
     const handleConfirm = () => {
+        if (selectedRole === 'portero' && porterosLlenos) {
+            toast.error(`Cupos de arquero completos (${porterosMax}/${porterosMax}).`);
+            return;
+        }
+        if (selectedRole === 'jugador' && jugadoresLlenos) {
+            toast.error(`Cupos de jugadores de campo completos (${jugadoresMax}/${jugadoresMax}).`);
+            return;
+        }
+        if (cupoLleno) {
+            toast.error('La convocatoria ya alcanzó el cupo máximo de participantes.');
+            return;
+        }
         if (cost > 0 && !hasEnoughBalance) {
             toast.error(`Saldo insuficiente. Necesitas S/ ${cost.toFixed(2)} en tu Billetera Digital.`);
             return;
@@ -201,6 +223,12 @@ export const ConvocatoriaDetailPage = () => {
 
     const handleAdminAddPlayer = () => {
         if (!adminSelectedUserId) return toast.error('Selecciona un jugador');
+        if (adminSelectedRole === 'portero' && porterosLlenos) {
+            return toast.error(`Los cupos de arquero ya están completos (${porterosMax}/${porterosMax})`);
+        }
+        if (adminSelectedRole === 'jugador' && jugadoresLlenos) {
+            return toast.error(`Los cupos de jugadores de campo ya están completos (${jugadoresMax}/${jugadoresMax})`);
+        }
         addPlayer({ id: c.id, userId: Number(adminSelectedUserId), matchRole: adminSelectedRole }, {
             onSuccess: () => {
                 toast.success('Jugador añadido a la convocatoria');
@@ -505,36 +533,44 @@ export const ConvocatoriaDetailPage = () => {
                                     {/* Opción Jugador de Campo */}
                                     <button
                                         type="button"
-                                        onClick={() => setSelectedRole('jugador')}
+                                        onClick={() => !jugadoresLlenos && setSelectedRole('jugador')}
+                                        disabled={jugadoresLlenos}
                                         className={`relative p-5 rounded-2xl border-2 transition-all text-left flex items-center justify-between group ${
-                                            selectedRole === 'jugador'
-                                                ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)] ring-2 ring-emerald-500/20'
-                                                : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600'
+                                            jugadoresLlenos
+                                                ? 'border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 opacity-60 cursor-not-allowed'
+                                                : selectedRole === 'jugador'
+                                                    ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.15)] ring-2 ring-emerald-500/20'
+                                                    : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600'
                                         }`}
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl transition-transform group-hover:scale-110 ${
-                                                selectedRole === 'jugador' ? 'bg-emerald-500 text-white shadow-md' : 'bg-slate-200 dark:bg-slate-700'
+                                                selectedRole === 'jugador' && !jugadoresLlenos ? 'bg-emerald-500 text-white shadow-md' : 'bg-slate-200 dark:bg-slate-700'
                                             }`}>
                                                 ⚽
                                             </div>
                                             <div>
-                                                <p className="font-black text-sm uppercase tracking-wider text-slate-900 dark:text-white">
-                                                    Jugador de Campo
+                                                <p className="font-black text-sm uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                                                    <span>Jugador de Campo</span>
+                                                    {jugadoresLlenos && (
+                                                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-red-500/20 text-red-500 border border-red-500/40">
+                                                            LLENO
+                                                        </span>
+                                                    )}
                                                 </p>
                                                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                                     Defensa, volante o delantero
                                                 </p>
-                                                <span className="inline-block mt-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">
-                                                    {jugadoresActuales}/{jugadoresMax} inscritos
+                                                <span className={`inline-block mt-1 text-[10px] font-bold uppercase ${jugadoresLlenos ? 'text-red-500 font-extrabold' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                                    {jugadoresLlenos ? `CUPOS COMPLETOS (${jugadoresMax}/${jugadoresMax})` : `${jugadoresActuales}/${jugadoresMax} inscritos`}
                                                 </span>
                                             </div>
                                         </div>
 
                                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                                            selectedRole === 'jugador' ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 dark:border-slate-600'
+                                            selectedRole === 'jugador' && !jugadoresLlenos ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-slate-300 dark:border-slate-600'
                                         }`}>
-                                            {selectedRole === 'jugador' && <Check size={14} className="stroke-[3]" />}
+                                            {selectedRole === 'jugador' && !jugadoresLlenos && <Check size={14} className="stroke-[3]" />}
                                         </div>
                                     </button>
 
@@ -553,27 +589,32 @@ export const ConvocatoriaDetailPage = () => {
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl transition-transform group-hover:scale-110 ${
-                                                selectedRole === 'portero' ? 'bg-amber-400 text-slate-950 shadow-md' : 'bg-slate-200 dark:bg-slate-700'
+                                                selectedRole === 'portero' && !porterosLlenos ? 'bg-amber-400 text-slate-950 shadow-md' : 'bg-slate-200 dark:bg-slate-700'
                                             }`}>
                                                 🧤
                                             </div>
                                             <div>
-                                                <p className="font-black text-sm uppercase tracking-wider text-slate-900 dark:text-white">
-                                                    Arquero / Portero
+                                                <p className="font-black text-sm uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                                                    <span>Arquero / Portero</span>
+                                                    {porterosLlenos && (
+                                                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-red-500/20 text-red-500 border border-red-500/40">
+                                                            LLENO
+                                                        </span>
+                                                    )}
                                                 </p>
                                                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                                    Defensa del arco
+                                                    Defensa del arco (1 por equipo)
                                                 </p>
-                                                <span className={`inline-block mt-1 text-[10px] font-bold uppercase ${porterosLlenos ? 'text-red-500' : 'text-amber-600 dark:text-amber-400'}`}>
-                                                    {porterosLlenos ? 'CUPOS COMPLETOS (2/2)' : `${porterosActuales}/${porterosMax} disponibles`}
+                                                <span className={`inline-block mt-1 text-[10px] font-bold uppercase ${porterosLlenos ? 'text-red-500 font-extrabold' : 'text-amber-600 dark:text-amber-400'}`}>
+                                                    {porterosLlenos ? `CUPOS COMPLETOS (${porterosMax}/${porterosMax})` : `${porterosActuales}/${porterosMax} disponibles`}
                                                 </span>
                                             </div>
                                         </div>
 
                                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                                            selectedRole === 'portero' ? 'border-amber-400 bg-amber-400 text-slate-950' : 'border-slate-300 dark:border-slate-600'
+                                            selectedRole === 'portero' && !porterosLlenos ? 'border-amber-400 bg-amber-400 text-slate-950' : 'border-slate-300 dark:border-slate-600'
                                         }`}>
-                                            {selectedRole === 'portero' && <Check size={14} className="stroke-[3]" />}
+                                            {selectedRole === 'portero' && !porterosLlenos && <Check size={14} className="stroke-[3]" />}
                                         </div>
                                     </button>
                                 </div>
@@ -638,10 +679,21 @@ export const ConvocatoriaDetailPage = () => {
                                                 <Wallet size={18} /> Recargar Billetera para Confirmar Cupo
                                             </Button>
                                         </Link>
+                                    ) : (selectedRole === 'portero' && porterosLlenos) || (selectedRole === 'jugador' && jugadoresLlenos) ? (
+                                        <Button 
+                                            disabled={true} 
+                                            className="w-full h-14 bg-slate-800 text-slate-400 font-black uppercase tracking-wider rounded-2xl border border-slate-700 text-sm flex items-center justify-center gap-2 cursor-not-allowed"
+                                        >
+                                            <AlertCircle size={20} className="text-amber-400" />
+                                            {selectedRole === 'portero' 
+                                                ? `Cupos de Arquero Llenos (${porterosMax}/${porterosMax})` 
+                                                : `Cupos de Jugador de Campo Llenos (${jugadoresMax}/${jugadoresMax})`
+                                            }
+                                        </Button>
                                     ) : (
                                         <Button 
                                             onClick={handleConfirm} 
-                                            disabled={isConfirming} 
+                                            disabled={isConfirming || cupoLleno} 
                                             className="w-full h-14 bg-gradient-to-r from-emerald-500 via-teal-500 to-lime-400 hover:from-emerald-600 hover:via-teal-600 hover:to-lime-500 text-slate-950 font-black uppercase tracking-wider rounded-2xl shadow-xl shadow-emerald-500/20 border-0 text-base flex items-center justify-center gap-2 disabled:opacity-50"
                                         >
                                             <CheckCircle2 size={20} />
@@ -845,8 +897,12 @@ export const ConvocatoriaDetailPage = () => {
                                 onChange={(e) => setAdminSelectedRole(e.target.value as any)}
                                 className="w-full p-3.5 rounded-xl border border-indigo-400/40 bg-slate-900 text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
-                                <option value="jugador">⚽ Jugador de Campo</option>
-                                <option value="portero">🧤 Portero</option>
+                                <option value="jugador" disabled={jugadoresLlenos}>
+                                    ⚽ Jugador de Campo ({jugadoresActuales}/{jugadoresMax}){jugadoresLlenos ? ' - LLENO' : ''}
+                                </option>
+                                <option value="portero" disabled={porterosLlenos}>
+                                    🧤 Arquero ({porterosActuales}/{porterosMax}){porterosLlenos ? ' - LLENO' : ''}
+                                </option>
                             </select>
                         </div>
 
@@ -856,11 +912,16 @@ export const ConvocatoriaDetailPage = () => {
                             </label>
                             <Button 
                                 onClick={handleAdminAddPlayer} 
-                                disabled={isAddingPlayer || !adminSelectedUserId} 
+                                disabled={isAddingPlayer || !adminSelectedUserId || (adminSelectedRole === 'portero' ? porterosLlenos : jugadoresLlenos)} 
                                 className="w-full h-12 bg-lime-400 hover:bg-lime-500 text-slate-950 font-black uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-lime-400/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm border-0"
                             >
                                 <UserPlus className="h-4 w-4" />
-                                {isAddingPlayer ? 'Añadiendo a la convocatoria...' : 'Añadir a la Convocatoria'}
+                                {isAddingPlayer 
+                                    ? 'Añadiendo a la convocatoria...' 
+                                    : (adminSelectedRole === 'portero' ? porterosLlenos : jugadoresLlenos)
+                                    ? 'Cupos de ese rol completos'
+                                    : 'Añadir a la Convocatoria'
+                                }
                             </Button>
                         </div>
                     </div>

@@ -23,8 +23,17 @@ class ConvocatoriaResource extends JsonResource
             ? $this->confirmaciones()->where('user_id', $authUser->id)->first() 
             : null;
 
+        $numTeams = max(2, (int) ($this->num_teams ?: 2));
         $confirmedCount = $this->confirmaciones()->where('status', 'confirmado')->count();
         $spotsRemaining = max(0, $this->max_players - $confirmedCount);
+        $porterosCount = $this->confirmaciones()->where('status', 'confirmado')->where('match_role', 'portero')->count();
+        $jugadoresCount = $this->confirmaciones()->where('status', 'confirmado')->where('match_role', '!=', 'portero')->count();
+        $maxPorteros = $numTeams;
+        $maxJugadores = max(0, (int) $this->max_players - $maxPorteros);
+        $porterosRemaining = max(0, $maxPorteros - $porterosCount);
+        $jugadoresRemaining = max(0, $maxJugadores - $jugadoresCount);
+        $isPorterosFull = $porterosCount >= $maxPorteros;
+        $isJugadoresFull = $jugadoresCount >= $maxJugadores;
 
         $dayNames = [
             0 => 'Domingo',
@@ -49,19 +58,26 @@ class ConvocatoriaResource extends JsonResource
             'match_time' => $this->match_time->format('H:i'),
             'day_name' => $dayName,
             'max_players' => $this->max_players,
-            'num_teams' => $this->num_teams,
+            'num_teams' => $numTeams,
+            'max_porteros' => $maxPorteros,
+            'max_jugadores' => $maxJugadores,
             'rival' => $this->rival,
             'cost_per_player' => $this->cost_per_player ?? 0,
             'status' => $dynamicStatus,
             'creator' => new UserResource($this->whenLoaded('creator')),
             'confirmed_count' => $confirmedCount,
             'spots_remaining' => $spotsRemaining,
+            'porteros_count' => $porterosCount,
+            'jugadores_count' => $jugadoresCount,
+            'porteros_remaining' => $porterosRemaining,
+            'jugadores_remaining' => $jugadoresRemaining,
             'is_full' => $confirmedCount >= $this->max_players,
+            'is_porteros_full' => $isPorterosFull,
+            'is_jugadores_full' => $isJugadoresFull,
             'is_user_confirmed' => $myConfirmacion ? ($myConfirmacion->status === 'confirmado') : false,
             'user_match_role' => $myConfirmacion ? $myConfirmacion->match_role : null,
             'rejected_count' => $this->confirmaciones()->where('status', 'rechazado')->count(),
             'pending_count' => $this->confirmaciones()->where('status', 'pendiente')->count(),
-            'porteros_count' => $this->confirmaciones()->where('status', 'confirmado')->where('match_role', 'portero')->count(),
             'confirmaciones' => ConfirmacionResource::collection($this->whenLoaded('confirmaciones')),
             'has_teams' => $this->confirmaciones()->whereNotNull('team_number')->exists(),
             'created_at' => $this->created_at,

@@ -61,7 +61,11 @@ class ConvocatoriaController extends Controller
         return \Illuminate\Support\Facades\DB::transaction(function () use ($request, $id, $matchRole) {
             $convocatoria = Convocatoria::where('id', $id)->lockForUpdate()->firstOrFail();
 
-            // Validate: if requesting portero, check if there's still room
+            $numTeams = max(2, (int) ($convocatoria->num_teams ?: 2));
+            $maxPorteros = $numTeams;
+            $maxJugadores = max(0, (int) $convocatoria->max_players - $maxPorteros);
+
+            // Validate: if requesting portero, check if there is still room
             if ($matchRole === 'portero') {
                 $currentPorteros = Confirmacion::where('convocatoria_id', $id)
                     ->where('status', 'confirmado')
@@ -69,10 +73,24 @@ class ConvocatoriaController extends Controller
                     ->where('user_id', '!=', $request->user()->id) // exclude self (in case of update)
                     ->count();
 
-                if ($currentPorteros >= $convocatoria->num_teams) {
+                if ($currentPorteros >= $maxPorteros) {
                     return response()->json([
-                        'message' => 'Ya se completaron los cupos de portero para esta convocatoria.',
+                        'message' => "Ya se completaron los cupos de arquero ({$maxPorteros}/{$maxPorteros}) para esta convocatoria.",
                         'porteros_llenos' => true,
+                    ], 422);
+                }
+            } else {
+                // Field player quota check
+                $currentJugadores = Confirmacion::where('convocatoria_id', $id)
+                    ->where('status', 'confirmado')
+                    ->where('match_role', '!=', 'portero')
+                    ->where('user_id', '!=', $request->user()->id)
+                    ->count();
+
+                if ($currentJugadores >= $maxJugadores) {
+                    return response()->json([
+                        'message' => "Ya se completaron los cupos de jugadores de campo ({$maxJugadores}/{$maxJugadores}) para esta convocatoria.",
+                        'jugadores_llenos' => true,
                     ], 422);
                 }
             }
@@ -85,7 +103,7 @@ class ConvocatoriaController extends Controller
 
             if ($currentConfirmados >= $convocatoria->max_players) {
                 return response()->json([
-                    'message' => 'Ya se completo el cupo maximo de jugadores.',
+                    'message' => 'Ya se completo el cupo maximo de la convocatoria.',
                     'cupo_lleno' => true,
                 ], 422);
             }
@@ -224,7 +242,7 @@ class ConvocatoriaController extends Controller
         return ConvocatoriaResource::collection($convocatorias);
     }
 
-        public function updatePlayerRole(Request $request, $id, $userId)
+    public function updatePlayerRole(Request $request, $id, $userId)
     {
         if (!$request->user()->isAdmin()) return response()->json(['message' => 'Unauthorized'], 403);
 
@@ -234,6 +252,32 @@ class ConvocatoriaController extends Controller
 
         $convocatoria = Convocatoria::findOrFail($id);
         $confirmacion = $convocatoria->confirmaciones()->where('user_id', $userId)->firstOrFail();
+
+        if ($confirmacion->match_role !== $request->match_role) {
+            $numTeams = max(2, (int) ($convocatoria->num_teams ?: 2));
+            $maxPorteros = $numTeams;
+            $maxJugadores = max(0, (int) $convocatoria->max_players - $maxPorteros);
+
+            if ($request->match_role === 'portero') {
+                $currentPorteros = $convocatoria->confirmaciones()
+                    ->where('status', 'confirmado')
+                    ->where('match_role', 'portero')
+                    ->where('user_id', '!=', $userId)
+                    ->count();
+                if ($currentPorteros >= $maxPorteros) {
+                    return response()->json(['message' => "No se puede cambiar a arquero: cupos completos ({$maxPorteros}/{$maxPorteros})."], 422);
+                }
+            } else {
+                $currentJugadores = $convocatoria->confirmaciones()
+                    ->where('status', 'confirmado')
+                    ->where('match_role', '!=', 'portero')
+                    ->where('user_id', '!=', $userId)
+                    ->count();
+                if ($currentJugadores >= $maxJugadores) {
+                    return response()->json(['message' => "No se puede cambiar a jugador de campo: cupos completos ({$maxJugadores}/{$maxJugadores})."], 422);
+                }
+            }
+        }
 
         $confirmacion->match_role = $request->match_role;
         $confirmacion->save();
@@ -341,16 +385,25 @@ class ConvocatoriaController extends Controller
             return response()->json(['message' => 'El jugador ya esta confirmado'], 400);
         }
 
+        $numTeams = max(2, (int) ($convocatoria->num_teams ?: 2));
+        $maxPorteros = $numTeams;
+        $maxJugadores = max(0, (int) $convocatoria->max_players - $maxPorteros);
+
         if ($request->match_role === 'portero') {
             $currentPorteros = $convocatoria->confirmaciones()->where('status', 'confirmado')->where('match_role', 'portero')->count();
-            if ($currentPorteros >= $convocatoria->num_teams) {
-                return response()->json(['message' => 'Ya se completaron los cupos de portero.'], 422);
+            if ($currentPorteros >= $maxPorteros) {
+                return response()->json(['message' => "Ya se completaron los cupos de arquero ({$maxPorteros}/{$maxPorteros})."], 422);
+            }
+        } else {
+            $currentJugadores = $convocatoria->confirmaciones()->where('status', 'confirmado')->where('match_role', '!=', 'portero')->count();
+            if ($currentJugadores >= $maxJugadores) {
+                return response()->json(['message' => "Ya se completaron los cupos de jugadores de campo ({$maxJugadores}/{$maxJugadores})."], 422);
             }
         }
 
         $currentConfirmados = $convocatoria->confirmaciones()->where('status', 'confirmado')->count();
         if ($currentConfirmados >= $convocatoria->max_players) {
-            return response()->json(['message' => 'Ya se completo el cupo maximo de jugadores.'], 422);
+            return response()->json(['message' => 'Ya se completo el cupo maximo de la convocatoria.'], 422);
         }
 
         $convocatoria->confirmaciones()->create([

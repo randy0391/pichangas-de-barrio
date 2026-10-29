@@ -231,6 +231,17 @@ export const ConvocatoriasPage = () => {
                             👕 {c.num_teams || 2} Equipos
                         </span>
 
+                        {/* Breakdown tag */}
+                        <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900/90 text-slate-300 text-[11px] font-bold border border-slate-800">
+                            <span className={c.is_porteros_full ? 'text-red-400' : 'text-amber-400'}>
+                                🧤 {c.porteros_count || 0}/{c.max_porteros || c.num_teams || 2}
+                            </span>
+                            <span className="text-slate-600">·</span>
+                            <span className={c.is_jugadores_full ? 'text-red-400' : 'text-emerald-400'}>
+                                ⚽ {c.jugadores_count ?? Math.max(0, (c.confirmed_count || 0) - (c.porteros_count || 0))}/{c.max_jugadores ?? Math.max(0, c.max_players - (c.num_teams || 2))}
+                            </span>
+                        </span>
+
                         {/* Availability Pill */}
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
                             isFull 
