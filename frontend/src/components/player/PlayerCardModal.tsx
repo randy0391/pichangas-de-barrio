@@ -25,15 +25,15 @@ export const PlayerCardModal: React.FC<PlayerCardModalProps> = ({
     : (player as Partial<User>);
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl overflow-y-auto p-4 sm:p-8 flex items-center justify-center animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-xl overflow-y-auto p-3 sm:p-6 flex items-center justify-center animate-in fade-in duration-200">
       
       {/* Click outside backdrop */}
       <div className="fixed inset-0" onClick={onClose} />
 
-      <div className="relative z-10 my-auto flex flex-col items-center max-w-md w-full py-4">
+      <div className="relative z-10 my-auto flex flex-col items-center max-w-sm w-full py-2 pb-24 sm:pb-4">
         
         {/* Top Control Bar with Close Button */}
-        <div className="w-full flex items-center justify-between mb-4 px-2">
+        <div className="w-full flex items-center justify-between mb-3 px-2">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
             <span className="text-xs font-black uppercase tracking-wider text-amber-300">
@@ -52,8 +52,8 @@ export const PlayerCardModal: React.FC<PlayerCardModalProps> = ({
         </div>
 
         {/* 3D FUT Card */}
-        <div className="w-full flex justify-center py-2">
-          <FutPlayerCard user={userData} size="lg" showDownload={true} />
+        <div className="w-full flex justify-center py-1">
+          <FutPlayerCard user={userData} size="md" showDownload={true} />
         </div>
 
       </div>
