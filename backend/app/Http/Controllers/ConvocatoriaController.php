@@ -220,13 +220,30 @@ class ConvocatoriaController extends Controller
         $firstMatchTeamB = $teamOrder[1];
         $restingTeams = array_slice($teamOrder, 2);
 
+        $drawMeta = [
+            'first_match' => [
+                'team_a' => $firstMatchTeamA,
+                'team_b' => $firstMatchTeamB,
+                'resting_teams' => array_values($restingTeams),
+            ]
+        ];
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('convocatorias', 'draw_metadata')) {
+                $convocatoria->draw_metadata = $drawMeta;
+                $convocatoria->save();
+            }
+        } catch (\Throwable $e) {}
+
+        \Illuminate\Support\Facades\Cache::forever("convocatoria_{$id}_draw_meta", $drawMeta);
+
         return response()->json([
             'message' => "Equipos sorteados exitosamente en {$numTeams} equipos.",
             'teams' => $numTeams,
             'first_match' => [
                 'team_a' => $firstMatchTeamA,
                 'team_b' => $firstMatchTeamB,
-                'resting_teams' => $restingTeams,
+                'resting_teams' => array_values($restingTeams),
             ]
         ]);
     }
@@ -310,6 +327,15 @@ class ConvocatoriaController extends Controller
     {
         $convocatoria = Convocatoria::findOrFail($id);
         $convocatoria->confirmaciones()->update(['team_number' => null]);
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('convocatorias', 'draw_metadata')) {
+                $convocatoria->draw_metadata = null;
+                $convocatoria->save();
+            }
+        } catch (\Throwable $e) {}
+
+        \Illuminate\Support\Facades\Cache::forget("convocatoria_{$id}_draw_meta");
 
         return response()->json(['message' => 'Equipos reiniciados exitosamente']);
     }

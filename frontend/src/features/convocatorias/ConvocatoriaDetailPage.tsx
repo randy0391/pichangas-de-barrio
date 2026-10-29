@@ -43,6 +43,7 @@ export const ConvocatoriaDetailPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuthStore();
+    const isAdmin = user?.role === 'admin' || user?.role?.toLowerCase() === 'admin' || Boolean((user as any)?.is_admin);
     const queryClient = useQueryClient();
     const { data: c, isLoading } = useConvocatoria(Number(id));
     const { mutate: confirmar, isPending: isConfirming } = useConfirmar();
@@ -384,22 +385,22 @@ export const ConvocatoriaDetailPage = () => {
 
                     {/* Quick Action Toolbar */}
                     <div className="flex flex-wrap items-center gap-3 pt-2">
-                        {user?.role === 'admin' && (
+                        {isAdmin && (
                             <Button 
                                 onClick={() => setShowFlyerModal(true)}
-                                className="bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-5 shadow-lg shadow-lime-400/20 flex items-center gap-2"
+                                className="bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-5 shadow-lg shadow-lime-400/20 flex items-center gap-2 transition-transform hover:scale-105"
                             >
                                 <Sparkles className="w-4 h-4" /> 📲 Generar Flyer WhatsApp
                             </Button>
                         )}
                         <Button 
-                            onClick={handleCopy}
-                            variant="outline"
+                            onClick={handleCopy} 
+                            variant="outline" 
                             className="border-slate-700 bg-slate-900/90 text-white hover:bg-slate-800 text-xs font-bold uppercase tracking-wider rounded-xl h-11 px-4 flex items-center gap-2"
                         >
                             <Copy className="w-4 h-4 text-lime-400" /> Copiar Lista
                         </Button>
-                        {user?.role === 'admin' && (
+                        {isAdmin && (
                             <Button 
                                 onClick={() => setShowShuffleModal(true)}
                                 className="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs uppercase tracking-wider rounded-xl h-11 px-5 shadow-lg shadow-indigo-600/20 flex items-center gap-2"
@@ -711,7 +712,7 @@ export const ConvocatoriaDetailPage = () => {
             )}
 
             {/* Admin Add Player */}
-            {user?.role === 'admin' && c.status === 'abierta' && (
+            {isAdmin && c.status === 'abierta' && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
                     className="bg-indigo-950/40 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border border-indigo-500/30 mb-8"
                 >
@@ -965,11 +966,11 @@ export const ConvocatoriaDetailPage = () => {
                             </div>
 
                             <div className="flex items-center gap-2">
-                                {user?.role === 'admin' && (
+                                {isAdmin && (
                                     <>
                                         <Button
                                             onClick={() => setShowFlyerModal(true)}
-                                            className="bg-slate-800 hover:bg-slate-700 text-lime-400 border border-lime-400/30 font-bold text-xs uppercase tracking-wider rounded-xl h-10 px-3.5 flex items-center gap-1.5"
+                                            className="bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-10 px-4 flex items-center gap-1.5 shadow-md shadow-lime-400/20"
                                         >
                                             <Sparkles className="w-3.5 h-3.5" /> 📲 Flyer WhatsApp
                                         </Button>
@@ -989,7 +990,7 @@ export const ConvocatoriaDetailPage = () => {
                                 convocatoria={c} 
                                 onSelectPlayer={(p) => setSelectedPlayerCard(p)} 
                                 onSwapTeam={handleSwapTeam} 
-                                isAdmin={user?.role === 'admin'} 
+                                isAdmin={isAdmin} 
                             />
                         ) : (
                             <div className="space-y-6">
@@ -1001,7 +1002,7 @@ export const ConvocatoriaDetailPage = () => {
                                 </h2>
                             </div>
 
-                            {user?.role === 'admin' && (
+                            {isAdmin && (
                                 <button 
                                     onClick={handleCopy} 
                                     className="inline-flex items-center gap-2 text-xs font-black uppercase text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700"
@@ -1093,7 +1094,7 @@ export const ConvocatoriaDetailPage = () => {
                                                         </div>
 
                                                         <div className="flex items-center gap-2 shrink-0">
-                                                            {user?.role === 'admin' && (
+                                                            {isAdmin && (
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => {
@@ -1168,7 +1169,7 @@ export const ConvocatoriaDetailPage = () => {
                                                         </div>
 
                                                         <div className="flex items-center gap-2 shrink-0">
-                                                            {user?.role === 'admin' && (
+                                                            {isAdmin && (
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => {
@@ -1322,7 +1323,7 @@ export const ConvocatoriaDetailPage = () => {
                                                 </div>
 
                                                 <div className="flex items-center gap-2 shrink-0">
-                                                    {user?.role === 'admin' && (
+                                                    {isAdmin && (
                                                         <button
                                                             type="button"
                                                             onClick={() => {
@@ -1365,6 +1366,7 @@ export const ConvocatoriaDetailPage = () => {
                 isOpen={showShuffleModal} 
                 onClose={() => setShowShuffleModal(false)} 
                 convocatoria={c} 
+                onOpenFlyer={() => setShowFlyerModal(true)}
             />
 
             {/* Modal Carta FUT 3D de Jugador */}

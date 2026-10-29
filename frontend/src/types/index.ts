@@ -112,6 +112,13 @@ export interface Convocatoria {
   is_user_confirmed?: boolean;
   user_match_role?: 'jugador' | 'portero' | null;
   has_teams?: boolean;
+  draw_metadata?: {
+    first_match?: {
+      team_a: number;
+      team_b: number;
+      resting_teams: number[];
+    };
+  } | null;
   maps_url?: string;
   cost_per_player?: string | number;
   confirmaciones?: Confirmacion[];

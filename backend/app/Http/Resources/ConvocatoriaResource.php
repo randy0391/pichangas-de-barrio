@@ -35,6 +35,18 @@ class ConvocatoriaResource extends JsonResource
         $isPorterosFull = $porterosCount >= $maxPorteros;
         $isJugadoresFull = $jugadoresCount >= $maxJugadores;
 
+        $hasTeams = $this->confirmaciones()->whereNotNull('team_number')->exists();
+        $drawMetadata = $this->draw_metadata ?: \Illuminate\Support\Facades\Cache::get("convocatoria_{$this->id}_draw_meta");
+        if (!$drawMetadata && $numTeams > 2 && $hasTeams) {
+            $drawMetadata = [
+                'first_match' => [
+                    'team_a' => 1,
+                    'team_b' => 2,
+                    'resting_teams' => array_values(range(3, $numTeams)),
+                ]
+            ];
+        }
+
         $dayNames = [
             0 => 'Domingo',
             1 => 'Lunes',
@@ -79,7 +91,8 @@ class ConvocatoriaResource extends JsonResource
             'rejected_count' => $this->confirmaciones()->where('status', 'rechazado')->count(),
             'pending_count' => $this->confirmaciones()->where('status', 'pendiente')->count(),
             'confirmaciones' => ConfirmacionResource::collection($this->whenLoaded('confirmaciones')),
-            'has_teams' => $this->confirmaciones()->whereNotNull('team_number')->exists(),
+            'has_teams' => $hasTeams,
+            'draw_metadata' => $drawMetadata,
             'created_at' => $this->created_at,
         ];
     }
