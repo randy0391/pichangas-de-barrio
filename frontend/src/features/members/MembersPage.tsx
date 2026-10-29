@@ -4,15 +4,16 @@ import { useMembers } from '@/hooks/useMembers';
 import { Input } from '@/components/ui/Input';
 import { User } from '@/types';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
-import { Search, Shield, User as UserIcon } from 'lucide-react';
-
+import { Search, Shield, User as UserIcon, Sparkles } from 'lucide-react';
 import { Pagination } from '@/components/ui/Pagination';
+import { PlayerCardModal } from '@/components/player/PlayerCardModal';
 
 export const MembersPage = () => {
     const [page, setPage] = useState(1);
     const { data: response, isLoading } = useMembers(page);
     const [search, setSearch] = useState('');
     const [position, setPosition] = useState('todos');
+    const [selectedPlayer, setSelectedPlayer] = useState<User | null>(null);
 
     const members = response?.data || [];
     const meta = response?.meta;
@@ -80,7 +81,11 @@ export const MembersPage = () => {
                         transition={{ delay: index * 0.05 }}
                     >
                         {/* Player Card Layout */}
-                        <div className="group relative bg-white dark:bg-slate-900 rounded-3xl p-1 overflow-hidden shadow-xl hover:shadow-[0_0_30px_rgba(0,210,255,0.2)] transition-all duration-300">
+                        <div 
+                            onClick={() => setSelectedPlayer(m)}
+                            className="group relative bg-white dark:bg-slate-900 rounded-3xl p-1 overflow-hidden shadow-xl hover:shadow-[0_0_30px_rgba(0,210,255,0.2)] transition-all duration-300 cursor-pointer"
+                            title="Clic para ver Carta FUT 3D"
+                        >
                             {/* Glowing border effect on hover */}
                             <div className="absolute inset-0 bg-gradient-to-b from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
                             
@@ -88,7 +93,7 @@ export const MembersPage = () => {
                                 
                                 {/* Top Badges */}
                                 <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
-                                    <span className={`text-[0.65rem] font-black uppercase tracking-widest px-2 py-1 rounded ${getPositionColor(m.position)}`}>
+                                    <span className={`text-[0.65rem] font-black uppercase tracking-widest px-2 py-1 rounded ${getPositionColor(m.position || '')}`}>
                                         {m.position || 'Jugador'}
                                     </span>
                                     {m.jersey_number && (
@@ -119,6 +124,10 @@ export const MembersPage = () => {
                                         "{m.bio}"
                                     </p>
                                 )}
+
+                                <span className="mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-black uppercase tracking-wider group-hover:bg-amber-400 group-hover:text-slate-950 transition-all">
+                                    <Sparkles size={11} /> Ver Carta FUT 3D
+                                </span>
                             </div>
                         </div>
                     </motion.div>
@@ -138,6 +147,13 @@ export const MembersPage = () => {
                     <Pagination currentPage={meta.current_page} lastPage={meta.last_page} onPageChange={setPage} />
                 </div>
             )}
+
+            {/* Modal Carta FUT 3D */}
+            <PlayerCardModal 
+                isOpen={!!selectedPlayer} 
+                onClose={() => setSelectedPlayer(null)} 
+                player={selectedPlayer} 
+            />
         </div>
     );
 };

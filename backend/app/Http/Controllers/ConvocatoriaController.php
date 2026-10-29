@@ -227,6 +227,35 @@ class ConvocatoriaController extends Controller
         return response()->json(['message' => 'Rol actualizado correctamente']);
     }
 
+    public function updatePlayerTeam(Request $request, $id, $userId)
+    {
+        if (!$request->user()->isAdmin()) return response()->json(['message' => 'Unauthorized'], 403);
+
+        $request->validate([
+            'team_number' => 'nullable|integer|min:0|max:10'
+        ]);
+
+        $convocatoria = Convocatoria::findOrFail($id);
+        $confirmacion = $convocatoria->confirmaciones()->where('user_id', $userId)->firstOrFail();
+
+        $val = $request->team_number;
+        $confirmacion->team_number = ($val === 0 || $val === null) ? null : (int) $val;
+        $confirmacion->save();
+
+        return response()->json([
+            'message' => 'Equipo del jugador actualizado exitosamente',
+            'team_number' => $confirmacion->team_number
+        ]);
+    }
+
+    public function resetEquipos($id)
+    {
+        $convocatoria = Convocatoria::findOrFail($id);
+        $convocatoria->confirmaciones()->update(['team_number' => null]);
+
+        return response()->json(['message' => 'Equipos reiniciados exitosamente']);
+    }
+
     public function removeConfirmacion($id, $userId)
     {
         $convocatoria = Convocatoria::findOrFail($id);

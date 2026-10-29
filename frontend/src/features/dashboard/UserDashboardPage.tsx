@@ -1,14 +1,17 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { useUserDashboard } from '@/hooks/useDashboard';
 import { useConvocatorias } from '@/hooks/useConvocatorias';
 import { useAuthStore } from '@/stores/authStore';
 import { DashboardStats, Convocatoria } from '@/types';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
-import { CalendarDays, Trophy, Activity, MapPin, ChevronRight, CheckCircle2, Clock, Wallet } from 'lucide-react';
+import { CalendarDays, Trophy, Activity, MapPin, ChevronRight, CheckCircle2, Clock, Wallet, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { DashboardPhotoGallery } from './DashboardPhotoGallery';
+import { ClubStoriesBar } from './ClubStoriesBar';
+import { PlayerCardModal } from '@/components/player/PlayerCardModal';
+import { PlayerAchievements } from '@/components/player/PlayerAchievements';
 
 const parseLocalDate = (dateStr?: string, timeStr?: string) => {
     if (!dateStr) return new Date();
@@ -25,6 +28,7 @@ export const UserDashboardPage = () => {
     const { data: dashboard, isLoading: isDashboardLoading } = useUserDashboard();
     const { data: convsResponse, isLoading: isConvsLoading } = useConvocatorias(1);
     const { user } = useAuthStore();
+    const [showFutModal, setShowFutModal] = useState(false);
     const dashData = dashboard as DashboardStats | undefined;
 
     const allConvs = (convsResponse?.data || []) as Convocatoria[];
@@ -50,6 +54,9 @@ export const UserDashboardPage = () => {
 
     return (
         <div className="space-y-8">
+            {/* Club Moments Stories Bar */}
+            <ClubStoriesBar />
+
             {/* VIP Player Welcome Banner */}
             <motion.div 
                 initial={{ opacity: 0, y: 15 }} 
@@ -59,7 +66,7 @@ export const UserDashboardPage = () => {
                 <div className="absolute right-0 top-0 w-80 h-full bg-lime-400/5 -skew-x-12 transform origin-top pointer-events-none"></div>
                 <div className="relative z-10 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
                     <div className="relative">
-                        <div className="w-20 h-20 sm:w-22 sm:h-22 bg-slate-800 rounded-2xl border-2 border-lime-400/50 flex items-center justify-center overflow-hidden shadow-lg shadow-lime-400/10">
+                        <div className="w-20 h-20 sm:w-22 sm:h-22 bg-slate-800 rounded-2xl border-2 border-lime-400/50 flex items-center justify-center overflow-hidden shadow-lg shadow-lime-400/10 cursor-pointer" onClick={() => setShowFutModal(true)} title="Clic para ver tu Carta FUT">
                             {user?.avatar ? (
                                 <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                             ) : (
@@ -92,7 +99,13 @@ export const UserDashboardPage = () => {
                     </div>
                 </div>
 
-                <div className="relative z-10 flex items-center gap-3 w-full sm:w-auto justify-center">
+                <div className="relative z-10 flex flex-wrap items-center gap-3 w-full sm:w-auto justify-center">
+                    <Button 
+                        onClick={() => setShowFutModal(true)}
+                        className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-2 shadow-amber-400/20"
+                    >
+                        <Sparkles className="w-4 h-4" /> Mi Carta FUT
+                    </Button>
                     <Link to="/billetera">
                         <Button className="bg-slate-800 hover:bg-slate-700 text-lime-400 border border-lime-400/30 hover:border-lime-400 font-bold text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-2">
                             <Wallet className="w-4 h-4" /> Mi Billetera
@@ -251,6 +264,19 @@ export const UserDashboardPage = () => {
                     </div>
                 </motion.div>
             </div>
+
+            {/* Player Badges & Achievements */}
+            <PlayerAchievements 
+                user={user || {}} 
+                participationsCount={dashData?.stats?.total_participations || 0} 
+            />
+
+            {/* Modal for 3D FUT Card */}
+            <PlayerCardModal 
+                isOpen={showFutModal} 
+                onClose={() => setShowFutModal(false)} 
+                player={user} 
+            />
         </div>
     );
 };

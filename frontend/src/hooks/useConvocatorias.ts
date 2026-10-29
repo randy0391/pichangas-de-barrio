@@ -116,10 +116,43 @@ export const useSortearEquipos = () => {
       const { data } = await api.post(`/convocatorias/${id}/sortear`);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['convocatorias'] });
       queryClient.invalidateQueries({ queryKey: ['convocatoria'] });
+      queryClient.invalidateQueries({ queryKey: ['convocatoria', id] });
     },
+  });
+};
+
+export const useUpdatePlayerTeam = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, userId, teamNumber }: { id: number; userId: number; teamNumber: number | null }) => {
+      const { data } = await api.put(`/convocatorias/${id}/confirmaciones/${userId}/team`, {
+        team_number: teamNumber
+      });
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['convocatorias'] });
+      queryClient.invalidateQueries({ queryKey: ['convocatoria'] });
+      queryClient.invalidateQueries({ queryKey: ['convocatoria', variables.id] });
+    }
+  });
+};
+
+export const useResetEquipos = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await api.post(`/convocatorias/${id}/reset-teams`);
+      return data;
+    },
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['convocatorias'] });
+      queryClient.invalidateQueries({ queryKey: ['convocatoria'] });
+      queryClient.invalidateQueries({ queryKey: ['convocatoria', id] });
+    }
   });
 };
 

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useConvocatoria, useConfirmar, useAddPlayerToConvocatoria, useUpdatePlayerRole, useRemoveConfirmacion } from '@/hooks/useConvocatorias';
+import { useConvocatoria, useConfirmar, useAddPlayerToConvocatoria, useUpdatePlayerRole, useRemoveConfirmacion, useUpdatePlayerTeam } from '@/hooks/useConvocatorias';
 import { useAllMembers } from '@/hooks/useMembers';
 import { useAuthStore } from '@/stores/authStore';
 import { motion } from 'motion/react';
@@ -29,10 +29,15 @@ import {
     Trophy,
     Sparkles,
     Flame,
-    Trash2
+    Trash2,
+    Shuffle
 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/axios';
+import { TacticalPitch } from './TacticalPitch';
+import { ConvocatoriaFlyerModal } from './ConvocatoriaFlyerModal';
+import { TeamShuffleModal } from './TeamShuffleModal';
+import { PlayerCardModal } from '@/components/player/PlayerCardModal';
 
 export const ConvocatoriaDetailPage = () => {
     const { id } = useParams();
@@ -44,8 +49,14 @@ export const ConvocatoriaDetailPage = () => {
     const { mutate: addPlayer, isPending: isAddingPlayer } = useAddPlayerToConvocatoria();
     const { mutate: removeConfirmacion } = useRemoveConfirmacion();
     const { mutate: updateRole } = useUpdatePlayerRole();
+    const { mutate: updatePlayerTeam } = useUpdatePlayerTeam();
     const { data: allMembers = [], isLoading: loadingMembers } = useAllMembers();
     
+    const [viewMode, setViewMode] = useState<'pitch' | 'cards'>('pitch');
+    const [showFlyerModal, setShowFlyerModal] = useState(false);
+    const [showShuffleModal, setShowShuffleModal] = useState(false);
+    const [selectedPlayerCard, setSelectedPlayerCard] = useState<Confirmacion | null>(null);
+
     const [selectedRole, setSelectedRole] = useState<'jugador' | 'portero'>('jugador');
     const [paymentReceipt, setPaymentReceipt] = useState<File | null>(null);
 
@@ -131,6 +142,14 @@ export const ConvocatoriaDetailPage = () => {
 
         navigator.clipboard.writeText(`⚽ CONVOCADOS: ${c.title.toUpperCase()}\n📅 ${c.match_date} · ⏰ ${c.match_time} hrs\n🏟️ ${c.location}\n\nLista de confirmados (${confirmados.length}/${c.max_players}):\n\n${text}`);
         toast.success('Lista de convocados copiada para WhatsApp');
+    };
+
+    const handleSwapTeam = (userId: number, targetTeam: number) => {
+        if (!c) return;
+        updatePlayerTeam({ id: c.id, userId, teamNumber: targetTeam }, {
+            onSuccess: () => toast.success(`Jugador asignado al Equipo ${targetTeam}`),
+            onError: () => toast.error('Error al cambiar de equipo')
+        });
     };
 
     const hasTeams = confirmados.some((p: Confirmacion) => p.team_number !== null);
@@ -333,6 +352,31 @@ export const ConvocatoriaDetailPage = () => {
                             <span>🧤 Arqueros: <strong className="text-amber-400">{porterosActuales}/{porterosMax}</strong></span>
                             <span>⚽ Jugadores de campo: <strong className="text-emerald-400">{jugadoresActuales}/{jugadoresMax}</strong></span>
                         </div>
+                    </div>
+
+                    {/* Quick Action Toolbar */}
+                    <div className="flex flex-wrap items-center gap-3 pt-2">
+                        <Button 
+                            onClick={() => setShowFlyerModal(true)}
+                            className="bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-5 shadow-lg shadow-lime-400/20 flex items-center gap-2"
+                        >
+                            <Sparkles className="w-4 h-4" /> 📲 Generar Flyer WhatsApp
+                        </Button>
+                        <Button 
+                            onClick={handleCopy}
+                            variant="outline"
+                            className="border-slate-700 bg-slate-900/90 text-white hover:bg-slate-800 text-xs font-bold uppercase tracking-wider rounded-xl h-11 px-4 flex items-center gap-2"
+                        >
+                            <Copy className="w-4 h-4 text-lime-400" /> Copiar Lista
+                        </Button>
+                        {user?.role === 'admin' && (
+                            <Button 
+                                onClick={() => setShowShuffleModal(true)}
+                                className="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs uppercase tracking-wider rounded-xl h-11 px-5 shadow-lg shadow-indigo-600/20 flex items-center gap-2"
+                            >
+                                <Shuffle className="w-4 h-4" /> 🎲 {c.has_teams ? 'Volver a Sortear' : 'Sortear Equipos'}
+                            </Button>
+                        )}
                     </div>
                 </div>
             </motion.div>
@@ -828,7 +872,60 @@ export const ConvocatoriaDetailPage = () => {
                 transition={{ delay: 0.2 }}
                 className="space-y-6"
             >
-                {hasTeams ? (
+                {/* View Switcher: Tactical Pitch vs Grid */}
+                <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-4 rounded-3xl shadow-xl">
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setViewMode('pitch')}
+                            className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
+                                viewMode === 'pitch'
+                                    ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
+                                    : 'bg-slate-800 text-slate-300 hover:text-white'
+                            }`}
+                        >
+                            ⚽ Cancha Táctica 2D
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setViewMode('cards')}
+                            className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
+                                viewMode === 'cards'
+                                    ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
+                                    : 'bg-slate-800 text-slate-300 hover:text-white'
+                            }`}
+                        >
+                            📋 Vista Lista / Equipos
+                        </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <Button
+                            onClick={() => setShowFlyerModal(true)}
+                            className="bg-slate-800 hover:bg-slate-700 text-lime-400 border border-lime-400/30 font-bold text-xs uppercase tracking-wider rounded-xl h-10 px-3.5 flex items-center gap-1.5"
+                        >
+                            <Sparkles className="w-3.5 h-3.5" /> 📲 Flyer WhatsApp
+                        </Button>
+                        {user?.role === 'admin' && (
+                            <Button
+                                onClick={() => setShowShuffleModal(true)}
+                                className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl h-10 px-3.5 flex items-center gap-1.5"
+                            >
+                                <Shuffle className="w-3.5 h-3.5" /> {hasTeams ? 'Re-sortear' : 'Sortear'}
+                            </Button>
+                        )}
+                    </div>
+                </div>
+
+                {viewMode === 'pitch' ? (
+                    <TacticalPitch 
+                        convocatoria={c} 
+                        onSelectPlayer={(p) => setSelectedPlayerCard(p)} 
+                        onSwapTeam={handleSwapTeam} 
+                        isAdmin={user?.role === 'admin'} 
+                    />
+                ) : (
+                    hasTeams ? (
                     <div className="space-y-6">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl">
                             <div>
@@ -895,11 +992,13 @@ export const ConvocatoriaDetailPage = () => {
                                                 return (
                                                     <div 
                                                         key={p.id} 
-                                                        className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                                                        onClick={() => setSelectedPlayerCard(p)}
+                                                        className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer hover:scale-[1.01] ${
                                                             isMe 
                                                                 ? 'bg-amber-400/15 border-amber-400/40 shadow-sm' 
-                                                                : 'bg-amber-400/5 dark:bg-amber-400/10 border-amber-400/20'
+                                                                : 'bg-amber-400/5 dark:bg-amber-400/10 border-amber-400/20 hover:border-amber-400'
                                                         }`}
+                                                        title="Clic para ver Carta FUT 3D"
                                                     >
                                                         <div className="flex items-center gap-3 min-w-0">
                                                             <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-base shrink-0 shadow-sm">
@@ -964,11 +1063,13 @@ export const ConvocatoriaDetailPage = () => {
                                                 return (
                                                     <div 
                                                         key={p.id} 
-                                                        className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                                                        onClick={() => setSelectedPlayerCard(p)}
+                                                        className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer hover:scale-[1.01] ${
                                                             isMe 
                                                                 ? 'bg-emerald-500/10 border-emerald-500/40 shadow-sm' 
-                                                                : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-800'
+                                                                : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-800 hover:border-lime-400/50'
                                                         }`}
+                                                        title="Clic para ver Carta FUT 3D"
                                                     >
                                                         <div className="flex items-center gap-3 min-w-0">
                                                             <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center justify-center font-black text-sm shrink-0">
@@ -1088,13 +1189,15 @@ export const ConvocatoriaDetailPage = () => {
                                         return (
                                             <div 
                                                 key={p.id} 
-                                                className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                                                onClick={() => setSelectedPlayerCard(p)}
+                                                className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 cursor-pointer hover:scale-[1.01] ${
                                                     isMe 
                                                         ? 'bg-emerald-500/10 border-emerald-500/40 shadow-sm' 
                                                         : isGoalkeeper 
-                                                            ? 'bg-amber-400/5 dark:bg-amber-400/10 border-amber-400/30' 
-                                                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                                                            ? 'bg-amber-400/5 dark:bg-amber-400/10 border-amber-400/30 hover:border-amber-400' 
+                                                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 hover:border-lime-400/50'
                                                 }`}
+                                                title="Clic para ver Carta FUT 3D"
                                             >
                                                 <div className="flex items-center gap-3 min-w-0">
                                                     {/* Badge de orden o dorsal */}
@@ -1179,8 +1282,29 @@ export const ConvocatoriaDetailPage = () => {
                             </div>
                         )}
                     </div>
-                )}
+                ))}
             </motion.div>
+
+            {/* Modal Flyer para WhatsApp */}
+            <ConvocatoriaFlyerModal 
+                isOpen={showFlyerModal} 
+                onClose={() => setShowFlyerModal(false)} 
+                convocatoria={c} 
+            />
+
+            {/* Modal Sorteo Inteligente */}
+            <TeamShuffleModal 
+                isOpen={showShuffleModal} 
+                onClose={() => setShowShuffleModal(false)} 
+                convocatoria={c} 
+            />
+
+            {/* Modal Carta FUT 3D de Jugador */}
+            <PlayerCardModal 
+                isOpen={!!selectedPlayerCard} 
+                onClose={() => setSelectedPlayerCard(null)} 
+                player={selectedPlayerCard} 
+            />
         </div>
     );
 };

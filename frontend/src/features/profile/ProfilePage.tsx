@@ -5,8 +5,10 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
-import { Camera, Save, User as UserIcon } from 'lucide-react';
+import { Camera, Save, User as UserIcon, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
+import { FutPlayerCard } from '@/components/player/FutPlayerCard';
+import { PlayerAchievements } from '@/components/player/PlayerAchievements';
 
 export const ProfilePage = () => {
     const { user, fetchUser } = useAuthStore();
@@ -57,12 +59,12 @@ export const ProfilePage = () => {
     };
 
     return (
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-5xl mx-auto space-y-8">
             {/* Header Banner */}
             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-slate-900 rounded-[2rem] p-8 mb-8 shadow-2xl relative overflow-hidden"
+                className="bg-slate-900 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden"
             >
                 <div className="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-primary/20 to-transparent skew-x-12"></div>
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
@@ -98,24 +100,59 @@ export const ProfilePage = () => {
                             <span className="px-3 py-1 bg-accent/20 text-accent border border-accent/30 rounded-full text-xs font-bold uppercase tracking-widest">
                                 {formData.position}
                             </span>
+                            {formData.jersey_number && (
+                                <span className="px-3 py-1 bg-lime-400 text-slate-950 rounded-full text-xs font-black font-mono">
+                                    DORSAL #{formData.jersey_number}
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
             </motion.div>
 
-            {/* Form Form */}
-            <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white dark:bg-slate-900 rounded-[2rem] p-8 shadow-xl border border-slate-200 dark:border-slate-800"
-            >
-                <div className="mb-8 border-b border-slate-100 dark:border-slate-800 pb-4">
-                    <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Ficha Técnica</h2>
-                    <p className="text-slate-500 dark:text-slate-400">Actualiza tus datos para que el equipo pueda contactarte.</p>
-                </div>
+            {/* Layout: FUT Card Preview + Technical Sheet Form */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                
+                {/* Official FUT Card Column */}
+                <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="lg:col-span-1 flex flex-col items-center space-y-4 bg-slate-900 border border-slate-800 p-6 rounded-[2rem] shadow-xl"
+                >
+                    <div className="text-center w-full pb-3 border-b border-slate-800">
+                        <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider flex items-center justify-center gap-1.5">
+                            <Sparkles size={13} /> Tu Carta Digital Oficial
+                        </span>
+                        <h3 className="font-black text-lg text-white uppercase tracking-tight">FUT Player Card</h3>
+                        <p className="text-[11px] text-slate-400 mt-0.5">Se actualiza en vivo con tus datos</p>
+                    </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                    <FutPlayerCard 
+                        user={{
+                            ...user,
+                            position: formData.position as any,
+                            jersey_number: formData.jersey_number ? Number(formData.jersey_number) : user?.jersey_number,
+                            nickname: formData.nickname || user?.nickname
+                        }} 
+                        size="md" 
+                        showDownload={true} 
+                    />
+                </motion.div>
+
+                {/* Form Column */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-8 shadow-xl border border-slate-200 dark:border-slate-800"
+                >
+                    <div className="mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
+                        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Ficha Técnica</h2>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs">Actualiza tus datos para que el equipo pueda contactarte y armar los partidos.</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Nombres</label>
@@ -236,6 +273,10 @@ export const ProfilePage = () => {
                     </div>
                 </form>
             </motion.div>
+            </div>
+
+            {/* Official Achievements and Badges */}
+            <PlayerAchievements user={user || {}} participationsCount={5} />
         </div>
     );
 };
