@@ -98,22 +98,19 @@ export const ConvocatoriaDetailPage = () => {
     const cost = parseFloat(String(c?.cost_per_player || '0'));
     const hasEnoughBalance = cost <= 0 || userBalance >= cost;
 
-    if (isLoading) return <div className="py-24 flex justify-center"><FootballSpinner /></div>;
-    if (!c) return <div className="py-24 text-center text-white text-2xl font-bold">Convocatoria no encontrada</div>;
-
-    const confirmados = c.confirmaciones?.filter((p: Confirmacion) => p.status === 'confirmado') || [];
+    const confirmados = c?.confirmaciones?.filter((p: Confirmacion) => p.status === 'confirmado') || [];
     const myConfirmation = confirmados.find((p: Confirmacion) => p.user?.id === user?.id);
     const isConfirmed = !!myConfirmation;
     
-    const porterosMax = c.max_porteros || c.num_teams || 2;
-    const porterosActuales = c.porteros_count ?? confirmados.filter((p: Confirmacion) => p.match_role === 'portero').length;
+    const porterosMax = c?.max_porteros || c?.num_teams || 2;
+    const porterosActuales = c?.porteros_count ?? confirmados.filter((p: Confirmacion) => p.match_role === 'portero').length;
     const porterosLlenos = porterosActuales >= porterosMax;
 
-    const jugadoresMax = c.max_jugadores ?? Math.max(0, c.max_players - porterosMax);
-    const jugadoresActuales = c.jugadores_count ?? Math.max(0, c.confirmed_count - porterosActuales);
+    const jugadoresMax = c?.max_jugadores ?? Math.max(0, (c?.max_players || 14) - porterosMax);
+    const jugadoresActuales = c?.jugadores_count ?? Math.max(0, (c?.confirmed_count || 0) - porterosActuales);
     const jugadoresLlenos = jugadoresActuales >= jugadoresMax;
-    const cupoLleno = c.confirmed_count >= c.max_players || (porterosLlenos && jugadoresLlenos);
-    const fillPercent = Math.min(100, Math.round((c.confirmed_count / (c.max_players || 1)) * 100));
+    const cupoLleno = (c?.confirmed_count || 0) >= (c?.max_players || 14) || (porterosLlenos && jugadoresLlenos);
+    const fillPercent = Math.min(100, Math.round(((c?.confirmed_count || 0) / (c?.max_players || 1)) * 100));
 
     // Ajustar rol por defecto automáticamente según disponibilidad
     useEffect(() => {
@@ -123,6 +120,9 @@ export const ConvocatoriaDetailPage = () => {
             setSelectedRole('jugador');
         }
     }, [jugadoresLlenos, porterosLlenos]);
+
+    if (isLoading) return <div className="py-24 flex justify-center"><FootballSpinner /></div>;
+    if (!c) return <div className="py-24 text-center text-white text-2xl font-bold">Convocatoria no encontrada</div>;
 
     // Formateo de fecha amigable en español
     const formattedDate = (() => {
