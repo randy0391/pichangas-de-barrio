@@ -9,7 +9,6 @@ import { CalendarDays, Trophy, Activity, MapPin, ChevronRight, CheckCircle2, Clo
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { DashboardPhotoGallery } from './DashboardPhotoGallery';
-import { ClubStoriesBar } from './ClubStoriesBar';
 import { PlayerCardModal } from '@/components/player/PlayerCardModal';
 import { PlayerAchievements } from '@/components/player/PlayerAchievements';
 
@@ -54,9 +53,6 @@ export const UserDashboardPage = () => {
 
     return (
         <div className="space-y-8">
-            {/* Club Moments Stories Bar */}
-            <ClubStoriesBar />
-
             {/* VIP Player Welcome Banner */}
             <motion.div 
                 initial={{ opacity: 0, y: 15 }} 

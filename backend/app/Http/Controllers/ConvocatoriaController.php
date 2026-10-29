@@ -150,22 +150,24 @@ class ConvocatoriaController extends Controller
     public function sortearEquipos($id)
     {
         $convocatoria = Convocatoria::findOrFail($id);
-        $numTeams = $convocatoria->num_teams;
+        $numTeams = max(2, (int) ($convocatoria->num_teams ?: 2));
 
         // Get all confirmed players
         $confirmados = Confirmacion::where('convocatoria_id', $id)
             ->where('status', 'confirmado')
             ->get();
 
-        if ($confirmados->isEmpty()) {
-            return response()->json(['message' => 'No hay jugadores confirmados para sortear.'], 422);
+        if ($confirmados->count() < $convocatoria->max_players) {
+            return response()->json([
+                'message' => "El sorteo solo se puede realizar cuando todos los cupos esten completos ({$confirmados->count()}/{$convocatoria->max_players} confirmados)."
+            ], 422);
         }
 
         // Separate porteros and jugadores
         $porteros = $confirmados->where('match_role', 'portero')->values();
         $jugadores = $confirmados->where('match_role', 'jugador')->values();
 
-        // Shuffle both groups
+        // Shuffle both groups randomly
         $porteros = $porteros->shuffle();
         $jugadores = $jugadores->shuffle();
 
@@ -193,9 +195,21 @@ class ConvocatoriaController extends Controller
             $teamIndex++;
         }
 
+        // Random match pairings and resting team if more than 2 teams
+        $teamOrder = range(1, $numTeams);
+        shuffle($teamOrder);
+        $firstMatchTeamA = $teamOrder[0];
+        $firstMatchTeamB = $teamOrder[1];
+        $restingTeams = array_slice($teamOrder, 2);
+
         return response()->json([
             'message' => "Equipos sorteados exitosamente en {$numTeams} equipos.",
             'teams' => $numTeams,
+            'first_match' => [
+                'team_a' => $firstMatchTeamA,
+                'team_b' => $firstMatchTeamB,
+                'resting_teams' => $restingTeams,
+            ]
         ]);
     }
 

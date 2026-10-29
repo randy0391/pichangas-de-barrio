@@ -24,10 +24,11 @@ export const TeamShuffleModal: React.FC<TeamShuffleModalProps> = ({
   const confirmados = (convocatoria.confirmaciones || []).filter(c => c.status === 'confirmado');
   const porteros = confirmados.filter(c => c.match_role === 'portero');
   const jugadores = confirmados.filter(c => c.match_role !== 'portero');
+  const isFull = confirmados.length >= convocatoria.max_players;
 
   const handleExecuteSortear = () => {
-    if (confirmados.length < 2) {
-      toast.error('Se necesitan al menos 2 jugadores confirmados para sortear.');
+    if (!isFull) {
+      toast.error(`El sorteo oficial requiere cupos completos (${confirmados.length}/${convocatoria.max_players} confirmados).`);
       return;
     }
 
@@ -125,13 +126,23 @@ export const TeamShuffleModal: React.FC<TeamShuffleModalProps> = ({
         ) : (
           <div className="bg-slate-950/70 p-4 rounded-2xl border border-slate-800/80 space-y-2.5">
             <p className="text-xs text-slate-300">
-              El sistema distribuirá a los <strong>{confirmados.length} jugadores confirmados</strong> en {convocatoria.num_teams || 2} equipos equilibrados (Equipo Blanco vs Equipo Verde).
+              El sorteo oficial distribuirá aleatoriamente a los <strong>{convocatoria.max_players} jugadores</strong> en {convocatoria.num_teams || 2} equipos equilibrados.
             </p>
             <ul className="text-[11px] text-slate-400 space-y-1 list-disc list-inside">
               <li>Asigna 1 portero oficial a cada equipo.</li>
               <li>Distribuye aleatoriamente a los jugadores de campo.</li>
-              <li>Puedes volver a sortear o mover jugadores manualmente en la cancha.</li>
+              {(convocatoria.num_teams || 2) > 2 && (
+                <li className="text-amber-400 font-bold">
+                  ¡Sortea también qué equipos juegan el 1er partido y qué equipo descansa!
+                </li>
+              )}
             </ul>
+
+            {!isFull && (
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold text-center">
+                ⚠️ Faltan {convocatoria.max_players - confirmados.length} confirmados para completar el cupo y habilitar el sorteo.
+              </div>
+            )}
           </div>
         )}
 
@@ -140,11 +151,13 @@ export const TeamShuffleModal: React.FC<TeamShuffleModalProps> = ({
           <button
             type="button"
             onClick={handleExecuteSortear}
-            disabled={isShufflingAnimation || isSorting || confirmados.length < 2}
-            className="w-full h-12 bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-lime-400/20 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+            disabled={isShufflingAnimation || isSorting || !isFull}
+            className="w-full h-12 bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-lime-400/20 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Shuffle size={16} />
-            {convocatoria.has_teams ? 'Volver a Sortear Equipos 🎲' : 'Iniciar Sorteo Oficial 🎲'}
+            {!isFull 
+              ? `Cupos Incompletos (${confirmados.length}/${convocatoria.max_players})` 
+              : convocatoria.has_teams ? 'Volver a Sortear Equipos 🎲' : 'Iniciar Sorteo Oficial 🎲'}
           </button>
 
           {convocatoria.has_teams && (

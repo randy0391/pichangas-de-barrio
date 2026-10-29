@@ -356,12 +356,14 @@ export const ConvocatoriaDetailPage = () => {
 
                     {/* Quick Action Toolbar */}
                     <div className="flex flex-wrap items-center gap-3 pt-2">
-                        <Button 
-                            onClick={() => setShowFlyerModal(true)}
-                            className="bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-5 shadow-lg shadow-lime-400/20 flex items-center gap-2"
-                        >
-                            <Sparkles className="w-4 h-4" /> 📲 Generar Flyer WhatsApp
-                        </Button>
+                        {user?.role === 'admin' && (
+                            <Button 
+                                onClick={() => setShowFlyerModal(true)}
+                                className="bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-5 shadow-lg shadow-lime-400/20 flex items-center gap-2"
+                            >
+                                <Sparkles className="w-4 h-4" /> 📲 Generar Flyer WhatsApp
+                            </Button>
+                        )}
                         <Button 
                             onClick={handleCopy}
                             variant="outline"
@@ -872,62 +874,65 @@ export const ConvocatoriaDetailPage = () => {
                 transition={{ delay: 0.2 }}
                 className="space-y-6"
             >
-                {/* View Switcher: Tactical Pitch vs Grid */}
-                <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-4 rounded-3xl shadow-xl">
-                    <div className="flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setViewMode('pitch')}
-                            className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
-                                viewMode === 'pitch'
-                                    ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
-                                    : 'bg-slate-800 text-slate-300 hover:text-white'
-                            }`}
-                        >
-                            ⚽ Cancha Táctica 2D
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setViewMode('cards')}
-                            className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
-                                viewMode === 'cards'
-                                    ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
-                                    : 'bg-slate-800 text-slate-300 hover:text-white'
-                            }`}
-                        >
-                            📋 Vista Lista / Equipos
-                        </button>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <Button
-                            onClick={() => setShowFlyerModal(true)}
-                            className="bg-slate-800 hover:bg-slate-700 text-lime-400 border border-lime-400/30 font-bold text-xs uppercase tracking-wider rounded-xl h-10 px-3.5 flex items-center gap-1.5"
-                        >
-                            <Sparkles className="w-3.5 h-3.5" /> 📲 Flyer WhatsApp
-                        </Button>
-                        {user?.role === 'admin' && (
-                            <Button
-                                onClick={() => setShowShuffleModal(true)}
-                                className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl h-10 px-3.5 flex items-center gap-1.5"
-                            >
-                                <Shuffle className="w-3.5 h-3.5" /> {hasTeams ? 'Re-sortear' : 'Sortear'}
-                            </Button>
-                        )}
-                    </div>
-                </div>
-
-                {viewMode === 'pitch' ? (
-                    <TacticalPitch 
-                        convocatoria={c} 
-                        onSelectPlayer={(p) => setSelectedPlayerCard(p)} 
-                        onSwapTeam={handleSwapTeam} 
-                        isAdmin={user?.role === 'admin'} 
-                    />
-                ) : (
-                    hasTeams ? (
+                {hasTeams ? (
                     <div className="space-y-6">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl">
+                        {/* View Switcher: Tactical Pitch vs Grid */}
+                        <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-4 rounded-3xl shadow-xl">
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode('pitch')}
+                                    className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
+                                        viewMode === 'pitch'
+                                            ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
+                                            : 'bg-slate-800 text-slate-300 hover:text-white'
+                                    }`}
+                                >
+                                    ⚽ Cancha Táctica 2D
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode('cards')}
+                                    className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
+                                        viewMode === 'cards'
+                                            ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
+                                            : 'bg-slate-800 text-slate-300 hover:text-white'
+                                    }`}
+                                >
+                                    📋 Vista Lista / Equipos
+                                </button>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                {user?.role === 'admin' && (
+                                    <>
+                                        <Button
+                                            onClick={() => setShowFlyerModal(true)}
+                                            className="bg-slate-800 hover:bg-slate-700 text-lime-400 border border-lime-400/30 font-bold text-xs uppercase tracking-wider rounded-xl h-10 px-3.5 flex items-center gap-1.5"
+                                        >
+                                            <Sparkles className="w-3.5 h-3.5" /> 📲 Flyer WhatsApp
+                                        </Button>
+                                        <Button
+                                            onClick={() => setShowShuffleModal(true)}
+                                            className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl h-10 px-3.5 flex items-center gap-1.5"
+                                        >
+                                            <Shuffle className="w-3.5 h-3.5" /> Re-sortear
+                                        </Button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        {viewMode === 'pitch' ? (
+                            <TacticalPitch 
+                                convocatoria={c} 
+                                onSelectPlayer={(p) => setSelectedPlayerCard(p)} 
+                                onSwapTeam={handleSwapTeam} 
+                                isAdmin={user?.role === 'admin'} 
+                            />
+                        ) : (
+                            <div className="space-y-6">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl">
                             <div>
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-primary block">Alineaciones del Encuentro</span>
                                 <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
@@ -1139,7 +1144,9 @@ export const ConvocatoriaDetailPage = () => {
                             })}
                         </div>
                     </div>
-                ) : (
+                )}
+            </div>
+        ) : (
                     /* Vista cuando no hay sorteo de equipos: Lista general de Convocados */
                     <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
@@ -1282,7 +1289,7 @@ export const ConvocatoriaDetailPage = () => {
                             </div>
                         )}
                     </div>
-                ))}
+                )}
             </motion.div>
 
             {/* Modal Flyer para WhatsApp */}

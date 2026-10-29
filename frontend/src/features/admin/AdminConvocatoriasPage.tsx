@@ -443,16 +443,12 @@ export const AdminConvocatoriasPage = () => {
     };
 
     const handleSortear = (c: Convocatoria) => {
-        if (c.confirmed_count < 2) {
-            toast.error('Se necesitan al menos 2 jugadores confirmados para sortear.');
+        if (c.confirmed_count < c.max_players) {
+            toast.error(`El sorteo oficial requiere que todos los cupos estén completos (${c.confirmed_count}/${c.max_players} confirmados).`);
             return;
         }
 
-        const warnText = c.confirmed_count < c.max_players 
-            ? `Hay ${c.confirmed_count} de ${c.max_players} jugadores confirmados. ¿Sortear con los presentes?`
-            : `¿Sortear los equipos para "${c.title}"?`;
-
-        toast(warnText, {
+        toast(`¿Sortear aleatoriamente los equipos para "${c.title}"?`, {
             action: {
                 label: 'Sortear Ahora 🎲',
                 onClick: () => {
@@ -461,7 +457,7 @@ export const AdminConvocatoriasPage = () => {
                             toast.success('¡Equipos sorteados con éxito! 🎲');
                             setExpandedId(c.id); // Expand teams view automatically
                         },
-                        onError: () => toast.error('Error al sortear equipos.')
+                        onError: (err: any) => toast.error(err?.response?.data?.message || 'Error al sortear equipos.')
                     });
                 }
             },
@@ -1117,15 +1113,15 @@ export const AdminConvocatoriasPage = () => {
                                             {/* Botón Sortear */}
                                             <Button 
                                                 onClick={() => handleSortear(c)} 
-                                                disabled={isSorting || c.confirmed_count < 2} 
+                                                disabled={isSorting || c.confirmed_count < c.max_players} 
                                                 className={`h-11 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md transition-all ${
-                                                    c.confirmed_count < 2 
+                                                    c.confirmed_count < c.max_players 
                                                         ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-300 dark:border-slate-700' 
                                                         : c.has_teams
                                                             ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40 hover:bg-amber-500/30'
                                                             : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white'
                                                 }`}
-                                                title={c.confirmed_count < 2 ? 'Requiere al menos 2 confirmados' : 'Sortear alineaciones'}
+                                                title={c.confirmed_count < c.max_players ? `Requiere cupo completo (${c.confirmed_count}/${c.max_players})` : 'Sortear alineaciones'}
                                             >
                                                 <Shuffle size={16} /> {c.has_teams ? 'Volver a Sortear' : 'Sortear'}
                                             </Button>
