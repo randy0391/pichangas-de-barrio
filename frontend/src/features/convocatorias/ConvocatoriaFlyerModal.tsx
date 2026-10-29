@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Convocatoria, Confirmacion } from '@/types';
-import { X, Download, Copy, Share2, Sparkles, Check, Key, RefreshCw, Tag, Users, Wand2, Image as ImageIcon } from 'lucide-react';
+import { X, Download, Copy, Share2, Sparkles, Check, Key, RefreshCw, Tag, MapPin, Calendar, Phone } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useConvocatoria } from '@/hooks/useConvocatorias';
 import { toast } from 'sonner';
@@ -22,23 +22,52 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Always fetch detailed convocatoria with confirmaciones.user eager-loaded
+  // Fetch full detailed convocatoria with confirmaciones.user eager-loaded
   const { data: fullConvocatoria, isLoading: isLoadingFull, refetch } = useConvocatoria(convocatoria?.id);
   const activeConvocatoria = fullConvocatoria || convocatoria;
 
-  // Flyer Style Mode: AI Generative (adapts to 2, 3 or 4 teams) vs Classic Template
-  const [flyerStyle, setFlyerStyle] = useState<'ai_generative' | 'classic_template'>('ai_generative');
-
-  // Modality/Category banner text (defaults to FUTSAL or detected modality)
+  // Format defaults matching official reference flyer
+  const numTeams = activeConvocatoria?.num_teams || 3;
   const defaultCategory = (() => {
     const title = (activeConvocatoria?.title || convocatoria?.title || '').toUpperCase();
+    if (title.includes('FUTBOL 7') || title.includes('FÚTBOL 7')) return 'FUTBOL 7';
     if (title.includes('FUTSAL')) return 'FUTSAL';
-    if (title.includes('FUTBOL 7') || title.includes('FÚTBOL 7')) return 'FÚTBOL 7';
     if (title.includes('FUTBOL 6') || title.includes('FÚTBOL 6')) return 'FÚTBOL 6';
     if (title.includes('FUTBOL 8') || title.includes('FÚTBOL 8')) return 'FÚTBOL 8';
-    return 'FUTSAL';
+    return numTeams === 3 ? 'FUTBOL 7' : 'FUTSAL';
   })();
+
+  // Editable fields for Admin
   const [categoryText, setCategoryText] = useState(defaultCategory);
+  const [venueText, setVenueText] = useState(activeConvocatoria?.location || 'Grass el Bosque de Moyococha');
+  const [contactPhone, setContactPhone] = useState('960735653');
+
+  // Format date & time helper
+  const getShortDateTime = (dateStr?: string, timeStr?: string) => {
+    let dayName = 'JUEVES';
+    if (dateStr) {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        const days = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+        dayName = days[d.getDay()] || 'JUEVES';
+      }
+    }
+    let timeText = '9 PM';
+    if (timeStr) {
+      const tParts = timeStr.split(':');
+      let h = parseInt(tParts[0], 10);
+      const m = tParts[1] || '00';
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      timeText = m === '00' ? `${h} ${ampm}` : `${h}:${m} ${ampm}`;
+    }
+    return `${dayName} ${timeText}`;
+  };
+
+  const [dateTimeText, setDateTimeText] = useState(() => 
+    getShortDateTime(activeConvocatoria?.match_date, activeConvocatoria?.match_time)
+  );
 
   // Gemini API Key management
   const FALLBACK_KEY = (() => {
@@ -57,41 +86,41 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
     return DEFAULT_KEY;
   });
   const [showKeyConfig, setShowKeyConfig] = useState(false);
-
-  // AI Generated Match Metadata
-  const numTeams = activeConvocatoria?.num_teams || 2;
-  const defaultTag = numTeams === 2 ? 'CLÁSICO DE BARRIO ⚡ 1 VS 1' : (numTeams === 3 ? 'TRIANGULAR DE CANDELA' : 'CUADRANGULAR DE TITANES');
   const [aiHeadline, setAiHeadline] = useState<string>('¡DUELO DE TITANES EN LA CANCHA!');
-  const [aiMatchTag, setAiMatchTag] = useState<string>(defaultTag);
   const [aiHypeNarrative, setAiHypeNarrative] = useState<string>('');
-  const [aiStatus, setAiStatus] = useState<string | null>(null);
 
   // Strictly only accessible for Admin
   const isAdmin = user?.role === 'admin' || user?.role?.toLowerCase() === 'admin' || Boolean((user as any)?.is_admin);
   if (!isOpen || !isAdmin) return null;
 
   useEffect(() => {
-    if (isOpen && activeConvocatoria) {
-      renderPoster(aiHeadline, aiMatchTag);
+    if (activeConvocatoria?.location) {
+      setVenueText(activeConvocatoria.location);
     }
-  }, [isOpen, activeConvocatoria, categoryText, aiHeadline, aiMatchTag, flyerStyle]);
+    if (activeConvocatoria?.match_date) {
+      setDateTimeText(getShortDateTime(activeConvocatoria.match_date, activeConvocatoria.match_time));
+    }
+  }, [activeConvocatoria?.location, activeConvocatoria?.match_date, activeConvocatoria?.match_time]);
 
-  // Request AI Match Announcement & Slogan from Gemini 3.5 Flash Lite
+  useEffect(() => {
+    if (isOpen && activeConvocatoria) {
+      renderPoster();
+    }
+  }, [isOpen, activeConvocatoria, categoryText, venueText, dateTimeText, contactPhone]);
+
+  // Request AI Hype Narrative from Gemini 3.5 Flash Lite
   const fetchGeminiData = async (keyToUse: string) => {
     try {
       setIsGenerating(true);
-      setAiStatus('Gemini IA analizando alineaciones...');
-      
-      const venue = activeConvocatoria.location || 'la cancha';
-      const prompt = `Actua como narrador deportivo oficial de "Pichangas de Barrio FC".
+      const prompt = `Actua como narrador oficial de Pichangas de Barrio FC.
 Partido: "${activeConvocatoria.title}"
+Sede: "${venueText}"
+Fecha: "${dateTimeText}"
 Formato: ${numTeams} equipos
-Sede: "${venue}"
 Genera un JSON con este formato exacto:
 {
-  "headline": "Eslogan epico de maximo 6 palabras en MAYUSCULAS (sin comillas)",
-  "match_tag": "Etiqueta corta en MAYUSCULAS (ej: CLASICO DE BARRIO, DUELO DE TITANES, o TRIANGULAR DE CANDELA)",
-  "hype": "Narrativa de 2 lineas motivadoras para compartir en WhatsApp anunciando a los equipos y la sede."
+  "headline": "Eslogan epico corto maximo 6 palabras en MAYUSCULAS",
+  "hype": "Narrativa emocionante de 2 lineas para compartir en WhatsApp motivando a los jugadores y anunciando la sede."
 }`;
 
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${keyToUse}`, {
@@ -104,162 +133,100 @@ Genera un JSON con este formato exacto:
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error?.message || 'Error en Gemini API');
-      }
+      if (!res.ok) throw new Error(data?.error?.message || 'Error en Gemini API');
 
       const rawJson = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
       if (rawJson) {
         const parsed = JSON.parse(rawJson);
-        const headlineText = (parsed.headline || '¡DUELO DE TITANES EN LA CANCHA!').toUpperCase();
-        const tagText = (parsed.match_tag || defaultTag).toUpperCase();
-        
-        setAiHeadline(headlineText);
-        setAiMatchTag(tagText);
+        if (parsed.headline) setAiHeadline(parsed.headline.toUpperCase());
         if (parsed.hype) setAiHypeNarrative(parsed.hype);
-
-        setAiStatus('¡Afiche generado con Gemini IA!');
-        toast.success('¡Diseño actualizado con Inteligencia Artificial!');
-        await renderPoster(headlineText, tagText);
+        toast.success('¡Eslogan y texto generados con Gemini IA!');
       }
     } catch {
-      setAiStatus('Eslogan oficial activo.');
-      await renderPoster(aiHeadline, aiMatchTag);
+      toast.info('Se mantiene el diseño oficial del afiche.');
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // Helper to format Date and Time
-  const formatMatchDateTime = (dateStr?: string, timeStr?: string) => {
-    let dayNameStr = 'MIÉRCOLES';
-    let fullDateStr = '';
-    if (dateStr) {
-      const parts = dateStr.split('-');
-      if (parts.length === 3) {
-        const year = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const day = parseInt(parts[2], 10);
-        const d = new Date(year, month, day);
-        const days = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
-        dayNameStr = days[d.getDay()] || 'MIÉRCOLES';
-        const months = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SET', 'OCT', 'NOV', 'DIC'];
-        fullDateStr = `${dayNameStr} ${day} ${months[month]}`;
-      }
-    }
-
-    let formattedTime = '10:00 P. M.';
-    if (timeStr) {
-      const tParts = timeStr.split(':');
-      let h = parseInt(tParts[0], 10);
-      const m = tParts[1] || '00';
-      const ampm = h >= 12 ? 'P. M.' : 'A. M.';
-      h = h % 12 || 12;
-      formattedTime = `${h}:${m} ${ampm}`;
-    }
-
-    return { dayNameStr, fullDateStr, formattedTime };
-  };
-
-  // Procedural 3D Soccer Ball Renderer in Canvas
-  const drawSoccerBall = (ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) => {
-    ctx.save();
-    // Drop shadow
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-    ctx.beginPath();
-    ctx.ellipse(cx + 8, cy + r - 5, r * 0.85, r * 0.25, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Base Sphere gradient
-    const ballGrad = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, r * 0.1, cx, cy, r);
-    ballGrad.addColorStop(0, '#ffffff');
-    ballGrad.addColorStop(0.65, '#f1f5f9');
-    ballGrad.addColorStop(1, '#94a3b8');
-    ctx.fillStyle = ballGrad;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = '#0f172a';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // Central pentagon
-    ctx.fillStyle = '#090d16';
-    ctx.beginPath();
-    for (let i = 0; i < 5; i++) {
-      const ang = (i * 72 - 18) * (Math.PI / 180);
-      const px = cx + Math.cos(ang) * (r * 0.38);
-      const py = cy + Math.sin(ang) * (r * 0.38);
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.closePath();
-    ctx.fill();
-
-    // Seam lines to outer points
-    for (let i = 0; i < 5; i++) {
-      const ang = (i * 72 - 18) * (Math.PI / 180);
-      const px1 = cx + Math.cos(ang) * (r * 0.38);
-      const py1 = cy + Math.sin(ang) * (r * 0.38);
-      const px2 = cx + Math.cos(ang) * (r * 0.82);
-      const py2 = cy + Math.sin(ang) * (r * 0.82);
-      ctx.beginPath();
-      ctx.moveTo(px1, py1);
-      ctx.lineTo(px2, py2);
-      ctx.stroke();
-    }
-
-    // Outer patch hints
-    for (let i = 0; i < 5; i++) {
-      const ang = (i * 72 - 18) * (Math.PI / 180);
-      const px2 = cx + Math.cos(ang) * (r * 0.82);
-      const py2 = cy + Math.sin(ang) * (r * 0.82);
-      ctx.fillStyle = '#090d16';
-      ctx.beginPath();
-      ctx.arc(px2, py2, r * 0.16, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Specular shine
-    const shine = ctx.createRadialGradient(cx - r * 0.4, cy - r * 0.4, 2, cx - r * 0.4, cy - r * 0.4, r * 0.45);
-    shine.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
-    shine.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = shine;
-    ctx.beginPath();
-    ctx.arc(cx - r * 0.4, cy - r * 0.4, r * 0.45, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  };
-
-  // Procedural Graffiti Splatter Renderer
-  const drawSplatter = (ctx: CanvasRenderingContext2D, x: number, y: number, color: string, radius: number) => {
-    ctx.save();
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Satellite droplets
-    for (let i = 0; i < 6; i++) {
-      const ang = (i * 60 + 15) * (Math.PI / 180);
-      const dist = radius * (1.6 + (i % 3) * 0.5);
-      const dropR = radius * 0.28;
-      ctx.beginPath();
-      ctx.arc(x + Math.cos(ang) * dist, y + Math.sin(ang) * dist, dropR, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
-  };
-
-  const renderPoster = async (headline: string, matchTag: string) => {
+  const renderPoster = async () => {
     const canvas = canvasRef.current || document.createElement('canvas');
     const width = 1080;
-    const height = 1620; // 2:3 vertical poster
+    const height = 1620; // 2:3 official ratio matching 682x1024
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // 1. Load the official base template (with night sky, floodlights, team photo, and grunge banners)
+    const baseImg = new Image();
+    baseImg.crossOrigin = 'anonymous';
+    baseImg.src = '/flyer-template-official.jpg';
+
+    const isLoaded = await new Promise<boolean>((resolve) => {
+      baseImg.onload = () => resolve(true);
+      baseImg.onerror = () => {
+        // Fallback to secondary template filename
+        const fallback = new Image();
+        fallback.crossOrigin = 'anonymous';
+        fallback.src = '/flyer-template.jpg';
+        fallback.onload = () => {
+          ctx.drawImage(fallback, 0, 0, width, height);
+          resolve(true);
+        };
+        fallback.onerror = () => resolve(false);
+      };
+    });
+
+    if (isLoaded && baseImg.width > 0) {
+      ctx.drawImage(baseImg, 0, 0, width, height);
+    }
+
+    // 2. Modality Ribbon Banner (y = 280 to 350)
+    // Only repaint if categoryText differs from default "FUTBOL 7" or custom text
+    ctx.save();
+    ctx.translate(width / 2, 312);
+    ctx.rotate(-0.02);
+
+    ctx.fillStyle = '#c8ff00'; // Neon lime-yellow brush ribbon
+    ctx.strokeStyle = '#05070a';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.roundRect(-240, -36, 480, 72, 10);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#0a0a0a';
+    ctx.font = '900 48px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(categoryText.toUpperCase(), 0, 0);
+    ctx.restore();
+
+    // 3. Match Date & Time (y = 358 to 425)
+    // Clean solid dark starry patch
+    ctx.fillStyle = '#030815';
+    ctx.fillRect(180, 358, width - 360, 68);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 44px sans-serif';
+    ctx.fillText(`📅 ${dateTimeText.toUpperCase()}`, width / 2, 392);
+
+    // 4. Match Venue / Sede (y = 425 to 525)
+    // Clean solid dark starry patch
+    ctx.fillStyle = '#030815';
+    ctx.fillRect(120, 428, width - 240, 95);
+
+    ctx.fillStyle = '#c8ff00'; // Neon yellow-lime
+    ctx.font = '900 44px sans-serif';
+    ctx.fillText(`📍 ${venueText}`, width / 2, 475);
+
+    // 5. Teams & Rosters Section (y = 1045 to 1405)
+    // 100% Solid dark backing covering all old player names
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(20, 1045, width - 40, 360);
 
     // Filter confirmed players
     const rawConfirmados = (activeConvocatoria.confirmaciones || []);
@@ -274,12 +241,7 @@ Genera un JSON con este formato exacto:
     const team1 = confirmados.filter(c => Number(c.team_number) === 1);
     const team2 = confirmados.filter(c => Number(c.team_number) === 2);
     const team3 = confirmados.filter(c => Number(c.team_number) === 3);
-    const team4 = confirmados.filter(c => Number(c.team_number) === 4);
 
-    const hasTeams = team1.length > 0 && team2.length > 0;
-    const detectedNumTeams = activeConvocatoria.num_teams || (team4.length > 0 ? 4 : (team3.length > 0 ? 3 : 2));
-
-    // Sort helper: Portero always at index 0 (#1)
     const sortWithGkFirst = (list: Confirmacion[]) => {
       return [...list].sort((a, b) => {
         const aGk = a.match_role === 'portero' ? 1 : 0;
@@ -288,649 +250,248 @@ Genera un JSON con este formato exacto:
       });
     };
 
-    // -------------------------------------------------------------
-    // OPTION A: AI GENERATIVE SPORTS POSTER (ADAPTIVE TO 2, 3, 4 TEAMS)
-    // -------------------------------------------------------------
-    if (flyerStyle === 'ai_generative') {
-      // 1. Athletic Arena Background
-      const bg = ctx.createLinearGradient(0, 0, 0, height);
-      bg.addColorStop(0, '#020612');
-      bg.addColorStop(0.2, '#041724');
-      bg.addColorStop(0.55, '#06261c');
-      bg.addColorStop(0.85, '#031118');
-      bg.addColorStop(1, '#020612');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, width, height);
+    const hasTeams = team1.length > 0 && team2.length > 0;
+    const detectedNumTeams = activeConvocatoria.num_teams || (team3.length > 0 ? 3 : 2);
 
-      // Diagonal Stadium Netting Mesh Texture
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.035)';
-      ctx.lineWidth = 1.5;
-      for (let i = -width; i < width * 2; i += 45) {
+    if (hasTeams) {
+      if (detectedNumTeams === 2) {
+        // ---------------------------------------------------------
+        // 2 TEAMS LAYOUT (Matching official colors and typography)
+        // ---------------------------------------------------------
+        const colWidth = 460;
+        const col1X = 60;
+        const col2X = 560;
+        const startY = 1050;
+        const pillH = 50;
+
+        // Team 1 Pill (Lime with glove)
+        ctx.fillStyle = '#84cc16';
         ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i + height, height);
-        ctx.stroke();
-      }
-      for (let i = width * 2; i > -width; i -= 45) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i - height, height);
-        ctx.stroke();
-      }
-
-      // Top Floodlights
-      const drawStadiumLight = (x: number, y: number, tintColor: string) => {
-        const rad = ctx.createRadialGradient(x, y, 15, x, y, 320);
-        rad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
-        rad.addColorStop(0.2, tintColor);
-        rad.addColorStop(0.6, 'rgba(200, 255, 0, 0.12)');
-        rad.addColorStop(1, 'transparent');
-        ctx.fillStyle = rad;
-        ctx.beginPath();
-        ctx.arc(x, y, 320, 0, Math.PI * 2);
-        ctx.fill();
-      };
-      drawStadiumLight(100, 60, 'rgba(200, 255, 0, 0.5)');
-      drawStadiumLight(width - 100, 60, 'rgba(34, 211, 238, 0.5)');
-
-      // Top Athletic Bar
-      const topBar = ctx.createLinearGradient(0, 0, width, 0);
-      topBar.addColorStop(0, '#e11d48');
-      topBar.addColorStop(0.5, '#84cc16');
-      topBar.addColorStop(1, '#06b6d4');
-      ctx.fillStyle = topBar;
-      ctx.fillRect(0, 0, width, 14);
-
-      // 2. Title: "PICHANGAS DE BARRIO" in brush street typography
-      ctx.save();
-      ctx.translate(width / 2 - 40, 140);
-      ctx.rotate(-0.03);
-
-      // Dark grunge halo behind title
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-      ctx.beginPath();
-      ctx.ellipse(0, 10, 420, 95, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Top line: PICHANGAS (neon lime/chartreuse)
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = '900 86px sans-serif';
-      ctx.fillStyle = '#0a0a0a';
-      ctx.fillText('PICHANGAS', 4, -40); // shadow
-      ctx.fillStyle = '#c8ff00';
-      ctx.fillText('PICHANGAS', 0, -44);
-
-      // Bottom line: DE BARRIO (white)
-      ctx.font = '900 76px sans-serif';
-      ctx.fillStyle = '#0a0a0a';
-      ctx.fillText('DE BARRIO', 4, 38);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText('DE BARRIO', 0, 34);
-      ctx.restore();
-
-      // 3D Soccer Ball at Top-Right
-      drawSoccerBall(ctx, width - 110, 120, 60);
-
-      // 3. Category Banner & AI Match Tag (y = 235 to 330)
-      ctx.save();
-      ctx.translate(width / 2, 260);
-      ctx.rotate(-0.02);
-
-      // Yellow Ribbon
-      ctx.fillStyle = '#facc15';
-      ctx.strokeStyle = '#05070a';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.roundRect(-220, -32, 440, 64, 12);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#0a0a0a';
-      ctx.font = '900 44px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(categoryText.toUpperCase(), 0, 0);
-      ctx.restore();
-
-      // AI Match Tag Pill
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = '900 22px sans-serif';
-      ctx.fillText(`⚡ ${matchTag} ⚡`, width / 2, 322);
-
-      // 4. Match Details Box (Date, Time, Sede) (y = 345 to 480)
-      const { dayNameStr, formattedTime } = formatMatchDateTime(activeConvocatoria.match_date, activeConvocatoria.match_time);
-      const venueName = (activeConvocatoria.location || 'JOHN ANDREWS').toUpperCase();
-
-      ctx.fillStyle = '#050b18';
-      ctx.beginPath();
-      ctx.roundRect(65, 345, width - 130, 132, 22);
-      ctx.fill();
-
-      const infoBoxGrad = ctx.createLinearGradient(0, 345, 0, 477);
-      infoBoxGrad.addColorStop(0, '#0a1628');
-      infoBoxGrad.addColorStop(1, '#040914');
-      ctx.fillStyle = infoBoxGrad;
-      ctx.strokeStyle = 'rgba(200, 255, 0, 0.45)';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.roundRect(65, 345, width - 130, 132, 22);
-      ctx.fill();
-      ctx.stroke();
-
-      // AI Slogan
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#fde047';
-      ctx.font = '900 22px sans-serif';
-      ctx.fillText(`🔥 ${headline} 🔥`, width / 2, 375);
-
-      // Date & Time
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 36px sans-serif';
-      ctx.fillText(`📅 ${dayNameStr}   |   🕒 ${formattedTime}`, width / 2, 415);
-
-      // Venue / Sede
-      ctx.fillStyle = '#c8ff00';
-      ctx.font = '900 38px sans-serif';
-      ctx.fillText(`📍 SEDE: ${venueName}`, width / 2, 455);
-
-      // 5. Center Matchup Hero Section (y = 490 to 650)
-      if (detectedNumTeams === 2 && hasTeams) {
-        // 2 TEAMS VERSUS DUEL SHOWCASE
-        const duelBoxY = 500;
-        const duelH = 140;
-
-        // Team 1 Left Shield Card
-        const redGrad = ctx.createLinearGradient(70, duelBoxY, 480, duelBoxY);
-        redGrad.addColorStop(0, '#dc2626');
-        redGrad.addColorStop(1, '#991b1b');
-        ctx.fillStyle = redGrad;
-        ctx.beginPath();
-        ctx.roundRect(70, duelBoxY, 410, duelH, 20);
-        ctx.fill();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 34px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('🔴 EQUIPO 1', 70 + 205, duelBoxY + 50);
-        ctx.font = 'bold 22px sans-serif';
-        ctx.fillStyle = '#fecaca';
-        ctx.fillText(`${team1.length} Convocados`, 70 + 205, duelBoxY + 95);
-
-        // Team 2 Right Shield Card
-        const limeGrad = ctx.createLinearGradient(600, duelBoxY, 1010, duelBoxY);
-        limeGrad.addColorStop(0, '#84cc16');
-        limeGrad.addColorStop(1, '#4d7c0f');
-        ctx.fillStyle = limeGrad;
-        ctx.beginPath();
-        ctx.roundRect(600, duelBoxY, 410, duelH, 20);
+        ctx.roundRect(col1X, startY, colWidth, pillH, 25);
         ctx.fill();
 
         ctx.fillStyle = '#0a0a0a';
-        ctx.font = '900 34px sans-serif';
-        ctx.fillText('🟢 EQUIPO 2', 600 + 205, duelBoxY + 50);
-        ctx.font = 'bold 22px sans-serif';
-        ctx.fillStyle = '#14532d';
-        ctx.fillText(`${team2.length} Convocados`, 600 + 205, duelBoxY + 95);
-
-        // Center VS Badge with electric lightning aura
-        ctx.fillStyle = '#0a0f1d';
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(width / 2, duelBoxY + duelH / 2, 54, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#facc15';
-        ctx.font = '900 40px sans-serif';
-        ctx.fillText('VS', width / 2, duelBoxY + duelH / 2 + 5);
-
-      } else {
-        // 3 or 4 Teams: Futsal Field Graphics in Center
-        const pitchY = 495;
-        const pitchH = 145;
-
-        ctx.fillStyle = 'rgba(6, 78, 59, 0.45)';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.roundRect(65, pitchY, width - 130, pitchH, 20);
-        ctx.fill();
-        ctx.stroke();
-
-        // Center Line and circle
-        ctx.beginPath();
-        ctx.moveTo(width / 2, pitchY);
-        ctx.lineTo(width / 2, pitchY + pitchH);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(width / 2, pitchY + pitchH / 2, 45, 0, Math.PI * 2);
-        ctx.stroke();
-
-        drawSoccerBall(ctx, width / 2, pitchY + pitchH / 2, 26);
-
-        // Triangular / Multi-team announcement
-        ctx.fillStyle = '#ffffff';
         ctx.font = '900 26px sans-serif';
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(`🏆 MODALIDAD: ${detectedNumTeams} EQUIPOS · TODOS CONTRA TODOS`, width / 2, pitchY + 30);
+        ctx.fillText('🧤 EQUIPO 1', col1X + colWidth / 2, startY + 26);
 
-        if (detectedNumTeams === 3 && activeConvocatoria.draw_metadata?.first_match) {
-          const fm = activeConvocatoria.draw_metadata.first_match;
-          ctx.fillStyle = '#c8ff00';
-          ctx.font = 'bold 22px sans-serif';
-          ctx.fillText(`⚡ Partido 1: Equipo ${fm.team_a} vs Equipo ${fm.team_b}  ·  Descansa: Equipo ${fm.resting_teams?.[0] || 3}`, width / 2, pitchY + pitchH - 30);
-        }
-      }
-
-      // 6. "CONVOCADOS" Brush Banner (y = 660 to 725)
-      ctx.fillStyle = '#05070c';
-      ctx.beginPath();
-      ctx.roundRect(50, 660, width - 100, 60, 10);
-      ctx.fill();
-
-      // Neon trim
-      ctx.fillStyle = '#c8ff00';
-      ctx.fillRect(50, 660, 18, 60);
-      ctx.fillRect(width - 68, 660, 18, 60);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 46px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('CONVOCADOS', width / 2, 690);
-
-      // 7. Dynamic Rosters Section (y = 735 to 1420)
-      if (hasTeams) {
-        if (detectedNumTeams === 2) {
-          // 2-COLUMN EXPANDED BATTLE LAYOUT (Spacious, bold, clear)
-          const colWidth = 460;
-          const col1X = 65;
-          const col2X = 555;
-          const startY = 745;
-          const pillH = 50;
-
-          // Team 1 Pill Header
-          ctx.fillStyle = '#dc2626';
-          ctx.beginPath();
-          ctx.roundRect(col1X, startY, colWidth, pillH, 25);
-          ctx.fill();
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '900 26px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('🏆 EQUIPO 1', col1X + colWidth / 2, startY + 26);
-
-          // Team 2 Pill Header
-          ctx.fillStyle = '#84cc16';
-          ctx.beginPath();
-          ctx.roundRect(col2X, startY, colWidth, pillH, 25);
-          ctx.fill();
-
-          ctx.fillStyle = '#0a0a0a';
-          ctx.font = '900 26px sans-serif';
-          ctx.fillText('🏆 EQUIPO 2', col2X + colWidth / 2, startY + 26);
-
-          // Vertical dividing line
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(width / 2, startY + 5);
-          ctx.lineTo(width / 2, 1400);
-          ctx.stroke();
-
-          // Render 2-column player cards
-          const render2Col = (players: Confirmacion[], colX: number, accentColor: string) => {
-            const sorted = sortWithGkFirst(players);
-            const rowStartY = startY + 68;
-            const maxR = Math.max(7, sorted.length);
-            const rowH = Math.min(54, 580 / maxR);
-
-            sorted.forEach((p, idx) => {
-              const py = rowStartY + idx * rowH;
-              const isGk = p.match_role === 'portero';
-              const rawName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
-              let nameToShow = p.user?.nickname ? `${rawName.split(' ')[0]} "${p.user.nickname}"` : rawName.split(' ').slice(0, 2).join(' ');
-              if (nameToShow.length > 18) nameToShow = nameToShow.slice(0, 17) + '.';
-
-              // Background player card
-              ctx.fillStyle = isGk ? 'rgba(245, 158, 11, 0.18)' : 'rgba(15, 23, 42, 0.7)';
-              ctx.strokeStyle = isGk ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)';
-              ctx.lineWidth = 1.5;
-              ctx.beginPath();
-              ctx.roundRect(colX, py - 20, colWidth, rowH - 8, 12);
-              ctx.fill();
-              ctx.stroke();
-
-              // Number
-              ctx.fillStyle = accentColor;
-              ctx.font = '900 24px sans-serif';
-              ctx.textAlign = 'left';
-              ctx.fillText(`${idx + 1}.`, colX + 16, py + 2);
-
-              // Player Name
-              ctx.fillStyle = '#ffffff';
-              ctx.font = 'bold 23px sans-serif';
-              ctx.fillText(nameToShow, colX + 54, py + 2);
-
-              // Goalkeeper icon
-              if (isGk) {
-                const textW = ctx.measureText(nameToShow).width;
-                ctx.fillText('🧤', colX + 62 + textW, py + 2);
-                ctx.fillStyle = '#f59e0b';
-                ctx.font = 'bold 15px sans-serif';
-                ctx.fillText('[ARQUERO]', colX + colWidth - 105, py + 2);
-              }
-            });
-          };
-
-          render2Col(team1, col1X, '#ef4444');
-          render2Col(team2, col2X, '#84cc16');
-
-        } else {
-          // 3-COLUMN ROSTER LAYOUT (Standard 3-Team Triangular)
-          const colWidth = 310;
-          const col1X = 45;
-          const col2X = 385;
-          const col3X = 725;
-          const startY = 745;
-          const pillH = 48;
-
-          // Headers
-          ctx.fillStyle = '#dc2626';
-          ctx.beginPath();
-          ctx.roundRect(col1X, startY, colWidth, pillH, 24);
-          ctx.fill();
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '900 24px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('🏆 EQUIPO 1', col1X + colWidth / 2, startY + 25);
-
-          ctx.fillStyle = '#84cc16';
-          ctx.beginPath();
-          ctx.roundRect(col2X, startY, colWidth, pillH, 24);
-          ctx.fill();
-          ctx.fillStyle = '#0a0a0a';
-          ctx.fillText('🏆 EQUIPO 2', col2X + colWidth / 2, startY + 25);
-
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.roundRect(col3X, startY, colWidth, pillH, 24);
-          ctx.fill();
-          ctx.fillStyle = '#0a0a0a';
-          ctx.fillText('🏆 EQUIPO 3', col3X + colWidth / 2, startY + 25);
-
-          // Dividers
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.moveTo(365, startY + 5);
-          ctx.lineTo(365, 1400);
-          ctx.moveTo(705, startY + 5);
-          ctx.lineTo(705, 1400);
-          ctx.stroke();
-
-          const render3Col = (players: Confirmacion[], colX: number, accentColor: string) => {
-            const sorted = sortWithGkFirst(players);
-            const rowStartY = startY + 65;
-            const maxR = Math.max(7, sorted.length);
-            const rowH = Math.min(48, 580 / maxR);
-
-            sorted.forEach((p, idx) => {
-              const py = rowStartY + idx * rowH;
-              const isGk = p.match_role === 'portero';
-              const rawName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
-              let nameToShow = p.user?.nickname ? p.user.nickname : rawName.split(' ').slice(0, 2).join(' ');
-              if (nameToShow.length > 14) nameToShow = nameToShow.slice(0, 13) + '.';
-
-              ctx.fillStyle = accentColor;
-              ctx.font = '900 23px sans-serif';
-              ctx.textAlign = 'left';
-              ctx.fillText(`${idx + 1}.`, colX + 12, py);
-
-              ctx.fillStyle = '#ffffff';
-              ctx.font = 'bold 22px sans-serif';
-              ctx.fillText(nameToShow, colX + 46, py);
-
-              if (isGk) {
-                const textW = ctx.measureText(nameToShow).width;
-                ctx.fillText('🧤', colX + 50 + textW, py);
-              }
-            });
-          };
-
-          render3Col(team1, col1X, '#ef4444');
-          render3Col(team2, col2X, '#84cc16');
-          render3Col(team3, col3X, '#ffffff');
-
-          const resting = activeConvocatoria.draw_metadata?.first_match?.resting_teams;
-          if (resting && resting.includes(3)) {
-            ctx.fillStyle = 'rgba(245, 158, 11, 0.95)';
-            ctx.font = 'bold 16px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('(Descansa 1er partido)', col3X + colWidth / 2, 1410);
-          }
-        }
-      } else if (confirmados.length > 0) {
-        // Enrolled players confirmed, waiting for team shuffle
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#c8ff00';
-        ctx.font = '900 30px sans-serif';
-        ctx.fillText(`📋 CONVOCADOS CONFIRMADOS (${confirmados.length} / ${activeConvocatoria.max_players})`, width / 2, 770);
-
-        const colWidth = 310;
-        const colXCoords = [55, 385, 715];
-        const startY = 825;
-        const sorted = sortWithGkFirst(confirmados);
-
-        sorted.slice(0, 21).forEach((p, idx) => {
-          const colIdx = Math.floor(idx / 7);
-          const rowIdx = idx % 7;
-          const colX = colXCoords[colIdx] || 55;
-          const py = startY + rowIdx * 52;
-          const isGk = p.match_role === 'portero';
-          const rawName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
-          let nameToShow = p.user?.nickname ? p.user.nickname : rawName.split(' ').slice(0, 2).join(' ');
-          if (nameToShow.length > 13) nameToShow = nameToShow.slice(0, 12) + '.';
-
-          ctx.fillStyle = isGk ? '#f59e0b' : '#c8ff00';
-          ctx.font = '900 23px sans-serif';
-          ctx.textAlign = 'left';
-          ctx.fillText(`${idx + 1}.`, colX + 10, py);
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 22px sans-serif';
-          ctx.fillText(nameToShow, colX + 46, py);
-
-          if (isGk) {
-            const textW = ctx.measureText(nameToShow).width;
-            ctx.fillText('🧤', colX + 50 + textW, py);
-          }
-        });
-      } else {
-        // 0 Players registered
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#c8ff00';
-        ctx.font = '900 34px sans-serif';
-        ctx.fillText(`📋 INSCRIPCIONES ABIERTAS (0 / ${activeConvocatoria.max_players || 21} CUPOS)`, width / 2, 850);
+        // Team 2 Pill (Red with glove)
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        ctx.roundRect(col2X, startY, colWidth, pillH, 25);
+        ctx.fill();
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 26px sans-serif';
-        ctx.fillText('¡Aún no hay jugadores registrados para este partido!', width / 2, 920);
+        ctx.font = '900 26px sans-serif';
+        ctx.fillText('🧤 EQUIPO 2', col2X + colWidth / 2, startY + 26);
 
-        ctx.fillStyle = '#facc15';
+        // Center dividing line
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(width / 2, startY + 5);
+        ctx.lineTo(width / 2, 1400);
+        ctx.stroke();
+
+        const render2Col = (players: Confirmacion[], colX: number) => {
+          const sorted = sortWithGkFirst(players);
+          const rowStartY = startY + 68;
+          const maxR = Math.max(7, sorted.length);
+          const rowH = Math.min(42, 280 / maxR);
+
+          ctx.textBaseline = 'middle';
+          sorted.forEach((p, idx) => {
+            const py = rowStartY + idx * rowH;
+            const isGk = p.match_role === 'portero';
+            const rawName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
+            let nameToShow = p.user?.nickname ? `${rawName.split(' ')[0]} "${p.user.nickname}"` : rawName.split(' ').slice(0, 2).join(' ');
+            if (nameToShow.length > 20) nameToShow = nameToShow.slice(0, 19) + '.';
+
+            // Lime yellow number
+            ctx.fillStyle = '#c8ff00';
+            ctx.font = '900 24px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`${idx + 1}.`, colX + 20, py);
+
+            // Crisp white player name
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 23px sans-serif';
+            ctx.fillText(nameToShow, colX + 60, py);
+
+            // Yellow glove for goalkeeper
+            if (isGk) {
+              const textW = ctx.measureText(nameToShow).width;
+              ctx.fillText('🧤', colX + 68 + textW, py);
+            }
+          });
+        };
+
+        render2Col(team1, col1X);
+        render2Col(team2, col2X);
+
+      } else {
+        // ---------------------------------------------------------
+        // 3 TEAMS LAYOUT (Exact reproduction of Image 2)
+        // ---------------------------------------------------------
+        const colWidth = 310;
+        const col1X = 45;
+        const col2X = 385;
+        const col3X = 725;
+        const startY = 1050;
+        const pillH = 48;
+
+        // Team 1: Lime Pill with glove
+        ctx.fillStyle = '#84cc16';
+        ctx.beginPath();
+        ctx.roundRect(col1X, startY, colWidth, pillH, 24);
+        ctx.fill();
+        ctx.fillStyle = '#0a0a0a';
         ctx.font = '900 24px sans-serif';
-        ctx.fillText('⚡ Los equipos y alineaciones aparecerán aquí automáticamente ⚡', width / 2, 990);
+        ctx.textAlign = 'center';
+        ctx.fillText('🧤 EQUIPO 1', col1X + colWidth / 2, startY + 25);
+
+        // Team 2: Purple Pill with soccer ball
+        ctx.fillStyle = '#9333ea';
+        ctx.beginPath();
+        ctx.roundRect(col2X, startY, colWidth, pillH, 24);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('⚽ EQUIPO 2', col2X + colWidth / 2, startY + 25);
+
+        // Team 3: Red Pill with glove
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        ctx.roundRect(col3X, startY, colWidth, pillH, 24);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('🧤 EQUIPO 3', col3X + colWidth / 2, startY + 25);
+
+        // Vertical dividing lines
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(365, startY + 5);
+        ctx.lineTo(365, 1395);
+        ctx.moveTo(705, startY + 5);
+        ctx.lineTo(705, 1395);
+        ctx.stroke();
+
+        const render3Col = (players: Confirmacion[], colX: number) => {
+          const sorted = sortWithGkFirst(players);
+          const rowStartY = startY + 65;
+          const maxR = Math.max(7, sorted.length);
+          const rowH = Math.min(42, 280 / maxR);
+
+          ctx.textBaseline = 'middle';
+          sorted.forEach((p, idx) => {
+            const py = rowStartY + idx * rowH;
+            const isGk = p.match_role === 'portero';
+            const rawName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
+            let nameToShow = p.user?.nickname ? p.user.nickname : rawName.split(' ').slice(0, 2).join(' ');
+            if (nameToShow.length > 14) nameToShow = nameToShow.slice(0, 13) + '.';
+
+            // Lime yellow number
+            ctx.fillStyle = '#c8ff00';
+            ctx.font = '900 23px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`${idx + 1}.`, colX + 12, py);
+
+            // Crisp white player name
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 22px sans-serif';
+            ctx.fillText(nameToShow, colX + 46, py);
+
+            // Yellow glove for goalkeeper
+            if (isGk) {
+              const textW = ctx.measureText(nameToShow).width;
+              ctx.fillText('🧤', colX + 50 + textW, py);
+            }
+          });
+        };
+
+        render3Col(team1, col1X);
+        render3Col(team2, col2X);
+        render3Col(team3, col3X);
+
+        // Resting team indicator
+        const resting = activeConvocatoria.draw_metadata?.first_match?.resting_teams;
+        if (resting && resting.includes(3)) {
+          ctx.fillStyle = 'rgba(245, 158, 11, 0.95)';
+          ctx.font = 'bold 15px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('(Descansa 1er partido)', col3X + colWidth / 2, 1400);
+        }
       }
-
-      // 8. Footer with Graffiti Splatters and Soccer Ball
-      drawSoccerBall(ctx, 110, 1530, 85);
-      drawSplatter(ctx, 230, 1550, '#84cc16', 14);
-      drawSplatter(ctx, 310, 1565, '#d946ef', 18);
-      drawSplatter(ctx, width - 260, 1555, '#06b6d4', 16);
-      drawSplatter(ctx, width - 180, 1540, '#84cc16', 12);
-
-      // Kicking player silhouette (bottom right)
+    } else if (confirmados.length > 0) {
+      // 3 Columns of confirmed players awaiting shuffle
+      ctx.textAlign = 'center';
       ctx.fillStyle = '#c8ff00';
-      ctx.beginPath();
-      // stylized player head
-      ctx.arc(width - 90, 1490, 14, 0, Math.PI * 2);
-      ctx.fill();
-      // stylized torso & kicking leg
-      ctx.beginPath();
-      ctx.moveTo(width - 90, 1504);
-      ctx.lineTo(width - 80, 1540);
-      ctx.lineTo(width - 45, 1535); // kicking foot
-      ctx.lineTo(width - 55, 1550);
-      ctx.lineTo(width - 95, 1555);
-      ctx.lineTo(width - 110, 1585); // standing foot
-      ctx.lineTo(width - 120, 1575);
-      ctx.closePath();
-      ctx.fill();
-      // mini ball
-      ctx.beginPath();
-      ctx.arc(width - 35, 1532, 8, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.font = '900 26px sans-serif';
+      ctx.fillText(`📋 CONVOCADOS CONFIRMADOS (${confirmados.length} / ${activeConvocatoria.max_players})`, width / 2, 1070);
 
-      // Brand watermarks
-      ctx.textAlign = 'center';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-      ctx.font = 'bold 18px monospace';
-      ctx.fillText('pichangasdebarrio.com · Pichangas de Barrio FC © 2026', width / 2, 1595);
-
-    } else {
-      // -------------------------------------------------------------
-      // OPTION B: CLASSIC PHOTO TEMPLATE BACKDROP
-      // -------------------------------------------------------------
-      const templateImg = new Image();
-      templateImg.crossOrigin = 'anonymous';
-      templateImg.src = '/flyer-template.jpg';
-      await new Promise<boolean>((resolve) => {
-        templateImg.onload = () => resolve(true);
-        templateImg.onerror = () => resolve(false);
-      });
-      ctx.drawImage(templateImg, 0, 0, width, height);
-
-      // Modality Banner
-      ctx.save();
-      ctx.translate(width / 2, 335);
-      ctx.rotate(-0.02);
-      ctx.fillStyle = '#facc15';
-      ctx.strokeStyle = '#05070a';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.roundRect(-230, -38, 460, 76, 12);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = '#0a0a0a';
-      ctx.font = '900 50px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(categoryText.toUpperCase(), 0, 0);
-      ctx.restore();
-
-      // Solid Match Details
-      const { dayNameStr, formattedTime } = formatMatchDateTime(activeConvocatoria.match_date, activeConvocatoria.match_time);
-      const venueName = (activeConvocatoria.location || 'JOHN ANDREWS').toUpperCase();
-
-      ctx.fillStyle = '#040711';
-      ctx.beginPath();
-      ctx.roundRect(75, 380, width - 150, 148, 24);
-      ctx.fill();
-
-      const infoGrad = ctx.createLinearGradient(0, 385, 0, 525);
-      infoGrad.addColorStop(0, '#0a1426');
-      infoGrad.addColorStop(1, '#050914');
-      ctx.fillStyle = infoGrad;
-      ctx.strokeStyle = 'rgba(200, 255, 0, 0.45)';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.roundRect(80, 385, width - 160, 140, 24);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 38px sans-serif';
-      ctx.fillText(`📅 ${dayNameStr}   |   🕒 ${formattedTime}`, width / 2, 428);
-
-      ctx.fillStyle = '#c8ff00';
-      ctx.font = '900 44px sans-serif';
-      ctx.fillText(`📍 ${venueName}`, width / 2, 484);
-
-      // Solid Rosters Box
-      ctx.fillStyle = '#04070d';
-      ctx.fillRect(15, 1025, width - 30, 400);
-
-      // Render 3 Columns
       const colWidth = 310;
-      const col1X = 45;
-      const col2X = 385;
-      const col3X = 725;
-      const pillY = 1045;
-      const pillH = 48;
+      const colXCoords = [45, 385, 725];
+      const startY = 1115;
+      const sorted = sortWithGkFirst(confirmados);
 
-      ctx.fillStyle = '#dc2626';
-      ctx.beginPath();
-      ctx.roundRect(col1X, pillY, colWidth, pillH, 24);
-      ctx.fill();
+      ctx.textBaseline = 'middle';
+      sorted.slice(0, 21).forEach((p, idx) => {
+        const colIdx = Math.floor(idx / 7);
+        const rowIdx = idx % 7;
+        const colX = colXCoords[colIdx] || 45;
+        const py = startY + rowIdx * 40;
+        const isGk = p.match_role === 'portero';
+        const rawName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
+        let nameToShow = p.user?.nickname ? p.user.nickname : rawName.split(' ').slice(0, 2).join(' ');
+        if (nameToShow.length > 13) nameToShow = nameToShow.slice(0, 12) + '.';
+
+        ctx.fillStyle = '#c8ff00';
+        ctx.font = '900 22px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${idx + 1}.`, colX + 10, py);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 21px sans-serif';
+        ctx.fillText(nameToShow, colX + 44, py);
+
+        if (isGk) {
+          const textW = ctx.measureText(nameToShow).width;
+          ctx.fillText('🧤', colX + 48 + textW, py);
+        }
+      });
+    } else {
+      // Open enrollment banner
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#c8ff00';
+      ctx.font = '900 30px sans-serif';
+      ctx.fillText(`📋 INSCRIPCIONES ABIERTAS (0 / ${activeConvocatoria.max_players || 21} CUPOS)`, width / 2, 1150);
+
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 24px sans-serif';
-      ctx.fillText('🏆 EQUIPO 1', col1X + colWidth / 2, pillY + 24);
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillText('¡Aún no hay jugadores registrados para este partido!', width / 2, 1220);
 
-      ctx.fillStyle = '#84cc16';
-      ctx.beginPath();
-      ctx.roundRect(col2X, pillY, colWidth, pillH, 24);
-      ctx.fill();
-      ctx.fillStyle = '#0a0a0a';
-      ctx.fillText('🏆 EQUIPO 2', col2X + colWidth / 2, pillY + 24);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.roundRect(col3X, pillY, colWidth, pillH, 24);
-      ctx.fill();
-      ctx.fillStyle = '#0a0a0a';
-      ctx.fillText('🏆 EQUIPO 3', col3X + colWidth / 2, pillY + 24);
-
-      const renderColumnPlayers = (players: Confirmacion[], colX: number, accentColor: string) => {
-        const sorted = sortWithGkFirst(players);
-        const maxRows = Math.max(7, sorted.length);
-        const rowH = Math.min(42, 280 / maxRows);
-        const startY = 1125;
-
-        sorted.forEach((p, idx) => {
-          const py = startY + idx * rowH;
-          const isGk = p.match_role === 'portero';
-          const rawName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
-          let nameToShow = p.user?.nickname ? p.user.nickname : rawName.split(' ').slice(0, 2).join(' ');
-          if (nameToShow.length > 14) nameToShow = nameToShow.slice(0, 13) + '.';
-
-          ctx.fillStyle = accentColor;
-          ctx.font = '900 23px sans-serif';
-          ctx.textAlign = 'left';
-          ctx.fillText(`${idx + 1}.`, colX + 12, py);
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 22px sans-serif';
-          ctx.fillText(nameToShow, colX + 46, py);
-
-          if (isGk) {
-            const textW = ctx.measureText(nameToShow).width;
-            ctx.fillText('🧤', colX + 50 + textW, py);
-          }
-        });
-      };
-
-      renderColumnPlayers(team1, col1X, '#ef4444');
-      renderColumnPlayers(team2, col2X, '#84cc16');
-      renderColumnPlayers(team3, col3X, '#ffffff');
+      ctx.fillStyle = '#facc15';
+      ctx.font = '900 22px sans-serif';
+      ctx.fillText('⚡ Los equipos y alineaciones aparecerán aquí automáticamente ⚡', width / 2, 1280);
     }
+
+    // 6. Contact Line (y = 1420 to 1485)
+    // Clean solid dark patch over contact line
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(250, 1420, width - 260, 55);
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 32px sans-serif';
+    ctx.fillText('ÚNETE A PICHANGAS DE BARRIO', 290, 1445);
+
+    ctx.fillStyle = '#22c55e'; // WhatsApp green
+    ctx.fillText('INFO 💬', 690, 1445);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(contactPhone, 810, 1445);
 
     const url = canvas.toDataURL('image/png');
     setPreviewUrl(url);
@@ -972,10 +533,10 @@ Genera un JSON con este formato exacto:
     }
     text += `🏆 *${activeConvocatoria.title.toUpperCase()}*\n` +
       `⚡ *Categoría:* ${categoryText} (${numTeams} Equipos)\n` +
-      `📅 *Fecha:* ${activeConvocatoria.match_date}\n` +
-      `⏰ *Hora:* ${activeConvocatoria.match_time?.slice(0, 5)} hrs\n` +
-      `🏟️ *Sede:* ${activeConvocatoria.location}\n` +
-      `👥 *Inscritos:* ${confirmados.length}/${activeConvocatoria.max_players} (${remaining > 0 ? `¡Quedan ${remaining} cupos!` : '¡Equipos Sorteados!'})\n\n` +
+      `📅 *Fecha:* ${dateTimeText}\n` +
+      `🏟️ *Sede:* ${venueText}\n` +
+      `👥 *Inscritos:* ${confirmados.length}/${activeConvocatoria.max_players} (${remaining > 0 ? `¡Quedan ${remaining} cupos!` : '¡Equipos Sorteados!'})\n` +
+      `📞 *Contacto:* ${contactPhone}\n\n` +
       `📲 *Ver afiche y alineaciones:* ${window.location.origin}/convocatorias/${activeConvocatoria.id}`;
 
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
@@ -1005,16 +566,16 @@ Genera un JSON con este formato exacto:
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-black text-lg text-white uppercase tracking-tight">
-                  Generador de Flyer con IA
+                  Flyer Oficial de Partido
                 </h3>
-                <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-black uppercase">
-                  Gemini 3.5 Flash
+                <span className="px-2 py-0.5 rounded-full bg-lime-500/20 text-lime-400 border border-lime-500/30 text-[10px] font-black uppercase">
+                  Diseño Oficial
                 </span>
               </div>
               <p className="text-xs text-slate-400 flex items-center gap-2">
-                <span>Adaptable a {numTeams} equipos con sede, arqueros 🧤 y jugadores</span>
-                <span className="text-lime-400 font-bold flex items-center gap-1">
-                  <Users size={12} /> {currentConfirmadosCount}/{activeConvocatoria.max_players || 21}
+                <span>Fotografía oficial en cancha con equipos {numTeams} y arqueros 🧤</span>
+                <span className="text-lime-400 font-bold">
+                  ({currentConfirmadosCount}/{activeConvocatoria.max_players || 21} Convocados)
                 </span>
               </p>
             </div>
@@ -1028,52 +589,80 @@ Genera un JSON con este formato exacto:
           </button>
         </div>
 
-        {/* Style Selector & Customization Bar */}
+        {/* Quick Customization Toolbar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-          {/* Style Selector */}
-          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
-            <button
-              type="button"
-              onClick={() => setFlyerStyle('ai_generative')}
-              className={`flex-1 py-1.5 px-2.5 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                flyerStyle === 'ai_generative'
-                  ? 'bg-gradient-to-r from-lime-400 to-emerald-400 text-slate-950 shadow-md font-black'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Wand2 size={13} /> Diseño IA Adaptable
-            </button>
-            <button
-              type="button"
-              onClick={() => setFlyerStyle('classic_template')}
-              className={`flex-1 py-1.5 px-2.5 rounded-lg font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                flyerStyle === 'classic_template'
-                  ? 'bg-gradient-to-r from-lime-400 to-emerald-400 text-slate-950 shadow-md font-black'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <ImageIcon size={13} /> Plantilla Clásica
-            </button>
+          {/* Sede Input */}
+          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
+            <MapPin size={14} className="text-lime-400 shrink-0" />
+            <span className="text-slate-400 font-bold shrink-0">Sede:</span>
+            <input 
+              type="text" 
+              value={venueText} 
+              onChange={(e) => setVenueText(e.target.value)}
+              placeholder="Grass el Bosque..."
+              className="w-full bg-transparent text-white font-bold outline-none"
+            />
           </div>
 
-          {/* Quick AI & Refresh Controls */}
+          {/* Fecha / Hora Input */}
+          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
+            <Calendar size={14} className="text-sky-400 shrink-0" />
+            <span className="text-slate-400 font-bold shrink-0">Día/Hora:</span>
+            <input 
+              type="text" 
+              value={dateTimeText} 
+              onChange={(e) => setDateTimeText(e.target.value)}
+              placeholder="JUEVES 9 PM..."
+              className="w-full bg-transparent text-white font-bold outline-none"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+          {/* Categoría Input */}
+          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
+            <Tag size={14} className="text-yellow-400 shrink-0" />
+            <span className="text-slate-400 font-bold shrink-0">Cinta:</span>
+            <input 
+              type="text" 
+              value={categoryText} 
+              onChange={(e) => setCategoryText(e.target.value.toUpperCase())}
+              placeholder="FUTBOL 7..."
+              className="w-full bg-transparent text-white font-black uppercase outline-none"
+            />
+          </div>
+
+          {/* Teléfono Input */}
+          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
+            <Phone size={14} className="text-emerald-400 shrink-0" />
+            <span className="text-slate-400 font-bold shrink-0">Info:</span>
+            <input 
+              type="text" 
+              value={contactPhone} 
+              onChange={(e) => setContactPhone(e.target.value)}
+              placeholder="960735653"
+              className="w-full bg-transparent text-white font-bold outline-none"
+            />
+          </div>
+
+          {/* AI Generate Button */}
           <div className="flex items-center justify-end gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
             <button
               type="button"
               onClick={() => fetchGeminiData(geminiKey)}
               disabled={isGenerating}
               className="text-lime-400 hover:text-lime-300 font-black flex items-center gap-1.5 cursor-pointer transition-colors"
-              title="Personalizar afiche con Gemini IA"
+              title="Personalizar afiche y texto con Gemini IA"
             >
               <Sparkles size={14} className={isGenerating ? 'animate-spin' : ''} />
-              <span>{isGenerating ? 'Gemini IA...' : 'Generar con IA'}</span>
+              <span>{isGenerating ? 'Gemini IA...' : 'Texto con IA'}</span>
             </button>
             <span className="text-slate-700">|</span>
             <button
               type="button"
               onClick={() => {
                 refetch();
-                renderPoster(aiHeadline, aiMatchTag);
+                renderPoster();
               }}
               className="text-slate-400 hover:text-slate-200 font-bold flex items-center gap-1 cursor-pointer transition-colors"
               title="Recargar datos de jugadores"
@@ -1089,19 +678,6 @@ Genera un JSON con este formato exacto:
               <Key size={12} /> Key
             </button>
           </div>
-        </div>
-
-        {/* Category Tape Bar */}
-        <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 text-xs">
-          <Tag size={14} className="text-yellow-400 shrink-0" />
-          <span className="text-slate-400 font-bold shrink-0">Cinta de Categoría:</span>
-          <input 
-            type="text" 
-            value={categoryText} 
-            onChange={(e) => setCategoryText(e.target.value.toUpperCase())}
-            placeholder="FUTSAL / FÚTBOL 7..."
-            className="w-full bg-transparent text-white font-black uppercase outline-none"
-          />
         </div>
 
         {/* Optional Gemini Key Input */}
@@ -1127,7 +703,7 @@ Genera un JSON con este formato exacto:
               </button>
             </div>
             <p className="text-[10px] text-slate-400">
-              💡 La clave activa verificada es: <span className="text-lime-400 font-mono">AQ.Ab8RN6...</span>
+              💡 Clave verificada y activa: <span className="text-lime-400 font-mono">AQ.Ab8RN6...</span>
             </p>
           </div>
         )}
@@ -1143,7 +719,7 @@ Genera un JSON con este formato exacto:
           ) : (
             <div className="py-20 text-center text-slate-400 text-sm flex items-center gap-2">
               <RefreshCw size={16} className="animate-spin text-lime-400" />
-              <span>Generando afiche oficial con Inteligencia Artificial...</span>
+              <span>Generando afiche oficial con jugadores en alta resolución...</span>
             </div>
           )}
         </div>
