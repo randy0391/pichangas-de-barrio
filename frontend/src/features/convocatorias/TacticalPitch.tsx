@@ -266,58 +266,58 @@ export const TacticalPitch: React.FC<TacticalPitchProps> = ({
         <div className="absolute bottom-0 left-0 w-44 h-44 bg-radial from-white/20 via-lime-400/10 to-transparent blur-xl pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-44 h-44 bg-radial from-white/20 via-lime-400/10 to-transparent blur-xl pointer-events-none" />
 
-        {/* Pitch Chalk Lines (SVG adapted to orientation) */}
+        {/* Pitch Chalk Lines (SVG adapted to orientation with valid viewBox coordinates) */}
         {orientation === 'vertical' ? (
-          /* VERTICAL SVG LINES */
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" stroke="rgba(255,255,255,0.45)" strokeWidth="2" fill="none">
-            <rect x="4%" y="3%" width="92%" height="94%" rx="10" />
-            <line x1="4%" y1="50%" x2="96%" y2="50%" />
-            <circle cx="50%" cy="50%" r="9%" />
-            <circle cx="50%" cy="50%" r="3" fill="rgba(255,255,255,0.7)" />
+          /* VERTICAL SVG LINES (viewBox 0 0 600 900) */
+          <svg viewBox="0 0 600 900" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5" fill="none">
+            <rect x="24" y="27" width="552" height="846" rx="15" />
+            <line x1="24" y1="450" x2="576" y2="450" />
+            <circle cx="300" cy="450" r="80" />
+            <circle cx="300" cy="450" r="4" fill="rgba(255,255,255,0.7)" />
             
             {/* Top Penalty Area (Team B) */}
-            <rect x="22%" y="3%" width="56%" height="15%" />
-            <rect x="36%" y="3%" width="28%" height="6%" />
-            <circle cx="50%" cy="12%" r="2" fill="rgba(255,255,255,0.7)" />
-            <path d="M 42% 18% A 8% 8% 0 0 0 58% 18%" />
+            <rect x="132" y="27" width="336" height="150" />
+            <rect x="216" y="27" width="168" height="60" />
+            <circle cx="300" cy="115" r="3" fill="rgba(255,255,255,0.7)" />
+            <path d="M 252 177 A 80 80 0 0 0 348 177" />
 
             {/* Bottom Penalty Area (Team A) */}
-            <rect x="22%" y="82%" width="56%" height="15%" />
-            <rect x="36%" y="91%" width="28%" height="6%" />
-            <circle cx="50%" cy="88%" r="2" fill="rgba(255,255,255,0.7)" />
-            <path d="M 42% 82% A 8% 8% 0 0 1 58% 82%" />
+            <rect x="132" y="723" width="336" height="150" />
+            <rect x="216" y="813" width="168" height="60" />
+            <circle cx="300" cy="785" r="3" fill="rgba(255,255,255,0.7)" />
+            <path d="M 252 723 A 80 80 0 0 1 348 723" />
 
             {/* Corner Arcs */}
-            <path d="M 4% 6% A 3% 3% 0 0 0 7% 3%" />
-            <path d="M 96% 6% A 3% 3% 0 0 1 93% 3%" />
-            <path d="M 4% 94% A 3% 3% 0 0 1 7% 97%" />
-            <path d="M 96% 94% A 3% 3% 0 0 0 93% 97%" />
+            <path d="M 24 53 A 26 26 0 0 0 50 27" />
+            <path d="M 576 53 A 26 26 0 0 1 550 27" />
+            <path d="M 24 847 A 26 26 0 0 1 50 873" />
+            <path d="M 576 847 A 26 26 0 0 0 550 873" />
           </svg>
         ) : (
-          /* HORIZONTAL SVG LINES */
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" stroke="rgba(255,255,255,0.45)" strokeWidth="2" fill="none">
-            <rect x="3%" y="4%" width="94%" height="92%" rx="10" />
-            <line x1="50%" y1="4%" x2="50%" y2="96%" />
-            <circle cx="50%" cy="50%" r="9%" />
-            <circle cx="50%" cy="50%" r="3" fill="rgba(255,255,255,0.7)" />
+          /* HORIZONTAL SVG LINES (viewBox 0 0 1000 600) */
+          <svg viewBox="0 0 1000 600" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5" fill="none">
+            <rect x="30" y="24" width="940" height="552" rx="15" />
+            <line x1="500" y1="24" x2="500" y2="576" />
+            <circle cx="500" cy="300" r="90" />
+            <circle cx="500" cy="300" r="4" fill="rgba(255,255,255,0.7)" />
             
             {/* Left Penalty Area */}
-            <rect x="3%" y="22%" width="15%" height="56%" />
-            <rect x="3%" y="36%" width="6%" height="28%" />
-            <circle cx="12%" cy="50%" r="2" fill="rgba(255,255,255,0.7)" />
-            <path d="M 18% 42% A 8% 8% 0 0 1 18% 58%" />
+            <rect x="30" y="132" width="150" height="336" />
+            <rect x="30" y="216" width="60" height="168" />
+            <circle cx="120" cy="300" r="3" fill="rgba(255,255,255,0.7)" />
+            <path d="M 180 252 A 80 80 0 0 1 180 348" />
 
             {/* Right Penalty Area */}
-            <rect x="82%" y="22%" width="15%" height="56%" />
-            <rect x="91%" y="36%" width="6%" height="28%" />
-            <circle cx="88%" cy="50%" r="2" fill="rgba(255,255,255,0.7)" />
-            <path d="M 82% 42% A 8% 8% 0 0 0 82% 58%" />
+            <rect x="820" y="132" width="150" height="336" />
+            <rect x="910" y="216" width="60" height="168" />
+            <circle cx="880" cy="300" r="3" fill="rgba(255,255,255,0.7)" />
+            <path d="M 820 252 A 80 80 0 0 0 820 348" />
 
             {/* Corner Arcs */}
-            <path d="M 3% 7% A 3% 3% 0 0 0 5% 4%" />
-            <path d="M 97% 7% A 3% 3% 0 0 1 95% 4%" />
-            <path d="M 3% 93% A 3% 3% 0 0 1 5% 96%" />
-            <path d="M 97% 93% A 3% 3% 0 0 0 95% 96%" />
+            <path d="M 30 50 A 26 26 0 0 0 56 24" />
+            <path d="M 970 50 A 26 26 0 0 1 944 24" />
+            <path d="M 30 550 A 26 26 0 0 1 56 576" />
+            <path d="M 970 550 A 26 26 0 0 0 944 576" />
           </svg>
         )}
 
