@@ -12,7 +12,7 @@ class ConvocatoriaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Convocatoria::with('creator');
+        $query = Convocatoria::with(['creator', 'confirmaciones.user']);
         if ($request->query('upcoming') === 'true') {
             $query->where('match_date', '>=', now()->toDateString());
         }

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Convocatoria, Confirmacion } from '@/types';
-import { X, Download, Copy, Share2, Sparkles, Check, Key, RefreshCw, Tag } from 'lucide-react';
+import { X, Download, Copy, Share2, Sparkles, Check, Key, RefreshCw, Tag, Users } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { useConvocatoria } from '@/hooks/useConvocatorias';
 import { toast } from 'sonner';
 
 interface ConvocatoriaFlyerModalProps {
@@ -21,9 +22,13 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Always fetch detailed convocatoria with confirmaciones.user eager-loaded
+  const { data: fullConvocatoria, isLoading: isLoadingFull, refetch } = useConvocatoria(convocatoria?.id);
+  const activeConvocatoria = fullConvocatoria || convocatoria;
+
   // Modality/Category banner text (defaults to FUTSAL or detected modality)
   const defaultCategory = (() => {
-    const title = (convocatoria.title || '').toUpperCase();
+    const title = (activeConvocatoria?.title || convocatoria?.title || '').toUpperCase();
     if (title.includes('FUTSAL')) return 'FUTSAL';
     if (title.includes('FUTBOL 7') || title.includes('FÚTBOL 7')) return 'FÚTBOL 7';
     if (title.includes('FUTBOL 6') || title.includes('FÚTBOL 6')) return 'FÚTBOL 6';
@@ -57,16 +62,16 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
   if (!isOpen || !isAdmin) return null;
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && activeConvocatoria) {
       renderPoster(aiHeadline);
     }
-  }, [isOpen, convocatoria, categoryText]);
+  }, [isOpen, activeConvocatoria, categoryText, aiHeadline]);
 
   // Request AI Hype Headline from Gemini API
   const fetchGeminiHype = async (keyToUse: string): Promise<string> => {
     try {
       setAiStatus('Consultando a Gemini AI...');
-      const prompt = `Actua como narrador deportivo oficial de Pichangas de Barrio FC. Genera UN SOLO eslogan epico, corto y motivador (maximo 6 palabras en MAYUSCULAS, sin comillas ni emojis) para el partido: "${convocatoria.title}". Responde unicamente con el texto del eslogan.`;
+      const prompt = `Actua como narrador deportivo oficial de Pichangas de Barrio FC. Genera UN SOLO eslogan epico, corto y motivador (maximo 6 palabras en MAYUSCULAS, sin comillas ni emojis) para el partido: "${activeConvocatoria.title}". Responde unicamente con el texto del eslogan.`;
 
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${keyToUse}`, {
         method: 'POST',
@@ -212,13 +217,19 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
     ctx.restore();
 
     // 3. Match Details Box (Date, Time, Venue)
-    const { dayNameStr, formattedTime } = formatMatchDateTime(convocatoria.match_date, convocatoria.match_time);
-    const venueName = (convocatoria.location || 'JOHN ANDREWS').toUpperCase();
+    const { dayNameStr, formattedTime } = formatMatchDateTime(activeConvocatoria.match_date, activeConvocatoria.match_time);
+    const venueName = (activeConvocatoria.location || 'JOHN ANDREWS').toUpperCase();
 
-    // Seamless dark container over y = 385 to 525 to cover old template info
+    // 100% Solid opaque backing to completely eliminate background template text bleed-through
+    ctx.fillStyle = '#040711';
+    ctx.beginPath();
+    ctx.roundRect(75, 380, width - 150, 148, 24);
+    ctx.fill();
+
+    // Stylized dark container over y = 385 to 525
     const infoGrad = ctx.createLinearGradient(0, 385, 0, 525);
-    infoGrad.addColorStop(0, 'rgba(6, 12, 22, 0.96)');
-    infoGrad.addColorStop(1, 'rgba(3, 7, 15, 0.98)');
+    infoGrad.addColorStop(0, '#0a1426');
+    infoGrad.addColorStop(1, '#050914');
     ctx.fillStyle = infoGrad;
     ctx.strokeStyle = 'rgba(200, 255, 0, 0.45)';
     ctx.lineWidth = 2.5;
@@ -246,29 +257,40 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
       ctx.fillText(`⚡ ${headline.length > 42 ? headline.slice(0, 42) + '...' : headline} ⚡`, width / 2, 370);
     }
 
-    // 4. Teams & Rosters Section (y = 1030 to 1420)
-    // Seamless carbon black container covering previous match rosters
+    // 4. Teams & Rosters Section (y = 1025 to 1425)
+    // 100% Solid opaque backing spanning x=15 to width-30 to cover all old template names completely
+    ctx.fillStyle = '#04070d';
+    ctx.fillRect(15, 1025, width - 30, 400);
+
     const rosterGrad = ctx.createLinearGradient(0, 1030, 0, 1420);
     rosterGrad.addColorStop(0, '#06090f');
     rosterGrad.addColorStop(0.5, '#030508');
     rosterGrad.addColorStop(1, '#06090f');
     ctx.fillStyle = rosterGrad;
-    ctx.fillRect(40, 1030, width - 80, 390);
+    ctx.fillRect(30, 1030, width - 60, 390);
 
     // Glowing Neon Lime divider line on top of rosters
     ctx.strokeStyle = '#c8ff00';
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(50, 1030);
-    ctx.lineTo(width - 50, 1030);
+    ctx.moveTo(40, 1030);
+    ctx.lineTo(width - 40, 1030);
     ctx.stroke();
 
     // Filter confirmed players
-    const confirmados = (convocatoria.confirmaciones || []).filter(c => c.status === 'confirmado');
-    const team1 = confirmados.filter(c => c.team_number === 1);
-    const team2 = confirmados.filter(c => c.team_number === 2);
-    const team3 = confirmados.filter(c => c.team_number === 3);
-    const team4 = confirmados.filter(c => c.team_number === 4);
+    const rawConfirmados = (activeConvocatoria.confirmaciones || []);
+    let confirmados = rawConfirmados.filter(c => {
+      const st = (c.status || '').toLowerCase();
+      return st === 'confirmado' || st === 'asistio' || st === 'confirmed';
+    });
+    // Fallback: if no players marked with 'confirmado', use all active enrollments
+    if (confirmados.length === 0 && rawConfirmados.length > 0) {
+      confirmados = rawConfirmados;
+    }
+
+    const team1 = confirmados.filter(c => Number(c.team_number) === 1);
+    const team2 = confirmados.filter(c => Number(c.team_number) === 2);
+    const team3 = confirmados.filter(c => Number(c.team_number) === 3);
 
     // Sort helper: Portero always at index 0 (#1)
     const sortWithGkFirst = (list: Confirmacion[]) => {
@@ -280,7 +302,7 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
     };
 
     const hasTeams = team1.length > 0 && team2.length > 0;
-    const numTeams = convocatoria.num_teams || (team3.length > 0 ? 3 : 2);
+    const numTeams = activeConvocatoria.num_teams || (team3.length > 0 ? 3 : 2);
 
     if (hasTeams) {
       if (numTeams === 3 || team3.length > 0) {
@@ -382,7 +404,7 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
         renderColumnPlayers(team3, col3X, '#ffffff');
 
         // Check resting team in draw_metadata
-        const resting = convocatoria.draw_metadata?.first_match?.resting_teams;
+        const resting = activeConvocatoria.draw_metadata?.first_match?.resting_teams;
         if (resting && resting.includes(3)) {
           ctx.fillStyle = 'rgba(245, 158, 11, 0.9)';
           ctx.font = 'bold 16px sans-serif';
@@ -467,12 +489,12 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
         render2ColPlayers(team1, col1X, '#ef4444');
         render2ColPlayers(team2, col2X, '#84cc16');
       }
-    } else {
-      // Teams not drawn yet - Render full confirmed roster
+    } else if (confirmados.length > 0) {
+      // Teams not sorted yet, but players are confirmed: List all confirmed players across 3 columns
       ctx.textAlign = 'center';
       ctx.fillStyle = '#c8ff00';
       ctx.font = '900 28px sans-serif';
-      ctx.fillText(`📋 CONVOCADOS CONFIRMADOS (${confirmados.length} / ${convocatoria.max_players})`, width / 2, 1065);
+      ctx.fillText(`📋 CONVOCADOS CONFIRMADOS (${confirmados.length} / ${activeConvocatoria.max_players})`, width / 2, 1065);
 
       const colWidth = 310;
       const colXCoords = [55, 385, 715];
@@ -504,6 +526,25 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
           ctx.fillText('🧤', colX + 48 + textW, py);
         }
       });
+    } else {
+      // Zero players confirmed yet - Render clear status banner
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#c8ff00';
+      ctx.font = '900 32px sans-serif';
+      ctx.fillText(`📋 INSCRIPCIONES ABIERTAS (0 / ${activeConvocatoria.max_players || 21} CUPOS)`, width / 2, 1100);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 26px sans-serif';
+      ctx.fillText('¡Aún no hay jugadores registrados para este partido!', width / 2, 1170);
+
+      ctx.fillStyle = '#facc15';
+      ctx.font = '900 22px sans-serif';
+      ctx.fillText('⚡ Los jugadores y equipos sorteados aparecerán aquí automáticamente ⚡', width / 2, 1230);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 22px monospace';
+      ctx.fillText('Asegura tu cupo en la web: pichangasdebarrio.com', width / 2, 1290);
     }
 
     // 5. Subtle Footer Brand Line
@@ -521,7 +562,7 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
     if (!previewUrl) return;
     const a = document.createElement('a');
     a.href = previewUrl;
-    a.download = `Flyer-PichangasDeBarrio-${convocatoria.match_date}.png`;
+    a.download = `Flyer-PichangasDeBarrio-${activeConvocatoria.match_date}.png`;
     a.click();
     toast.success('¡Flyer descargado en alta definición!');
   };
@@ -543,17 +584,18 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
   };
 
   const handleShareWhatsApp = () => {
-    const confirmados = (convocatoria.confirmaciones || []).filter(c => c.status === 'confirmado');
-    const remaining = Math.max(0, convocatoria.max_players - confirmados.length);
+    const rawConfirmados = (activeConvocatoria.confirmaciones || []);
+    const confirmados = rawConfirmados.filter(c => (c.status || '').toLowerCase() === 'confirmado');
+    const remaining = Math.max(0, activeConvocatoria.max_players - confirmados.length);
 
     const text = `⚽ *CONVOCATORIA OFICIAL - PICHANGAS DE BARRIO FC* ⚽\n\n` +
-      `🔥 *${convocatoria.title.toUpperCase()}*\n` +
+      `🔥 *${activeConvocatoria.title.toUpperCase()}*\n` +
       `🏆 *Categoría:* ${categoryText}\n` +
-      `📅 *Fecha:* ${convocatoria.match_date}\n` +
-      `⏰ *Hora:* ${convocatoria.match_time?.slice(0, 5)} hrs\n` +
-      `🏟️ *Sede:* ${convocatoria.location}\n` +
-      `👥 *Inscritos:* ${confirmados.length}/${convocatoria.max_players} (${remaining > 0 ? `¡Quedan ${remaining} cupos!` : '¡Equipos Sorteados!'})\n\n` +
-      `📲 *Ver lista completa:* ${window.location.origin}/convocatorias/${convocatoria.id}`;
+      `📅 *Fecha:* ${activeConvocatoria.match_date}\n` +
+      `⏰ *Hora:* ${activeConvocatoria.match_time?.slice(0, 5)} hrs\n` +
+      `🏟️ *Sede:* ${activeConvocatoria.location}\n` +
+      `👥 *Inscritos:* ${confirmados.length}/${activeConvocatoria.max_players} (${remaining > 0 ? `¡Quedan ${remaining} cupos!` : '¡Equipos Sorteados!'})\n\n` +
+      `📲 *Ver lista completa:* ${window.location.origin}/convocatorias/${activeConvocatoria.id}`;
 
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   };
@@ -564,6 +606,8 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
     setShowKeyConfig(false);
     handleRegenerateWithGemini();
   };
+
+  const currentConfirmadosCount = (activeConvocatoria.confirmaciones || []).filter(c => (c.status || '').toLowerCase() === 'confirmado').length;
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in duration-200">
@@ -586,15 +630,18 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
                   Solo Administrador
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
-                Póster oficial con equipos sorteados, arqueros 🧤 y diseño urban grunge
+              <p className="text-xs text-slate-400 flex items-center gap-2">
+                <span>Póster oficial con arqueros 🧤 y equipos sorteados</span>
+                <span className="text-lime-400 font-bold flex items-center gap-1">
+                  <Users size={12} /> {currentConfirmadosCount}/{activeConvocatoria.max_players || 21}
+                </span>
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors"
+            className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -628,6 +675,18 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
             <span className="text-slate-600">|</span>
             <button
               type="button"
+              onClick={() => {
+                refetch();
+                renderPoster(aiHeadline);
+              }}
+              className="text-slate-400 hover:text-slate-200 font-bold flex items-center gap-1 cursor-pointer transition-colors"
+              title="Recargar datos frescos de jugadores"
+            >
+              <RefreshCw size={12} className={isLoadingFull ? 'animate-spin' : ''} /> Recargar
+            </button>
+            <span className="text-slate-600">|</span>
+            <button
+              type="button"
               onClick={() => setShowKeyConfig(!showKeyConfig)}
               className="text-slate-400 hover:text-slate-200 font-bold flex items-center gap-1 cursor-pointer transition-colors"
             >
@@ -653,7 +712,7 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
               <button
                 type="button"
                 onClick={handleSaveKey}
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold"
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold cursor-pointer"
               >
                 Guardar
               </button>
@@ -673,8 +732,9 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
               className="max-h-[44vh] w-auto rounded-xl shadow-2xl object-contain border border-slate-700/50"
             />
           ) : (
-            <div className="py-20 text-center text-slate-400 text-sm">
-              Generando póster oficial en alta resolución...
+            <div className="py-20 text-center text-slate-400 text-sm flex items-center gap-2">
+              <RefreshCw size={16} className="animate-spin text-lime-400" />
+              <span>Generando póster oficial en alta resolución con jugadores...</span>
             </div>
           )}
         </div>
