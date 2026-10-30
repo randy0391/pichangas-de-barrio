@@ -7,7 +7,8 @@ import {
     useSortearEquipos, 
     useConvocatoria, 
     useRemoveConfirmacion, 
-    useUpdatePlayerRole 
+    useUpdatePlayerRole,
+    useUpdatePlayerTeam
 } from '@/hooks/useConvocatorias';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -47,6 +48,8 @@ import { Link } from 'react-router-dom';
 import { AdminAttendanceDialog } from './AdminAttendanceDialog';
 import { AdminRecurringScheduleDialog } from './AdminRecurringScheduleDialog';
 import { ConvocatoriaFlyerModal } from '@/features/convocatorias/ConvocatoriaFlyerModal';
+import { TacticalPitch } from '@/features/convocatorias/TacticalPitch';
+import { PlayerCardModal } from '@/components/player/PlayerCardModal';
 
 const getPlayerName = (user: any) => {
     if (!user) return 'Jugador';
@@ -73,13 +76,40 @@ const formatMatchDateTime = (dateStr?: string, timeStr?: string) => {
 };
 
 const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
-    const { data: c } = useConvocatoria(convocatoriaId);
+    const { data: c, isLoading } = useConvocatoria(convocatoriaId);
     const { mutate: removeConfirmacion } = useRemoveConfirmacion();
     const { mutate: updateRole } = useUpdatePlayerRole();
+    const { mutate: updatePlayerTeam } = useUpdatePlayerTeam();
+    const [viewMode, setViewMode] = useState<'pitch' | 'cards'>('pitch');
+    const [selectedPlayerCard, setSelectedPlayerCard] = useState<Confirmacion | null>(null);
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-10 gap-2 text-slate-400">
+                <FootballSpinner />
+            </div>
+        );
+    }
+
     if (!c || !c.confirmaciones) return null;
 
     const confirmados = c.confirmaciones.filter((p: Confirmacion) => p.status === 'confirmado');
     const hasTeams = confirmados.some((p: Confirmacion) => p.team_number !== null);
+
+    const handleSwapTeam = (userId: number, targetTeam: number) => {
+        updatePlayerTeam({
+            id: convocatoriaId,
+            userId,
+            teamNumber: targetTeam
+        }, {
+            onSuccess: () => {
+                toast.success(`Jugador transferido al Equipo ${targetTeam}`);
+            },
+            onError: (err: any) => {
+                toast.error(err?.response?.data?.message || 'Error al transferir de equipo');
+            }
+        });
+    };
 
     const handleCopy = () => {
         if (hasTeams) {
@@ -165,8 +195,12 @@ const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
                                 >
                                     {isPortero ? '🧤' : '⚽'}
                                 </button>
-                                <div className="min-w-0 flex-1">
-                                    <p className="font-bold text-sm text-slate-900 dark:text-white truncate flex items-center gap-1">
+                                <div 
+                                    className="min-w-0 flex-1 cursor-pointer"
+                                    onClick={() => setSelectedPlayerCard(p)}
+                                    title="Ver ficha del jugador"
+                                >
+                                    <p className="font-bold text-sm text-slate-900 dark:text-white truncate flex items-center gap-1 hover:text-primary transition-colors">
                                         {name}
                                         {isPortero && (
                                             <span className="text-[10px] font-black uppercase tracking-wider bg-amber-400/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.2 rounded-md">
@@ -205,6 +239,14 @@ const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
                     })}
                 </div>
             )}
+
+            {selectedPlayerCard && (
+                <PlayerCardModal 
+                    isOpen={!!selectedPlayerCard} 
+                    onClose={() => setSelectedPlayerCard(null)} 
+                    player={selectedPlayerCard} 
+                />
+            )}
         </div>
     );
 
@@ -225,95 +267,141 @@ const TeamsList = ({ convocatoriaId }: { convocatoriaId: number }) => {
 
     return (
         <div className="space-y-4 pt-2">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-2">
-                    <Trophy className="text-amber-500" size={18} />
-                    <h4 className="font-black text-sm uppercase tracking-wider text-slate-900 dark:text-white">
-                        Equipos Sorteados ({confirmados.length} jugadores en {Object.keys(teams).length} equipos)
-                    </h4>
+            {/* Barra de Controles: Conmutador Cancha Táctica vs Lista y Copiar */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex flex-wrap items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setViewMode('pitch')}
+                        className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
+                            viewMode === 'pitch'
+                                ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
+                                : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'
+                        }`}
+                    >
+                        ⚽ Cancha Táctica 2D
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setViewMode('cards')}
+                        className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
+                            viewMode === 'cards'
+                                ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
+                                : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'
+                        }`}
+                    >
+                        📋 Vista Lista / Tarjetas
+                    </button>
                 </div>
-                <Button 
-                    onClick={handleCopy} 
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white h-9 px-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow"
-                >
-                    <Copy size={14} /> Copiar Equipos para WhatsApp
-                </Button>
+
+                <div className="flex items-center gap-2">
+                    <Button 
+                        onClick={handleCopy} 
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white h-9 px-3.5 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow"
+                    >
+                        <Copy size={14} /> Copiar Equipos para WhatsApp
+                    </Button>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {Object.entries(teams).sort(([a], [b]) => Number(a) - Number(b)).map(([teamNum, players]) => {
-                    const num = Number(teamNum);
-                    const gradient = num === 0 ? 'bg-slate-700' : `bg-gradient-to-r ${teamGradients[(num - 1) % teamGradients.length]}`;
-                    
-                    return (
-                        <div key={teamNum} className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 space-y-3">
-                            <div className="flex justify-between items-center">
-                                <div className={`px-3 py-1 rounded-xl ${gradient} text-white font-black text-xs uppercase tracking-widest shadow-sm flex items-center gap-1.5`}>
-                                    <Trophy size={13} /> {num === 0 ? 'Sin Equipo' : `Equipo ${num}`}
+            {/* Vista Seleccionada: Cancha Táctica 2D o Cuadrícula de Tarjetas */}
+            {viewMode === 'pitch' ? (
+                <div className="pt-2">
+                    <TacticalPitch 
+                        convocatoria={c} 
+                        onSelectPlayer={(p) => setSelectedPlayerCard(p)} 
+                        onSwapTeam={handleSwapTeam} 
+                        isAdmin={true} 
+                    />
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
+                    {Object.entries(teams).sort(([a], [b]) => Number(a) - Number(b)).map(([teamNum, players]) => {
+                        const num = Number(teamNum);
+                        const gradient = num === 0 ? 'bg-slate-700' : `bg-gradient-to-r ${teamGradients[(num - 1) % teamGradients.length]}`;
+                        
+                        return (
+                            <div key={teamNum} className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <div className={`px-3 py-1 rounded-xl ${gradient} text-white font-black text-xs uppercase tracking-widest shadow-sm flex items-center gap-1.5`}>
+                                        <Trophy size={13} /> {num === 0 ? 'Sin Equipo' : `Equipo ${num}`}
+                                    </div>
+                                    <span className="text-xs font-bold text-slate-500">
+                                        {players.length} jugadores
+                                    </span>
                                 </div>
-                                <span className="text-xs font-bold text-slate-500">
-                                    {players.length} jugadores
-                                </span>
-                            </div>
 
-                            <div className="space-y-2">
-                                {players.sort((a, b) => a.match_role === 'portero' ? -1 : 1).map(p => {
-                                    const name = getPlayerName(p.user);
-                                    const isPortero = p.match_role === 'portero';
+                                <div className="space-y-2">
+                                    {players.sort((a, b) => a.match_role === 'portero' ? -1 : 1).map(p => {
+                                        const name = getPlayerName(p.user);
+                                        const isPortero = p.match_role === 'portero';
 
-                                    return (
-                                        <div key={p.id} className="flex items-center gap-2.5 p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm text-sm">
-                                            <button 
-                                                onClick={() => updateRole({ 
-                                                    id: convocatoriaId, 
-                                                    userId: p.user.id, 
-                                                    role: isPortero ? 'jugador' : 'portero' 
-                                                }, {
-                                                    onSuccess: () => toast.success(`Rol cambiado a ${isPortero ? 'Jugador' : 'Portero'}`)
-                                                })}
-                                                title={`Cambiar rol de ${name}`}
-                                                className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center font-bold text-xs transition-transform active:scale-95 cursor-pointer ${
-                                                    isPortero ? 'bg-amber-400 text-amber-950 shadow-sm ring-1 ring-amber-400/50' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
-                                                }`}
-                                            >
-                                                {isPortero ? '🧤' : '⚽'}
-                                            </button>
+                                        return (
+                                            <div key={p.id} className="flex items-center gap-2.5 p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm text-sm">
+                                                <button 
+                                                    onClick={() => updateRole({ 
+                                                        id: convocatoriaId, 
+                                                        userId: p.user.id, 
+                                                        role: isPortero ? 'jugador' : 'portero' 
+                                                    }, {
+                                                        onSuccess: () => toast.success(`Rol cambiado a ${isPortero ? 'Jugador' : 'Portero'}`)
+                                                    })}
+                                                    title={`Cambiar rol de ${name}`}
+                                                    className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center font-bold text-xs transition-transform active:scale-95 cursor-pointer ${
+                                                        isPortero ? 'bg-amber-400 text-amber-950 shadow-sm ring-1 ring-amber-400/50' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                                                    }`}
+                                                >
+                                                    {isPortero ? '🧤' : '⚽'}
+                                                </button>
 
-                                            <div className="min-w-0 flex-1">
-                                                <span className="font-bold text-slate-900 dark:text-white truncate block text-xs">
-                                                    {name}
-                                                    {isPortero && (
-                                                        <span className="ml-1 text-[9px] font-black uppercase text-amber-600 dark:text-amber-400 bg-amber-400/10 px-1 py-0.5 rounded">
-                                                            Portero
-                                                        </span>
-                                                    )}
-                                                </span>
-                                                <span className="text-[11px] text-slate-400 block truncate">{p.user?.phone || 'Sin número'}</span>
+                                                <div 
+                                                    className="min-w-0 flex-1 cursor-pointer"
+                                                    onClick={() => setSelectedPlayerCard(p)}
+                                                    title="Ver ficha del jugador"
+                                                >
+                                                    <span className="font-bold text-slate-900 dark:text-white truncate block text-xs hover:text-primary transition-colors">
+                                                        {name}
+                                                        {isPortero && (
+                                                            <span className="ml-1 text-[9px] font-black uppercase text-amber-600 dark:text-amber-400 bg-amber-400/10 px-1 py-0.5 rounded">
+                                                                Portero
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                    <span className="text-[11px] text-slate-400 block truncate">{p.user?.phone || 'Sin número'}</span>
+                                                </div>
+
+                                                <button 
+                                                    onClick={() => {
+                                                        toast(`¿Eliminar la reserva de ${name}?`, {
+                                                            action: {
+                                                                label: 'Eliminar',
+                                                                onClick: () => removeConfirmacion({ id: convocatoriaId, userId: p.user.id })
+                                                            },
+                                                            cancel: { label: 'Cancelar', onClick: () => {} }
+                                                        });
+                                                    }} 
+                                                    className="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors" 
+                                                    title="Eliminar de convocatoria"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
                                             </div>
-
-                                            <button 
-                                                onClick={() => {
-                                                    toast(`¿Eliminar la reserva de ${name}?`, {
-                                                        action: {
-                                                            label: 'Eliminar',
-                                                            onClick: () => removeConfirmacion({ id: convocatoriaId, userId: p.user.id })
-                                                        },
-                                                        cancel: { label: 'Cancelar', onClick: () => {} }
-                                                    });
-                                                }} 
-                                                className="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors" 
-                                                title="Eliminar de convocatoria"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
-                    );
-                })}
-            </div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {selectedPlayerCard && (
+                <PlayerCardModal 
+                    isOpen={!!selectedPlayerCard} 
+                    onClose={() => setSelectedPlayerCard(null)} 
+                    player={selectedPlayerCard} 
+                />
+            )}
         </div>
     );
 };
@@ -1123,18 +1211,20 @@ export const AdminConvocatoriasPage = () => {
                                                 <ClipboardCheck size={16} /> Tomar Lista
                                             </Button>
 
-                                            {/* Botón Ver / Ocultar Equipos */}
+                                            {/* Botón Ver / Ocultar Cancha y Equipos */}
                                             <Button 
                                                 onClick={() => setExpandedId(isExpanded ? null : c.id)} 
                                                 variant="outline" 
                                                 className={`h-11 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2 border transition-all ${
                                                     isExpanded 
                                                         ? 'bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white border-slate-300 dark:border-slate-700' 
-                                                        : 'border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                                        : c.has_teams
+                                                            ? 'border-lime-500/50 bg-lime-500/10 text-lime-600 dark:text-lime-400 hover:bg-lime-500/20 shadow-sm'
+                                                            : 'border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                                                 }`}
                                             >
                                                 {isExpanded ? <EyeOff size={16} /> : <Eye size={16} />}
-                                                {isExpanded ? 'Ocultar Equipos' : 'Ver Equipos'}
+                                                {isExpanded ? 'Ocultar Cancha' : (c.has_teams ? '⚽ Cancha y Equipos' : 'Ver Inscritos')}
                                             </Button>
 
                                             {/* Botón Sortear */}
