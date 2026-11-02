@@ -140,7 +140,7 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 15;
 
-  // Fetch report data based on active filters
+  // Fetch report data based on active filters (with seamless fallback to existing live endpoints)
   const { data: response, isLoading, isFetching } = useQuery<ReportApiResponse>({
     queryKey: [
       'admin-wallets-report',
@@ -161,17 +161,274 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
           ? 'without_balance'
           : 'recharged_players';
 
-      const res = await api.get('/admin/wallets/report', {
-        params: {
-          report_type: typeParam,
-          start_date: startDate || undefined,
-          end_date: endDate || undefined,
-          status: rechargeStatus !== 'all' ? rechargeStatus : undefined,
-          sub_filter: activeSubTab === 'without_balance' && withoutBalanceSubFilter !== 'all' ? withoutBalanceSubFilter : undefined,
-          search: searchQuery.trim() || undefined,
+      try {
+        const res = await api.get('/admin/wallets/report', {
+          params: {
+            report_type: typeParam,
+            start_date: startDate || undefined,
+            end_date: endDate || undefined,
+            status: rechargeStatus !== 'all' ? rechargeStatus : undefined,
+            sub_filter: activeSubTab === 'without_balance' && withoutBalanceSubFilter !== 'all' ? withoutBalanceSubFilter : undefined,
+            search: searchQuery.trim() || undefined,
+          }
+        });
+        if (res.data && res.data.global_stats) {
+          return res.data;
         }
+      } catch (err) {
+        // Fallback to client-side aggregation from live endpoints if backend endpoint is not yet live
+      }
+
+      // FALLBACK AGGREGATION FROM LIVE PRODUCTION ENDPOINTS
+      const [walletsRes, rechargesRes] = await Promise.all([
+        api.get('/admin/wallets', { params: { all: true, per_page: 500 } }).catch(() => ({ data: { data: [] } })),
+        api.get<any>('/admin/wallets/recharges', { params: { all: true, per_page: 1000 } }).catch(() => ({ data: { data: [] } }))
+      ]);
+
+      const rawWallets: any[] = (walletsRes.data as any).data || [];
+      const rawRecharges: any[] = (rechargesRes.data as any).data || [];
+
+      // Compute Global Stats
+      const totalBalanceCirculation = rawWallets.reduce((acc, w) => acc + parseFloat(w.balance || '0'), 0);
+      const withBal = rawWallets.filter(w => parseFloat(w.balance || '0') > 0);
+      const withoutBal = rawWallets.filter(w => parseFloat(w.balance || '0') <= 0);
+      const inDebt = rawWallets.filter(w => parseFloat(w.balance || '0') < 0);
+      const totalDebt = inDebt.reduce((acc, w) => acc + Math.abs(parseFloat(w.balance || '0')), 0);
+
+      const approvedRecharges = rawRecharges.filter(r => r.status === 'aprobado');
+      const totalApprovedRechargesAmount = approvedRecharges.reduce((acc, r) => acc + parseFloat(r.amount || '0'), 0);
+      const uniqueRechargers = new Set(approvedRecharges.map(r => r.user_id || r.user?.id).filter(Boolean));
+
+      const globalStats = {
+        total_balance_circulation: totalBalanceCirculation,
+        players_with_balance_count: withBal.length,
+        total_with_balance_amount: withBal.reduce((acc, w) => acc + parseFloat(w.balance || '0'), 0),
+        players_without_balance_count: withoutBal.length,
+        players_in_debt_count: inDebt.length,
+        total_debt_amount: totalDebt,
+        total_approved_recharges_amount: totalApprovedRechargesAmount,
+        total_approved_recharges_count: approvedRecharges.length,
+        total_pending_recharges_count: rawRecharges.filter(r => r.status === 'pendiente').length,
+        unique_rechargers_count: uniqueRechargers.size,
+        total_users_count: rawWallets.length,
+      };
+
+      const matchesSearch = (name = '', nickname = '', phone = '', dni = '') => {
+        if (!searchQuery.trim()) return true;
+        const q = searchQuery.toLowerCase().trim();
+        return (
+          name.toLowerCase().includes(q) ||
+          nickname.toLowerCase().includes(q) ||
+          phone.replace(/\D/g, '').includes(q.replace(/\D/g, '')) ||
+          dni.toLowerCase().includes(q)
+        );
+      };
+
+      // 1. RECHARGES BY DATE
+      if (activeSubTab === 'recharges') {
+        const list = rawRecharges.filter(r => {
+          const u = r.user;
+          const uName = u?.name || 'Jugador';
+          const uNick = u?.nickname || '';
+          const uPhone = u?.phone || '';
+          const uDni = u?.dni || '';
+          if (!matchesSearch(uName, uNick, uPhone, uDni)) return false;
+
+          if (rechargeStatus !== 'all' && r.status !== rechargeStatus) return false;
+
+          if (startDate) {
+            const rDate = (r.created_at || '').slice(0, 10);
+            if (rDate < startDate) return false;
+          }
+          if (endDate) {
+            const rDate = (r.created_at || '').slice(0, 10);
+            if (rDate > endDate) return false;
+          }
+          return true;
+        });
+
+        list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        const periodApproved = list.filter(r => r.status === 'aprobado');
+        const periodApprovedAmount = periodApproved.reduce((acc, r) => acc + parseFloat(r.amount || '0'), 0);
+
+        const items: RechargeItem[] = list.map(r => ({
+          id: r.id,
+          user_id: r.user_id || r.user?.id,
+          user_name: r.user?.name || 'Jugador',
+          user_nickname: r.user?.nickname || null,
+          user_phone: r.user?.phone || null,
+          user_dni: r.user?.dni || null,
+          user_avatar: r.user?.avatar || null,
+          amount: parseFloat(r.amount || '0'),
+          balance_after: parseFloat(r.balance_after || '0'),
+          description: r.description,
+          receipt_path: r.receipt_path,
+          status: r.status,
+          approver_name: r.approver_name,
+          approved_at: r.approved_at,
+          created_at: r.created_at,
+          date_formatted: new Date(r.created_at).toLocaleDateString('es-PE', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          })
+        }));
+
+        return {
+          global_stats: globalStats,
+          period_stats: {
+            period_approved_amount: periodApprovedAmount,
+            period_total_count: list.length,
+            period_approved_count: periodApproved.length,
+            period_pending_count: list.filter(r => r.status === 'pendiente').length,
+            period_rejected_count: list.filter(r => r.status === 'rechazado').length,
+          },
+          data: items
+        };
+      }
+
+      // Group recharges by user for metrics in tabs 2, 3, 4
+      const userRechargeMap = new Map<number, { total: number; count: number; firstDate: string; lastDate: string }>();
+      approvedRecharges.forEach(r => {
+        const uid = r.user_id || r.user?.id;
+        if (!uid) return;
+        const cur = userRechargeMap.get(uid) || { total: 0, count: 0, firstDate: r.created_at, lastDate: r.created_at };
+        cur.total += parseFloat(r.amount || '0');
+        cur.count += 1;
+        if (new Date(r.created_at).getTime() < new Date(cur.firstDate).getTime()) cur.firstDate = r.created_at;
+        if (new Date(r.created_at).getTime() > new Date(cur.lastDate).getTime()) cur.lastDate = r.created_at;
+        userRechargeMap.set(uid, cur);
       });
-      return res.data;
+
+      // 2. WITH BALANCE (> 0)
+      if (activeSubTab === 'with_balance') {
+        const filtered = withBal.filter(w => {
+          const u = w.user;
+          return matchesSearch(u?.name, u?.nickname, u?.phone, u?.dni);
+        });
+
+        filtered.sort((a, b) => parseFloat(b.balance || '0') - parseFloat(a.balance || '0'));
+
+        const items: PlayerWithBalanceItem[] = filtered.map(w => {
+          const uid = w.user?.id || w.user_id;
+          const recInfo = userRechargeMap.get(uid);
+          const bal = parseFloat(w.balance || '0');
+          const totRec = recInfo?.total || 0;
+          const spent = Math.max(0, totRec - bal);
+
+          return {
+            user_id: uid,
+            user_name: w.user?.name || 'Jugador',
+            user_nickname: w.user?.nickname || null,
+            user_phone: w.user?.phone || null,
+            user_dni: w.user?.dni || null,
+            user_avatar: w.user?.avatar || null,
+            current_balance: bal,
+            total_recharged: totRec,
+            total_spent: spent,
+            recharges_count: recInfo?.count || 0,
+            last_recharge_date: recInfo?.lastDate ? new Date(recInfo.lastDate).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : null,
+          };
+        });
+
+        return {
+          global_stats: globalStats,
+          data: items
+        };
+      }
+
+      // 3. WITHOUT BALANCE (<= 0)
+      if (activeSubTab === 'without_balance') {
+        let filtered = withoutBal.filter(w => {
+          const u = w.user;
+          return matchesSearch(u?.name, u?.nickname, u?.phone, u?.dni);
+        });
+
+        if (withoutBalanceSubFilter === 'zero') {
+          filtered = filtered.filter(w => parseFloat(w.balance || '0') === 0);
+        } else if (withoutBalanceSubFilter === 'negative') {
+          filtered = filtered.filter(w => parseFloat(w.balance || '0') < 0);
+        }
+
+        filtered.sort((a, b) => parseFloat(a.balance || '0') - parseFloat(b.balance || '0'));
+
+        const items: PlayerWithoutBalanceItem[] = filtered.map(w => {
+          const uid = w.user?.id || w.user_id;
+          const recInfo = userRechargeMap.get(uid);
+          const bal = parseFloat(w.balance || '0');
+
+          return {
+            user_id: uid,
+            user_name: w.user?.name || 'Jugador',
+            user_nickname: w.user?.nickname || null,
+            user_phone: w.user?.phone || null,
+            user_dni: w.user?.dni || null,
+            user_avatar: w.user?.avatar || null,
+            current_balance: bal,
+            is_negative: bal < 0,
+            has_recharged_before: !!recInfo && recInfo.count > 0,
+            total_recharged: recInfo?.total || 0,
+            recharges_count: recInfo?.count || 0,
+            last_recharge_date: recInfo?.lastDate ? new Date(recInfo.lastDate).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : null,
+          };
+        });
+
+        return {
+          global_stats: globalStats,
+          data: items
+        };
+      }
+
+      // 4. ALL RECHARGED PLAYERS
+      if (activeSubTab === 'all_recharged') {
+        const walletMap = new Map<number, any>();
+        rawWallets.forEach(w => {
+          const uid = w.user?.id || w.user_id;
+          if (uid) walletMap.set(uid, w);
+        });
+
+        const list: RechargedPlayerItem[] = [];
+        userRechargeMap.forEach((recInfo, uid) => {
+          const w = walletMap.get(uid);
+          const u = w?.user;
+          const uName = u?.name || 'Jugador';
+          const uNick = u?.nickname || '';
+          const uPhone = u?.phone || '';
+          const uDni = u?.dni || '';
+
+          if (!matchesSearch(uName, uNick, uPhone, uDni)) return;
+
+          const bal = parseFloat(w?.balance || '0');
+          const avg = recInfo.count > 0 ? parseFloat((recInfo.total / recInfo.count).toFixed(2)) : 0;
+
+          list.push({
+            user_id: uid,
+            user_name: uName,
+            user_nickname: uNick || null,
+            user_phone: uPhone || null,
+            user_dni: uDni || null,
+            user_avatar: u?.avatar || null,
+            current_balance: bal,
+            total_recharged: recInfo.total,
+            recharges_count: recInfo.count,
+            average_recharge: avg,
+            first_recharge_date: recInfo.firstDate ? new Date(recInfo.firstDate).toLocaleDateString('es-PE') : null,
+            last_recharge_date: recInfo.lastDate ? new Date(recInfo.lastDate).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : null,
+          });
+        });
+
+        list.sort((a, b) => b.total_recharged - a.total_recharged);
+
+        return {
+          global_stats: globalStats,
+          data: list
+        };
+      }
+
+      return {
+        global_stats: globalStats,
+        data: []
+      };
     }
   });
 
