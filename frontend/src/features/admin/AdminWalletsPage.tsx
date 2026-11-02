@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
@@ -9,13 +9,15 @@ import {
   Wallet, CheckCircle, Clock, Search, Eye, 
   Sliders, ExternalLink, History, ArrowUpCircle, ArrowDownCircle,
   FileText, User as UserIcon, X, Calendar, RotateCcw, Copy, Check,
-  TrendingUp, AlertCircle, DollarSign, Users, Phone, ArrowUpRight
+  TrendingUp, AlertCircle, DollarSign, Users, Phone, ArrowUpRight,
+  FileSpreadsheet, BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
 import { Pagination } from '@/components/ui/Pagination';
 import { WalletTransaction, Wallet as WalletType } from '@/types';
+import { AdminWalletReportsSection } from './AdminWalletReportsSection';
 
 interface PlayerHistoryTransaction {
   id: number;
@@ -71,7 +73,26 @@ interface RechargesHistoryResponse {
 }
 
 export const AdminWalletsPage = () => {
-  const [activeTab, setActiveTab] = useState<'pending' | 'all' | 'vouchers'>('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<'pending' | 'all' | 'vouchers' | 'reports'>(
+    tabFromUrl === 'reports' || tabFromUrl === 'reportes' ? 'reports' : 'all'
+  );
+
+  useEffect(() => {
+    if (tabFromUrl === 'reports' || tabFromUrl === 'reportes') {
+      setActiveTab('reports');
+    }
+  }, [tabFromUrl]);
+
+  const handleTabChange = (tab: 'pending' | 'all' | 'vouchers' | 'reports') => {
+    setActiveTab(tab);
+    if (tab === 'reports') {
+      setSearchParams({ tab: 'reports' });
+    } else {
+      setSearchParams({});
+    }
+  };
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [balanceFilter, setBalanceFilter] = useState<'all' | 'positive' | 'zero' | 'negative'>('all');
@@ -361,14 +382,30 @@ export const AdminWalletsPage = () => {
           <p className="text-slate-400 mt-1">Controla los saldos, aprueba recargas y revisa el historial de movimientos de cada jugador</p>
         </div>
 
-        <Link
-          to="/billetera"
-          className="self-start sm:self-auto px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-lime-400 hover:text-lime-300 border border-lime-400/30 hover:border-lime-400 font-bold text-xs flex items-center gap-2 transition-all shadow-sm"
-          title="Ver mi propia billetera personal"
-        >
-          <Wallet className="h-4 w-4" />
-          <span>Ver Mi Billetera Personal</span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => handleTabChange('reports')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-md ${
+              activeTab === 'reports'
+                ? 'bg-lime-400 text-slate-950 shadow-lime-400/25 ring-2 ring-lime-400/40'
+                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/40'
+            }`}
+            title="Abrir Centro de Reportes y Exportación de Billeteras"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            <span>📊 Reportes y Exportar</span>
+          </button>
+
+          <Link
+            to="/billetera"
+            className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-lime-400 hover:text-lime-300 border border-lime-400/30 hover:border-lime-400 font-bold text-xs flex items-center gap-2 transition-all shadow-sm"
+            title="Ver mi propia billetera personal"
+          >
+            <Wallet className="h-4 w-4" />
+            <span>Mi Billetera</span>
+          </Link>
+        </div>
       </div>
 
       {/* Financial KPIs Banner */}
@@ -447,7 +484,7 @@ export const AdminWalletsPage = () => {
       {/* Tab switcher */}
       <div className="flex flex-wrap bg-slate-900 p-1 rounded-xl border border-slate-800 self-start sm:self-auto gap-1">
         <button
-          onClick={() => setActiveTab('all')}
+          onClick={() => handleTabChange('all')}
           className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
             activeTab === 'all'
               ? 'bg-lime-400 text-slate-950 shadow-md'
@@ -457,7 +494,7 @@ export const AdminWalletsPage = () => {
           Todas las Billeteras ({meta?.total ?? allWallets.length})
         </button>
         <button
-          onClick={() => setActiveTab('pending')}
+          onClick={() => handleTabChange('pending')}
           className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all relative ${
             activeTab === 'pending'
               ? 'bg-lime-400 text-slate-950 shadow-md'
@@ -471,7 +508,7 @@ export const AdminWalletsPage = () => {
           )}
         </button>
         <button
-          onClick={() => setActiveTab('vouchers')}
+          onClick={() => handleTabChange('vouchers')}
           className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
             activeTab === 'vouchers'
               ? 'bg-lime-400 text-slate-950 shadow-md'
@@ -480,6 +517,17 @@ export const AdminWalletsPage = () => {
         >
           <Calendar className="h-3.5 w-3.5" />
           <span>Historial de Vouchers</span>
+        </button>
+        <button
+          onClick={() => handleTabChange('reports')}
+          className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+            activeTab === 'reports'
+              ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <FileSpreadsheet className="h-3.5 w-3.5 text-primary" />
+          <span>📊 Centro de Reportes</span>
         </button>
       </div>
 
@@ -1301,6 +1349,15 @@ export const AdminWalletsPage = () => {
             </>
           )}
         </div>
+      )}
+
+      {/* WALLET REPORTS SECTION */}
+      {activeTab === 'reports' && (
+        <AdminWalletReportsSection
+          onViewReceipt={setSelectedReceipt}
+          onOpenPlayerHistory={setHistoryModalUser}
+          onOpenAdjustModal={setAdjustModalUser}
+        />
       )}
 
       {/* PLAYER MOVEMENTS / HISTORY MODAL */}

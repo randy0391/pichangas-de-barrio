@@ -4,7 +4,7 @@ import {
   Wallet, ArrowUpCircle, ArrowDownCircle, Clock, CheckCircle, XCircle, 
   Upload, Plus, Copy, Check, Eye, ExternalLink, Shield, Zap, 
   Sparkles, AlertCircle, RefreshCw, Smartphone, CreditCard, ChevronRight, 
-  X, ArrowRight, TrendingUp, History, HelpCircle
+  X, ArrowRight, TrendingUp, History, HelpCircle, FileSpreadsheet
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -166,6 +166,36 @@ export const WalletPage = () => {
     }
   };
 
+  const exportMyMovementsToExcel = () => {
+    if (!allTransactions.length) {
+      toast.info('No tienes movimientos registrados para exportar.');
+      return;
+    }
+
+    let csvContent = '\uFEFF';
+    csvContent += 'N°;Fecha y Hora;Tipo;Monto (S/);Saldo Posterior (S/);Estado;Descripción\n';
+
+    allTransactions.forEach((tx, idx) => {
+      const date = `"${new Date(tx.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}"`;
+      const typeLabel = tx.type === 'recarga' ? 'Recarga Yape/Plin' : tx.type === 'descuento' ? 'Pago Pichanga' : tx.type === 'devolucion' ? 'Devolución' : 'Ajuste';
+      const amount = parseFloat(tx.amount).toFixed(2);
+      const balanceAfter = parseFloat(tx.balance_after).toFixed(2);
+      const status = tx.status ? tx.status.toUpperCase() : 'APROBADO';
+      const desc = `"${(tx.description || '').replace(/"/g, '""')}"`;
+      csvContent += `${idx + 1};${date};"${typeLabel}";${amount};${balanceAfter};"${status}";${desc}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `mi_estado_de_cuenta_billetera_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('¡Tu estado de cuenta fue descargado en formato Excel!');
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'aprobado': 
@@ -201,16 +231,26 @@ export const WalletPage = () => {
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-indigo-300">Modo Administrador</p>
-              <p className="text-sm font-semibold text-white">Esta es tu billetera personal. Puedes ir al panel general para aprobar recargas y gestionar saldos de todos los jugadores.</p>
+              <p className="text-sm font-semibold text-white">Esta es tu billetera personal. Puedes acceder al panel general y al centro de reportes de todos los jugadores.</p>
             </div>
           </div>
-          <Link
-            to="/admin/billeteras"
-            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shrink-0 shadow-md shadow-indigo-950/50"
-          >
-            <span>Gestionar Billeteras</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <Link
+              to="/admin/billeteras?tab=reports"
+              className="flex-1 sm:flex-none px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-md shadow-emerald-950/50"
+              title="Abrir Centro de Reportes de Billetera"
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5" />
+              <span>Reporte General</span>
+            </Link>
+            <Link
+              to="/admin/billeteras"
+              className="flex-1 sm:flex-none px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shrink-0 shadow-md shadow-indigo-950/50"
+            >
+              <span>Gestionar Todo</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       )}
 
@@ -465,48 +505,62 @@ export const WalletPage = () => {
             <p className="text-xs text-slate-400 mt-0.5">Registro de todas tus recargas, pagos de partidos y devoluciones</p>
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800 gap-1 overflow-x-auto self-start sm:self-auto">
-            <button
-              onClick={() => setActiveFilter('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                activeFilter === 'all'
-                  ? 'bg-slate-800 text-white shadow'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Todos ({allTransactions.length})
-            </button>
-            <button
-              onClick={() => setActiveFilter('recarga')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                activeFilter === 'recarga'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow'
-                  : 'text-slate-400 hover:text-emerald-300'
-              }`}
-            >
-              Recargas
-            </button>
-            <button
-              onClick={() => setActiveFilter('descuento')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                activeFilter === 'descuento'
-                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow'
-                  : 'text-slate-400 hover:text-rose-300'
-              }`}
-            >
-              Pagos Pichangas
-            </button>
-            <button
-              onClick={() => setActiveFilter('devolucion')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                activeFilter === 'devolucion'
-                  ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow'
-                  : 'text-slate-400 hover:text-blue-300'
-              }`}
-            >
-              Devoluciones
-            </button>
+          {/* Filter Pills & Export */}
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <div className="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800 gap-1 overflow-x-auto">
+              <button
+                onClick={() => setActiveFilter('all')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                  activeFilter === 'all'
+                    ? 'bg-slate-800 text-white shadow'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Todos ({allTransactions.length})
+              </button>
+              <button
+                onClick={() => setActiveFilter('recarga')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                  activeFilter === 'recarga'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow'
+                    : 'text-slate-400 hover:text-emerald-300'
+                }`}
+              >
+                Recargas
+              </button>
+              <button
+                onClick={() => setActiveFilter('descuento')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                  activeFilter === 'descuento'
+                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow'
+                    : 'text-slate-400 hover:text-rose-300'
+                }`}
+              >
+                Pagos Pichangas
+              </button>
+              <button
+                onClick={() => setActiveFilter('devolucion')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                  activeFilter === 'devolucion'
+                    ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow'
+                    : 'text-slate-400 hover:text-blue-300'
+                }`}
+              >
+                Devoluciones
+              </button>
+            </div>
+
+            {allTransactions.length > 0 && (
+              <button
+                type="button"
+                onClick={exportMyMovementsToExcel}
+                className="px-3 py-2 rounded-xl text-xs font-bold transition-all bg-emerald-600/90 hover:bg-emerald-500 text-white flex items-center gap-1.5 shadow-md shadow-emerald-950/40 shrink-0"
+                title="Descargar mi estado de cuenta en Excel (CSV)"
+              >
+                <FileSpreadsheet className="h-3.5 w-3.5" />
+                <span>Exportar Excel</span>
+              </button>
+            )}
           </div>
         </div>
 

@@ -406,4 +406,388 @@ class WalletController extends Controller
             'transaction' => $tx,
         ]);
     }
+
+    public function adminReport(Request $request)
+    {
+        $reportType = $request->get('report_type', 'recharges_by_date');
+        $search = trim($request->get('search', ''));
+        $lowerSearch = mb_strtolower($search, 'UTF-8');
+        $words = preg_split('/\s+/', $lowerSearch, -1, PREG_SPLIT_NO_EMPTY);
+
+        $totalBalanceCirculation = (float) Wallet::sum('balance');
+        $playersWithBalanceCount = Wallet::where('balance', '>', 0)->count();
+        $totalWithBalanceAmount = (float) Wallet::where('balance', '>', 0)->sum('balance');
+        
+        $totalUsersCount = User::count();
+        $playersWithoutBalanceCount = User::whereDoesntHave('wallet')
+            ->orWhereHas('wallet', function ($wq) {
+                $wq->where('balance', '<=', 0);
+            })->count();
+        $playersInDebtCount = Wallet::where('balance', '<', 0)->count();
+        $totalDebtAmount = abs((float) Wallet::where('balance', '<', 0)->sum('balance'));
+
+        $totalApprovedRechargesAmount = (float) WalletTransaction::where('type', 'recarga')
+            ->where('status', 'aprobado')
+            ->sum('amount');
+        $totalApprovedRechargesCount = WalletTransaction::where('type', 'recarga')
+            ->where('status', 'aprobado')
+            ->count();
+        $totalPendingRechargesCount = WalletTransaction::where('type', 'recarga')
+            ->where('status', 'pendiente')
+            ->count();
+
+        $uniqueRechargersCount = WalletTransaction::where('type', 'recarga')
+            ->where('status', 'aprobado')
+            ->distinct('user_id')
+            ->count('user_id');
+
+        $globalStats = [
+            'total_balance_circulation' => $totalBalanceCirculation,
+            'players_with_balance_count' => $playersWithBalanceCount,
+            'total_with_balance_amount' => $totalWithBalanceAmount,
+            'players_without_balance_count' => $playersWithoutBalanceCount,
+            'players_in_debt_count' => $playersInDebtCount,
+            'total_debt_amount' => $totalDebtAmount,
+            'total_approved_recharges_amount' => $totalApprovedRechargesAmount,
+            'total_approved_recharges_count' => $totalApprovedRechargesCount,
+            'total_pending_recharges_count' => $totalPendingRechargesCount,
+            'unique_rechargers_count' => $uniqueRechargersCount,
+            'total_users_count' => $totalUsersCount,
+        ];
+
+        if ($reportType === 'recharges_by_date') {
+            $query = WalletTransaction::where('type', 'recarga')
+                ->with(['user', 'approver']);
+
+            if ($request->filled('start_date')) {
+                $query->whereDate('created_at', '>=', $request->get('start_date'));
+            }
+
+            if ($request->filled('end_date')) {
+                $query->whereDate('created_at', '<=', $request->get('end_date'));
+            }
+
+            if ($request->filled('status') && in_array($request->get('status'), ['aprobado', 'pendiente', 'rechazado'])) {
+                $query->where('status', $request->get('status'));
+            }
+
+            if (!empty($search)) {
+                $query->whereHas('user', function ($uq) use ($lowerSearch, $words) {
+                    $uq->where(function ($sub) use ($lowerSearch, $words) {
+                        $sub->whereRaw("LOWER(COALESCE(dni, '')) LIKE ?", ["%{$lowerSearch}%"])
+                            ->orWhereRaw("LOWER(COALESCE(phone, '')) LIKE ?", ["%{$lowerSearch}%"])
+                            ->orWhereRaw("LOWER(COALESCE(nickname, '')) LIKE ?", ["%{$lowerSearch}%"]);
+
+                        if (!empty($words)) {
+                            $sub->orWhere(function ($wordsSub) use ($words) {
+                                foreach ($words as $word) {
+                                    $wordsSub->whereRaw("LOWER(CONCAT_WS(' ', COALESCE(nombres, ''), COALESCE(apellido_paterno, ''), COALESCE(apellido_materno, ''), COALESCE(nickname, ''))) LIKE ?", ["%{$word}%"]);
+                                }
+                            });
+                        }
+                    });
+                });
+            }
+
+            $statsQuery = clone $query;
+            $periodApprovedAmount = (float) (clone $statsQuery)->where('status', 'aprobado')->sum('amount');
+            $periodTotalCount = (clone $statsQuery)->count();
+            $periodApprovedCount = (clone $statsQuery)->where('status', 'aprobado')->count();
+            $periodPendingCount = (clone $statsQuery)->where('status', 'pendiente')->count();
+            $periodRejectedCount = (clone $statsQuery)->where('status', 'rechazado')->count();
+
+            $recharges = $query->orderBy('created_at', 'desc')->get();
+
+            $items = $recharges->map(function ($tx) {
+                $u = $tx->user;
+                $approver = $tx->approver;
+                $uName = $u ? ($u->full_name ?: trim("{$u->nombres} {$u->apellido_paterno} {$u->apellido_materno}")) : 'Jugador';
+                if ($u && empty($uName)) {
+                    $uName = $u->name ?: ($u->nickname ?: ($u->dni ? "DNI: {$u->dni}" : 'Jugador'));
+                }
+
+                return [
+                    'id' => $tx->id,
+                    'user_id' => $tx->user_id,
+                    'user_name' => $uName,
+                    'user_nickname' => $u ? $u->nickname : null,
+                    'user_phone' => $u ? $u->phone : null,
+                    'user_dni' => $u ? $u->dni : null,
+                    'user_avatar' => ($u && $u->avatar) ? ImageHelper::getUrl($u->avatar) : null,
+                    'amount' => (float) $tx->amount,
+                    'balance_after' => (float) $tx->balance_after,
+                    'description' => $tx->description,
+                    'receipt_path' => $tx->receipt_path ? ImageHelper::getUrl($tx->receipt_path) : null,
+                    'status' => $tx->status,
+                    'approver_name' => $approver ? ($approver->full_name ?: $approver->nombres) : null,
+                    'approved_at' => $tx->approved_at ? $tx->approved_at->toIso8601String() : null,
+                    'created_at' => $tx->created_at ? $tx->created_at->toIso8601String() : null,
+                    'date_formatted' => $tx->created_at ? $tx->created_at->format('d/m/Y H:i') : null,
+                ];
+            });
+
+            return response()->json([
+                'global_stats' => $globalStats,
+                'period_stats' => [
+                    'period_approved_amount' => $periodApprovedAmount,
+                    'period_total_count' => $periodTotalCount,
+                    'period_approved_count' => $periodApprovedCount,
+                    'period_pending_count' => $periodPendingCount,
+                    'period_rejected_count' => $periodRejectedCount,
+                ],
+                'data' => $items,
+            ]);
+        }
+
+        if ($reportType === 'with_balance') {
+            $query = User::with('wallet')
+                ->whereHas('wallet', function ($wq) {
+                    $wq->where('balance', '>', 0);
+                });
+
+            if (!empty($search)) {
+                $query->where(function ($q) use ($lowerSearch, $words) {
+                    $q->whereRaw("LOWER(COALESCE(dni, '')) LIKE ?", ["%{$lowerSearch}%"])
+                      ->orWhereRaw("LOWER(COALESCE(phone, '')) LIKE ?", ["%{$lowerSearch}%"])
+                      ->orWhereRaw("LOWER(COALESCE(nickname, '')) LIKE ?", ["%{$lowerSearch}%"]);
+
+                    if (!empty($words)) {
+                        $q->orWhere(function ($subQ) use ($words) {
+                            foreach ($words as $word) {
+                                $subQ->whereRaw("LOWER(CONCAT_WS(' ', COALESCE(nombres, ''), COALESCE(apellido_paterno, ''), COALESCE(apellido_materno, ''), COALESCE(nickname, ''))) LIKE ?", ["%{$word}%"]);
+                            }
+                        });
+                    }
+                });
+            }
+
+            $users = $query->get();
+            $userIds = $users->pluck('id')->toArray();
+
+            $rechargeStats = DB::table('wallet_transactions')
+                ->whereIn('user_id', $userIds)
+                ->where('type', 'recarga')
+                ->where('status', 'aprobado')
+                ->select(
+                    'user_id',
+                    DB::raw('SUM(amount) as total_recharged'),
+                    DB::raw('COUNT(id) as recharges_count'),
+                    DB::raw('MAX(created_at) as last_recharge_date')
+                )
+                ->groupBy('user_id')
+                ->get()
+                ->keyBy('user_id');
+
+            $spentStats = DB::table('wallet_transactions')
+                ->whereIn('user_id', $userIds)
+                ->where('type', 'descuento')
+                ->where('status', 'aprobado')
+                ->select(
+                    'user_id',
+                    DB::raw('ABS(SUM(amount)) as total_spent')
+                )
+                ->groupBy('user_id')
+                ->get()
+                ->keyBy('user_id');
+
+            $items = $users->map(function ($u) use ($rechargeStats, $spentStats) {
+                $uName = $u->full_name ?: trim("{$u->nombres} {$u->apellido_paterno} {$u->apellido_materno}");
+                if (empty($uName)) {
+                    $uName = $u->name ?: ($u->nickname ?: ($u->dni ? "DNI: {$u->dni}" : 'Jugador'));
+                }
+
+                $rec = $rechargeStats->get($u->id);
+                $spent = $spentStats->get($u->id);
+
+                return [
+                    'user_id' => $u->id,
+                    'user_name' => $uName,
+                    'user_nickname' => $u->nickname,
+                    'user_phone' => $u->phone,
+                    'user_dni' => $u->dni,
+                    'user_avatar' => $u->avatar ? ImageHelper::getUrl($u->avatar) : null,
+                    'current_balance' => (float) ($u->wallet ? $u->wallet->balance : 0),
+                    'total_recharged' => (float) ($rec ? $rec->total_recharged : 0),
+                    'total_spent' => (float) ($spent ? $spent->total_spent : 0),
+                    'recharges_count' => (int) ($rec ? $rec->recharges_count : 0),
+                    'last_recharge_date' => $rec && $rec->last_recharge_date ? \Carbon\Carbon::parse($rec->last_recharge_date)->format('d/m/Y H:i') : null,
+                ];
+            })->sortByDesc('current_balance')->values();
+
+            return response()->json([
+                'global_stats' => $globalStats,
+                'data' => $items,
+            ]);
+        }
+
+        if ($reportType === 'without_balance') {
+            $query = User::with('wallet')
+                ->where(function ($q) {
+                    $q->whereDoesntHave('wallet')
+                      ->orWhereHas('wallet', function ($wq) {
+                          $wq->where('balance', '<=', 0);
+                      });
+                });
+
+            if ($request->get('sub_filter') === 'negative') {
+                $query->whereHas('wallet', function ($wq) {
+                    $wq->where('balance', '<', 0);
+                });
+            } elseif ($request->get('sub_filter') === 'zero') {
+                $query->where(function ($q) {
+                    $q->whereDoesntHave('wallet')
+                      ->orWhereHas('wallet', function ($wq) {
+                          $wq->where('balance', '=', 0);
+                      });
+                });
+            }
+
+            if (!empty($search)) {
+                $query->where(function ($q) use ($lowerSearch, $words) {
+                    $q->whereRaw("LOWER(COALESCE(dni, '')) LIKE ?", ["%{$lowerSearch}%"])
+                      ->orWhereRaw("LOWER(COALESCE(phone, '')) LIKE ?", ["%{$lowerSearch}%"])
+                      ->orWhereRaw("LOWER(COALESCE(nickname, '')) LIKE ?", ["%{$lowerSearch}%"]);
+
+                    if (!empty($words)) {
+                        $q->orWhere(function ($subQ) use ($words) {
+                            foreach ($words as $word) {
+                                $subQ->whereRaw("LOWER(CONCAT_WS(' ', COALESCE(nombres, ''), COALESCE(apellido_paterno, ''), COALESCE(apellido_materno, ''), COALESCE(nickname, ''))) LIKE ?", ["%{$word}%"]);
+                            }
+                        });
+                    }
+                });
+            }
+
+            $users = $query->get();
+            $userIds = $users->pluck('id')->toArray();
+
+            $rechargeStats = DB::table('wallet_transactions')
+                ->whereIn('user_id', $userIds)
+                ->where('type', 'recarga')
+                ->where('status', 'aprobado')
+                ->select(
+                    'user_id',
+                    DB::raw('SUM(amount) as total_recharged'),
+                    DB::raw('COUNT(id) as recharges_count'),
+                    DB::raw('MAX(created_at) as last_recharge_date')
+                )
+                ->groupBy('user_id')
+                ->get()
+                ->keyBy('user_id');
+
+            $items = $users->map(function ($u) use ($rechargeStats) {
+                $uName = $u->full_name ?: trim("{$u->nombres} {$u->apellido_paterno} {$u->apellido_materno}");
+                if (empty($uName)) {
+                    $uName = $u->name ?: ($u->nickname ?: ($u->dni ? "DNI: {$u->dni}" : 'Jugador'));
+                }
+
+                $bal = (float) ($u->wallet ? $u->wallet->balance : 0);
+                $rec = $rechargeStats->get($u->id);
+
+                return [
+                    'user_id' => $u->id,
+                    'user_name' => $uName,
+                    'user_nickname' => $u->nickname,
+                    'user_phone' => $u->phone,
+                    'user_dni' => $u->dni,
+                    'user_avatar' => $u->avatar ? ImageHelper::getUrl($u->avatar) : null,
+                    'current_balance' => $bal,
+                    'is_negative' => $bal < 0,
+                    'has_recharged_before' => $rec && $rec->recharges_count > 0,
+                    'total_recharged' => (float) ($rec ? $rec->total_recharged : 0),
+                    'recharges_count' => (int) ($rec ? $rec->recharges_count : 0),
+                    'last_recharge_date' => $rec && $rec->last_recharge_date ? \Carbon\Carbon::parse($rec->last_recharge_date)->format('d/m/Y H:i') : null,
+                ];
+            })->sortBy('current_balance')->values();
+
+            return response()->json([
+                'global_stats' => $globalStats,
+                'data' => $items,
+            ]);
+        }
+
+        if ($reportType === 'recharged_players') {
+            $rechargeQuery = DB::table('wallet_transactions')
+                ->where('type', 'recarga')
+                ->where('status', 'aprobado');
+
+            if ($request->filled('start_date')) {
+                $rechargeQuery->whereDate('created_at', '>=', $request->get('start_date'));
+            }
+            if ($request->filled('end_date')) {
+                $rechargeQuery->whereDate('created_at', '<=', $request->get('end_date'));
+            }
+
+            $userAggregates = $rechargeQuery
+                ->select(
+                    'user_id',
+                    DB::raw('SUM(amount) as total_recharged'),
+                    DB::raw('COUNT(id) as recharges_count'),
+                    DB::raw('MIN(created_at) as first_recharge_date'),
+                    DB::raw('MAX(created_at) as last_recharge_date')
+                )
+                ->groupBy('user_id')
+                ->get()
+                ->keyBy('user_id');
+
+            $userIds = $userAggregates->keys()->toArray();
+
+            $usersQuery = User::with('wallet')->whereIn('id', $userIds);
+
+            if (!empty($search)) {
+                $usersQuery->where(function ($q) use ($lowerSearch, $words) {
+                    $q->whereRaw("LOWER(COALESCE(dni, '')) LIKE ?", ["%{$lowerSearch}%"])
+                      ->orWhereRaw("LOWER(COALESCE(phone, '')) LIKE ?", ["%{$lowerSearch}%"])
+                      ->orWhereRaw("LOWER(COALESCE(nickname, '')) LIKE ?", ["%{$lowerSearch}%"]);
+
+                    if (!empty($words)) {
+                        $q->orWhere(function ($subQ) use ($words) {
+                            foreach ($words as $word) {
+                                $subQ->whereRaw("LOWER(CONCAT_WS(' ', COALESCE(nombres, ''), COALESCE(apellido_paterno, ''), COALESCE(apellido_materno, ''), COALESCE(nickname, ''))) LIKE ?", ["%{$word}%"]);
+                            }
+                        });
+                    }
+                });
+            }
+
+            $users = $usersQuery->get();
+
+            $items = $users->map(function ($u) use ($userAggregates) {
+                $agg = $userAggregates->get($u->id);
+                $uName = $u->full_name ?: trim("{$u->nombres} {$u->apellido_paterno} {$u->apellido_materno}");
+                if (empty($uName)) {
+                    $uName = $u->name ?: ($u->nickname ?: ($u->dni ? "DNI: {$u->dni}" : 'Jugador'));
+                }
+
+                $tot = (float) ($agg ? $agg->total_recharged : 0);
+                $count = (int) ($agg ? $agg->recharges_count : 0);
+                $avg = $count > 0 ? round($tot / $count, 2) : 0;
+
+                return [
+                    'user_id' => $u->id,
+                    'user_name' => $uName,
+                    'user_nickname' => $u->nickname,
+                    'user_phone' => $u->phone,
+                    'user_dni' => $u->dni,
+                    'user_avatar' => $u->avatar ? ImageHelper::getUrl($u->avatar) : null,
+                    'current_balance' => (float) ($u->wallet ? $u->wallet->balance : 0),
+                    'total_recharged' => $tot,
+                    'recharges_count' => $count,
+                    'average_recharge' => $avg,
+                    'first_recharge_date' => $agg && $agg->first_recharge_date ? \Carbon\Carbon::parse($agg->first_recharge_date)->format('d/m/Y') : null,
+                    'last_recharge_date' => $agg && $agg->last_recharge_date ? \Carbon\Carbon::parse($agg->last_recharge_date)->format('d/m/Y H:i') : null,
+                ];
+            })->sortByDesc('total_recharged')->values();
+
+            return response()->json([
+                'global_stats' => $globalStats,
+                'data' => $items,
+            ]);
+        }
+
+        return response()->json([
+            'global_stats' => $globalStats,
+            'data' => [],
+        ]);
+    }
 }
