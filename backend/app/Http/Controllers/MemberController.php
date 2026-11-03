@@ -64,6 +64,7 @@ class MemberController extends Controller
         }
 
         if ($request->boolean('all')) {
+            abort_unless($request->user()?->isAdmin(), 403);
             $users = $query->orderBy('nombres', 'asc')->orderBy('apellido_paterno', 'asc')->get();
             return response()->json([
                 'data' => UserResource::collection($users),
@@ -96,6 +97,32 @@ class MemberController extends Controller
         }
 
         return UserResource::collection($query->paginate(15));
+    }
+
+    public function stats()
+    {
+        // Devuelve solo agregados; no carga ni expone los registros de usuarios.
+        $stats = User::query()
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw("SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as admins")
+            ->selectRaw("SUM(CASE WHEN role = 'member' THEN 1 ELSE 0 END) as jugadores")
+            ->selectRaw("SUM(CASE WHEN LOWER(COALESCE(position, '')) = 'portero' THEN 1 ELSE 0 END) as porteros")
+            ->selectRaw("SUM(CASE WHEN is_approved = 0 OR is_approved IS NULL THEN 1 ELSE 0 END) as pendientes")
+            ->selectRaw("SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactivos")
+            ->selectRaw("SUM(CASE WHEN status = 'active' AND is_approved = 1 THEN 1 ELSE 0 END) as activos")
+            ->first();
+
+        return response()->json([
+            'stats' => [
+                'total' => (int) $stats->total,
+                'admins' => (int) $stats->admins,
+                'jugadores' => (int) $stats->jugadores,
+                'porteros' => (int) $stats->porteros,
+                'pendientes' => (int) $stats->pendientes,
+                'inactivos' => (int) $stats->inactivos,
+                'activos' => (int) $stats->activos,
+            ],
+        ]);
     }
 
     public function show($id)
