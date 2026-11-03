@@ -3,84 +3,86 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* Pichangas de Barrio — colores tomados de la identidad del logo */
+  /* Pichangas de Barrio — identidad oficial */
   --color-primary: #F00091;
   --color-primary-light: #FF4DB5;
   --color-primary-dark: #B8006D;
-
   --color-accent: #00C9E8;
   --color-accent-light: #5CE5F7;
   --color-accent-dark: #0098B5;
-
   --color-lime: #A5E900;
-  --color-dark-bg: #08090D;
+  --color-dark-bg: #101522;
 }
 
 @layer base {
   :root {
-    color-scheme: dark;
-    --background: 240 14% 4%;
-    --foreground: 210 20% 98%;
-    --card: 240 12% 8%;
-    --card-foreground: 210 20% 98%;
-    --popover: 240 12% 8%;
-    --popover-foreground: 210 20% 98%;
+    color-scheme: light;
+    --background: 220 33% 98%;
+    --foreground: 222 34% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 34% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 34% 13%;
     --primary: 324 100% 47%;
     --primary-foreground: 0 0% 100%;
     --secondary: 188 100% 45%;
-    --secondary-foreground: 220 20% 8%;
-    --muted: 225 14% 13%;
-    --muted-foreground: 215 12% 66%;
+    --secondary-foreground: 222 34% 13%;
+    --muted: 220 22% 94%;
+    --muted-foreground: 220 12% 44%;
     --accent: 77 100% 45%;
-    --accent-foreground: 220 20% 8%;
-    --destructive: 0 63% 40%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 225 14% 17%;
-    --input: 225 14% 17%;
+    --accent-foreground: 222 34% 13%;
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 18% 88%;
+    --input: 220 18% 88%;
     --ring: 324 100% 58%;
-    --radius: 0.9rem;
+    --radius: 1rem;
+    --pdb-canvas: #f4f6fb;
+    --pdb-surface: #ffffff;
+    --pdb-ink: #172033;
+    --pdb-muted: #687386;
+    --pdb-line: #e4e9f1;
+    --pdb-shadow: 0 14px 38px rgb(27 39 65 / 7%);
   }
 
   .dark {
-    --background: 240 14% 4%;
-    --foreground: 210 20% 98%;
-    --card: 240 12% 8%;
-    --card-foreground: 210 20% 98%;
-    --popover: 240 12% 8%;
-    --popover-foreground: 210 20% 98%;
+    --background: 220 33% 98%;
+    --foreground: 222 34% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 34% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 34% 13%;
     --primary: 324 100% 47%;
     --primary-foreground: 0 0% 100%;
     --secondary: 188 100% 45%;
-    --secondary-foreground: 220 20% 8%;
-    --muted: 225 14% 13%;
-    --muted-foreground: 215 12% 66%;
+    --secondary-foreground: 222 34% 13%;
+    --muted: 220 22% 94%;
+    --muted-foreground: 220 12% 44%;
     --accent: 77 100% 45%;
-    --accent-foreground: 220 20% 8%;
-    --destructive: 0 63% 40%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 225 14% 17%;
-    --input: 225 14% 17%;
+    --accent-foreground: 222 34% 13%;
+    --border: 220 18% 88%;
+    --input: 220 18% 88%;
     --ring: 324 100% 58%;
   }
 
   * {
     @apply border-gray-200;
     scrollbar-width: thin;
-    scrollbar-color: #39404d #090a10;
+    scrollbar-color: #aab4c4 #eef1f6;
   }
 
   html {
     scroll-behavior: smooth;
-    background: #08090d;
+    background: var(--pdb-canvas);
   }
 
   body {
     min-width: 320px;
     background:
-      radial-gradient(ellipse at 12% 0%, rgb(240 0 145 / 7%), transparent 34rem),
-      radial-gradient(ellipse at 92% 12%, rgb(0 201 232 / 6%), transparent 32rem),
-      hsl(var(--background));
-    color: hsl(var(--foreground));
+      radial-gradient(ellipse at 8% 0%, rgb(240 0 145 / 5%), transparent 34rem),
+      radial-gradient(ellipse at 92% 8%, rgb(0 201 232 / 6%), transparent 32rem),
+      var(--pdb-canvas);
+    color: var(--pdb-ink);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -90,54 +92,123 @@
   }
 
   :focus-visible {
-    outline: 2px solid #00c9e8;
+    outline: 2px solid #00aeca;
     outline-offset: 3px;
   }
 
   ::selection {
-    color: #08090d;
-    background: #a5e900;
+    color: #ffffff;
+    background: #f00091;
   }
 
   ::-webkit-scrollbar { width: 9px; height: 9px; }
-  ::-webkit-scrollbar-track { background: #090a10; }
+  ::-webkit-scrollbar-track { background: #eef1f6; }
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #343b49, #202633);
-    border: 2px solid #090a10;
+    background: linear-gradient(180deg, #aeb9ca, #8794a9);
+    border: 2px solid #eef1f6;
     border-radius: 99px;
   }
-  ::-webkit-scrollbar-thumb:hover { background: #596174; }
+  ::-webkit-scrollbar-thumb:hover { background: #68788f; }
 }
 
 @layer components {
-  .pdb-shell { isolation: isolate; }
-  .pdb-header {
-    background: rgb(8 9 13 / 88%);
-    border-color: rgb(255 255 255 / 8%);
-    box-shadow: 0 10px 35px rgb(0 0 0 / 18%);
-  }
-  .pdb-sidebar {
-    background:
-      radial-gradient(ellipse at 0% 0%, rgb(240 0 145 / 8%), transparent 22rem),
-      rgb(8 9 13 / 96%);
-    border-color: rgb(255 255 255 / 8%);
-  }
-  .pdb-main { background: transparent; }
-  .pdb-content { animation: pdb-page-enter 520ms cubic-bezier(.2,.75,.25,1) both; }
-  .pdb-mobile-nav {
-    background: rgb(8 9 13 / 92%);
-    border-color: rgb(255 255 255 / 10%);
-    box-shadow: 0 -12px 36px rgb(0 0 0 / 24%);
+  /* Lienzo general híbrido: navegación oscura + contenido claro */
+  .pdb-shell {
+    isolation: isolate;
+    background: var(--pdb-canvas) !important;
+    color: var(--pdb-ink);
   }
 
-  .pdb-shell a, .pdb-shell button {
+  .pdb-header {
+    background: rgb(15 20 34 / 94%) !important;
+    border-color: rgb(255 255 255 / 9%) !important;
+    box-shadow: 0 12px 36px rgb(19 28 47 / 18%);
+    backdrop-filter: blur(22px) saturate(150%);
+  }
+
+  .pdb-sidebar {
+    background:
+      radial-gradient(ellipse at 0% 0%, rgb(240 0 145 / 13%), transparent 22rem),
+      linear-gradient(180deg, #151c2d 0%, #101522 100%) !important;
+    border-color: rgb(255 255 255 / 8%) !important;
+    box-shadow: 12px 0 36px rgb(26 37 60 / 7%);
+  }
+
+  .pdb-main {
+    background:
+      radial-gradient(ellipse at 78% 0%, rgb(0 201 232 / 7%), transparent 32rem),
+      radial-gradient(ellipse at 12% 8%, rgb(240 0 145 / 4%), transparent 28rem),
+      var(--pdb-canvas);
+  }
+
+  .pdb-content {
+    animation: pdb-page-enter 480ms cubic-bezier(.2,.75,.25,1) both;
+    color: var(--pdb-ink);
+  }
+
+  .pdb-mobile-nav {
+    background: rgb(15 20 34 / 96%) !important;
+    border-color: rgb(255 255 255 / 10%) !important;
+    box-shadow: 0 -12px 36px rgb(19 28 47 / 18%);
+    backdrop-filter: blur(22px) saturate(150%);
+  }
+
+  /* Superficies de páginas: las tarjetas se convierten en paneles limpios */
+  .pdb-content [class~="bg-slate-950"],
+  .pdb-content [class~="bg-slate-900"],
+  .pdb-content [class~="bg-slate-800"] {
+    background-color: #ffffff !important;
+    border-color: var(--pdb-line);
+    box-shadow: var(--pdb-shadow);
+  }
+
+  .pdb-content [class~="text-white"],
+  .pdb-content [class~="text-slate-100"],
+  .pdb-content [class~="text-slate-200"] {
+    color: #172033 !important;
+  }
+
+  .pdb-content [class~="text-slate-300"],
+  .pdb-content [class~="text-slate-400"],
+  .pdb-content [class~="text-slate-500"] {
+    color: #687386 !important;
+  }
+
+  .pdb-content [class~="border-slate-700"],
+  .pdb-content [class~="border-slate-800"],
+  .pdb-content [class~="border-slate-600"] {
+    border-color: #e4e9f1 !important;
+  }
+
+  .pdb-content [class~="divide-slate-700"] > :not([hidden]) ~ :not([hidden]),
+  .pdb-content [class~="divide-slate-800"] > :not([hidden]) ~ :not([hidden]) {
+    border-color: #e8edf4 !important;
+  }
+
+  .pdb-content input,
+  .pdb-content select,
+  .pdb-content textarea {
+    color: #172033;
+    background-color: #ffffff;
+    border-color: #dce3ed;
+  }
+
+  .pdb-content input::placeholder,
+  .pdb-content textarea::placeholder {
+    color: #98a3b4;
+  }
+
+  .pdb-shell a,
+  .pdb-shell button {
     transition-property: color, background-color, border-color, box-shadow, transform, opacity;
     transition-duration: 220ms;
     transition-timing-function: cubic-bezier(.2,.75,.25,1);
   }
+
   .pdb-sidebar nav a:not([aria-current="page"]):hover {
     transform: translateX(3px);
   }
+
   .pdb-shell img { image-rendering: auto; }
 }
 
