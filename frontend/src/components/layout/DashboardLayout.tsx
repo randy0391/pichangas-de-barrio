@@ -278,7 +278,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-40 pt-16">
           <div className="absolute inset-0 bg-black/75 backdrop-blur-md" onClick={() => setMobileMenuOpen(false)}></div>
-          <div className="absolute left-0 top-16 bottom-0 w-[min(88vw,360px)] bg-[#080d19] border-r border-cyan-400/20 overflow-y-auto shadow-2xl">
+          <div className="absolute left-0 top-16 bottom-0 w-[min(88vw,360px)] bg-[#080d19] border-r border-cyan-400/20 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden shadow-2xl">
             <div className="p-4 space-y-4">
               {/* Mobile User Profile Card */}
               <Link
@@ -380,7 +380,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
         {/* ===== Desktop Sidebar ===== */}
         <aside
           onMouseLeave={() => setSidebarExpandedAll(false)}
-          className={cn("pdb-sidebar bg-[#080d19] border-r border-cyan-400/15 hidden md:flex flex-col shrink-0 fixed top-16 bottom-0 left-0 z-30 overflow-y-auto transition-all duration-300", sidebarExpandedAll ? "w-64" : "w-[84px]")}
+          className={cn("pdb-sidebar bg-[#080d19] border-r border-cyan-400/15 hidden md:flex flex-col shrink-0 fixed top-16 bottom-0 left-0 z-30 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden transition-all duration-300", sidebarExpandedAll ? "w-64" : "w-[84px]")}
         >
           <div className={cn("py-3 flex-grow", sidebarExpandedAll ? "px-3.5" : "px-2")}>
             <div className={cn("flex mb-4", sidebarExpandedAll ? "justify-end" : "justify-center")}>
@@ -474,7 +474,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                           title={!sidebarExpandedAll ? link.name : undefined}
                           className={cn(
                             'relative flex items-center rounded-xl font-bold text-[13px] tracking-wide transition-all duration-200 group border',
-                            sidebarExpandedAll ? 'space-x-3 px-3.5 py-2.5' : 'relative justify-center w-12 mx-auto py-3 hover:w-[230px] hover:justify-start hover:px-3.5 hover:shadow-xl hover:shadow-black/40 hover:z-40',
+                            sidebarExpandedAll ? 'flex-row space-x-3 px-3.5 py-2.5' : 'flex-col justify-center w-full min-h-12 mx-auto py-2.5 gap-1 hover:py-3 hover:shadow-lg hover:shadow-black/30 hover:z-40',
                             active
                               ? 'bg-gradient-to-r from-fuchsia-500/15 to-cyan-400/10 text-white border-fuchsia-400/40 shadow-[inset_3px_0_0_#f00091,0_8px_22px_rgba(0,0,0,.18)]'
                               : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5 hover:border-white/10'
@@ -494,7 +494,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                           )} />
 
                           {/* Text */}
-                          <span className={cn("truncate flex-1", sidebarExpandedAll ? "" : "hidden group-hover:inline-flex")}>{link.name}</span>
+                          <span className={cn("min-w-0", sidebarExpandedAll ? "flex-1 truncate" : "hidden group-hover:flex w-full whitespace-normal break-words text-center leading-tight text-[10px] px-1")}>{link.name}</span>
 
                           {/* Badge or chevron */}
                           {link.badge ? (
