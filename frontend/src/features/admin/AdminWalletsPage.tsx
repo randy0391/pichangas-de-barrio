@@ -375,8 +375,8 @@ export const AdminWalletsPage = () => {
       {/* Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-white uppercase tracking-tight flex items-center gap-3">
-            <Wallet className="h-8 w-8 text-lime-400" />
+          <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3 bg-gradient-to-r from-[#F00091] via-[#00C9E8] to-[#A5E900] bg-clip-text text-transparent">
+            <Wallet className="h-8 w-8 text-cyan-400" />
             Gestion de Billeteras
           </h1>
           <p className="text-slate-400 mt-1">Controla los saldos, aprueba recargas y revisa el historial de movimientos de cada jugador</p>
@@ -388,8 +388,8 @@ export const AdminWalletsPage = () => {
             onClick={() => handleTabChange('reports')}
             className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-md ${
               activeTab === 'reports'
-                ? 'bg-lime-400 text-slate-950 shadow-lime-400/25 ring-2 ring-lime-400/40'
-                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/40'
+                ? 'bg-[#F00091] text-white shadow-fuchsia-500/25 ring-2 ring-fuchsia-400/40'
+                : 'bg-[#F00091] hover:bg-[#d90082] text-white shadow-fuchsia-950/40'
             }`}
             title="Abrir Centro de Reportes y Exportación de Billeteras"
           >
@@ -399,7 +399,7 @@ export const AdminWalletsPage = () => {
 
           <Link
             to="/billetera"
-            className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-lime-400 hover:text-lime-300 border border-lime-400/30 hover:border-lime-400 font-bold text-xs flex items-center gap-2 transition-all shadow-sm"
+            className="px-4 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 hover:border-cyan-400/40 font-bold text-xs flex items-center gap-2 transition-all shadow-sm"
             title="Ver mi propia billetera personal"
           >
             <Wallet className="h-4 w-4" />
@@ -410,27 +410,27 @@ export const AdminWalletsPage = () => {
 
       {/* Financial KPIs Banner */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-slate-900/90 border border-lime-500/20 rounded-2xl p-4 relative overflow-hidden backdrop-blur-sm shadow-lg">
+        <div className="bg-gradient-to-br from-fuchsia-950/35 via-slate-900 to-slate-900 border border-fuchsia-500/25 rounded-2xl p-4 relative overflow-hidden backdrop-blur-sm shadow-lg">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saldo en Circulación</span>
-            <div className="p-2 rounded-xl bg-lime-400/10 text-lime-400">
+            <div className="p-2 rounded-xl bg-fuchsia-500/15 text-fuchsia-300">
               <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
           <div className="text-xl sm:text-2xl font-black text-white tracking-tight">
             S/ {(allWalletsData?.stats?.total_balance_circulation ?? 0).toFixed(2)}
           </div>
-          <p className="text-[11px] text-lime-400/80 font-medium mt-1">Total disponible en billeteras</p>
+          <p className="text-[11px] text-fuchsia-300/80 font-medium mt-1">Total disponible en billeteras</p>
         </div>
 
-        <div className="bg-slate-900/90 border border-emerald-500/20 rounded-2xl p-4 relative overflow-hidden backdrop-blur-sm shadow-lg">
+        <div className="bg-gradient-to-br from-cyan-950/35 via-slate-900 to-slate-900 border border-cyan-500/25 rounded-2xl p-4 relative overflow-hidden backdrop-blur-sm shadow-lg">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Con Saldo a Favor</span>
-            <div className="p-2 rounded-xl bg-emerald-400/10 text-emerald-400">
+            <div className="p-2 rounded-xl bg-cyan-400/10 text-cyan-300">
               <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
-          <div className="text-xl sm:text-2xl font-black text-emerald-400 tracking-tight">
+          <div className="text-xl sm:text-2xl font-black text-cyan-300 tracking-tight">
             {allWalletsData?.stats?.positive_wallets_count ?? 0}
           </div>
           <p className="text-[11px] text-slate-400 font-medium mt-1">Jugadores listos para pichanguear</p>
@@ -487,7 +487,7 @@ export const AdminWalletsPage = () => {
           onClick={() => handleTabChange('all')}
           className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
             activeTab === 'all'
-              ? 'bg-lime-400 text-slate-950 shadow-md'
+              ? 'bg-[#F00091] text-white shadow-md shadow-fuchsia-500/20'
               : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -497,7 +497,7 @@ export const AdminWalletsPage = () => {
           onClick={() => handleTabChange('pending')}
           className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all relative ${
             activeTab === 'pending'
-              ? 'bg-lime-400 text-slate-950 shadow-md'
+              ? 'bg-[#F00091] text-white shadow-md shadow-fuchsia-500/20'
               : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -511,7 +511,7 @@ export const AdminWalletsPage = () => {
           onClick={() => handleTabChange('vouchers')}
           className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
             activeTab === 'vouchers'
-              ? 'bg-lime-400 text-slate-950 shadow-md'
+              ? 'bg-[#F00091] text-white shadow-md shadow-fuchsia-500/20'
               : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -522,7 +522,7 @@ export const AdminWalletsPage = () => {
           onClick={() => handleTabChange('reports')}
           className={`px-3.5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
             activeTab === 'reports'
-              ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
+              ? 'bg-[#F00091] text-white shadow-md shadow-fuchsia-500/20'
               : 'text-slate-400 hover:text-white'
           }`}
         >
@@ -537,7 +537,7 @@ export const AdminWalletsPage = () => {
           {/* Search bar, balance filter pills & Export Button */}
           <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
             {/* Search */}
-            <div className="flex items-center gap-3 bg-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-800 focus-within:border-lime-400/50 focus-within:ring-1 focus-within:ring-lime-400/30 transition-all w-full xl:max-w-md shadow-sm">
+            <div className="flex items-center gap-3 bg-slate-900 px-3.5 py-2.5 rounded-xl border border-slate-800 focus-within:border-cyan-400/50 focus-within:ring-1 focus-within:ring-cyan-400/30 transition-all w-full xl:max-w-md shadow-sm">
               <Search className="h-4 w-4 text-slate-400 shrink-0" />
               <input
                 type="text"
@@ -622,7 +622,7 @@ export const AdminWalletsPage = () => {
                 type="button"
                 onClick={copyAllBalancesList}
                 disabled={isCopyingBalances}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 h-auto rounded-xl flex items-center gap-1.5 shadow-md shadow-emerald-950/40 transition-all shrink-0"
+                className="bg-[#F00091] hover:bg-[#d90082] text-white text-xs font-bold px-3 py-2 h-auto rounded-xl flex items-center gap-1.5 shadow-md shadow-fuchsia-950/40 transition-all shrink-0"
                 title="Copiar lista de saldos para WhatsApp"
               >
                 {isCopyingBalances ? (
@@ -917,7 +917,7 @@ export const AdminWalletsPage = () => {
                     <Button
                       onClick={() => approveMutation.mutate(tx.id)}
                       disabled={approveMutation.isPending || rejectMutation.isPending}
-                      className="flex-1 bg-lime-400 hover:bg-lime-500 text-slate-950 font-black text-xs uppercase tracking-wider py-2.5 rounded-xl border-0"
+                      className="flex-1 bg-[#A5E900] hover:bg-[#91cc00] text-slate-950 font-black text-xs uppercase tracking-wider py-2.5 rounded-xl border-0"
                     >
                       Aprobar
                     </Button>
@@ -978,7 +978,7 @@ export const AdminWalletsPage = () => {
           <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3 shadow-lg">
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
               {/* Search */}
-              <div className="flex items-center gap-3 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 focus-within:border-lime-400/50 focus-within:ring-1 focus-within:ring-lime-400/30 transition-all flex-1">
+              <div className="flex items-center gap-3 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 focus-within:border-cyan-400/50 focus-within:ring-1 focus-within:ring-cyan-400/30 transition-all flex-1">
                 <Search className="h-4 w-4 text-slate-400 shrink-0" />
                 <input
                   type="text"
@@ -1109,7 +1109,7 @@ export const AdminWalletsPage = () => {
                   type="button"
                   onClick={copyFullHistoryList}
                   disabled={isCopyingAll || !historyData?.data || historyData.data.length === 0}
-                  className="px-3.5 py-1.5 rounded-xl bg-lime-400 hover:bg-lime-500 text-slate-950 font-black text-xs transition-all shadow-md inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed border-0"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#A5E900] hover:bg-[#91cc00] text-slate-950 font-black text-xs transition-all shadow-md inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed border-0"
                   title="Copiar todas las recargas de la lista en un solo texto para Yape o WhatsApp"
                 >
                   <Copy className="h-3.5 w-3.5" />
@@ -1284,7 +1284,7 @@ export const AdminWalletsPage = () => {
                                   <button
                                     onClick={() => approveMutation.mutate(tx.id)}
                                     disabled={approveMutation.isPending || rejectMutation.isPending}
-                                    className="bg-lime-400 hover:bg-lime-500 text-slate-950 font-bold px-2.5 py-1 rounded-lg text-xs transition-colors"
+                                    className="bg-[#A5E900] hover:bg-[#91cc00] text-slate-950 font-bold px-2.5 py-1 rounded-lg text-xs transition-colors"
                                     title="Aprobar recarga"
                                   >
                                     Aprobar
@@ -1487,7 +1487,7 @@ export const AdminWalletsPage = () => {
               </Button>
               <Button
                 onClick={() => setHistoryModalUser(null)}
-                className="bg-lime-400 hover:bg-lime-500 text-slate-950 font-black text-xs px-6 rounded-xl border-0"
+                className="bg-[#A5E900] hover:bg-[#91cc00] text-slate-950 font-black text-xs px-6 rounded-xl border-0"
               >
                 Cerrar
               </Button>
@@ -1655,7 +1655,7 @@ export const AdminWalletsPage = () => {
                 <Button
                   type="submit"
                   disabled={adjustMutation.isPending}
-                  className="flex-1 bg-lime-400 hover:bg-lime-500 text-slate-950 font-black rounded-xl border-0"
+                  className="flex-1 bg-[#A5E900] hover:bg-[#91cc00] text-slate-950 font-black rounded-xl border-0"
                 >
                   {adjustMutation.isPending ? 'Guardando...' : 'Aplicar Ajuste'}
                 </Button>
