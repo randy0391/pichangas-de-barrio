@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/authStore';
 import {
   LayoutDashboard, Trophy, Users, User, Image, AlertCircle,
   History, Newspaper, CalendarDays, Wallet, ClipboardCheck,
-  LogOut, Menu, X, ChevronRight, PanelLeftClose, PanelLeftOpen, ShieldCheck, Sparkles, Award
+  LogOut, Menu, X, ChevronRight, ShieldCheck, Sparkles, Award
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
@@ -96,7 +96,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
   const navigate = useNavigate();
   const { user, isLoading, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   const mobileTabs = user?.role === 'admin' ? adminMobileTabs : userMobileTabs;
 
@@ -367,7 +367,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                   className="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 font-bold text-sm w-full transition-all"
                 >
                   <LogOut className="h-4.5 w-4.5" />
-                  {!sidebarCollapsed && <span>Cerrar Sesión</span>}
+                  <span>Cerrar Sesión</span>
                 </button>
               </div>
             </div>
@@ -378,9 +378,13 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
       {/* ===== Main Content Area ===== */}
       <div className="flex-grow flex pt-16 pb-16 md:pb-0">
         {/* ===== Desktop Sidebar ===== */}
-        <aside className={cn("pdb-sidebar bg-[#080d19] border-r border-cyan-400/15 hidden md:flex flex-col shrink-0 fixed top-16 bottom-0 left-0 z-30 overflow-y-auto transition-all duration-300", sidebarCollapsed ? "w-[84px]" : "w-64")}>
+        <aside
+          onMouseEnter={() => setSidebarCollapsed(false)}
+          onMouseLeave={() => setSidebarCollapsed(true)}
+          className={cn("pdb-sidebar bg-[#080d19] border-r border-cyan-400/15 hidden md:flex flex-col shrink-0 fixed top-16 bottom-0 left-0 z-30 overflow-y-auto transition-all duration-300", sidebarCollapsed ? "w-[84px]" : "w-64")}
+        >
           <div className={cn("py-3 flex-grow", sidebarCollapsed ? "px-2" : "px-3.5")}>
-            <div className={cn("flex mb-4", sidebarCollapsed ? "justify-center" : "justify-end")}><button type="button" onClick={() => setSidebarCollapsed(v => !v)} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 hover:text-cyan-300 hover:border-cyan-400/40 transition-all" aria-label={sidebarCollapsed ? "Expandir menú" : "Contraer menú"} title={sidebarCollapsed ? "Expandir menú" : "Contraer menú"}>{sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}</button></div>
+
             {/* VIP Club Member Card at Top of Sidebar */}
             <Link 
               to="/perfil"
@@ -456,6 +460,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                         <Link
                           key={link.path}
                           to={link.path}
+                          onClick={() => setSidebarCollapsed(true)}
                           title={sidebarCollapsed ? link.name : undefined}
                           className={cn(
                             'relative flex items-center rounded-xl font-bold text-[13px] tracking-wide transition-all duration-200 group border',
