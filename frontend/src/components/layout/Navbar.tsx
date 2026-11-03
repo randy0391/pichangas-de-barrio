@@ -38,7 +38,7 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className={`pdb-public-navbar fixed w-full z-50 transition-all duration-300 ${scrolled ? 'backdrop-blur-xl py-3' : 'py-4'}`}>
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-[#070b14]/95 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.5)] border-b border-white/5 py-3' : 'bg-[#070b14] shadow-md border-b border-white/5 py-4'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           
