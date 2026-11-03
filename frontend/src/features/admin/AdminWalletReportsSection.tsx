@@ -675,7 +675,7 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
   return (
     <div className="space-y-4">
       {/* COMPACT SUMMARY BANNER */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-lg">
+      <div className="bg-gradient-to-br from-fuchsia-950/20 via-slate-900 to-cyan-950/20 border border-slate-700/80 rounded-2xl p-4 shadow-lg">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="flex items-center gap-2">
             <DollarSign className="h-4 w-4 text-lime-400" />
@@ -704,19 +704,19 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
           onClick={() => { setActiveSubTab('recharges'); setCurrentPage(1); }}
           className={`w-full flex items-center justify-between px-4 py-3 transition-all ${
             activeSubTab === 'recharges'
-              ? 'bg-lime-400/10 border-l-[3px] border-l-lime-400'
+              ? 'bg-fuchsia-500/10 border-l-[3px] border-l-[#F00091]'
               : 'hover:bg-slate-800/50 border-l-[3px] border-l-transparent'
           }`}
         >
           <div className="flex items-center gap-3">
-            <Calendar className={`h-4 w-4 ${activeSubTab === 'recharges' ? 'text-lime-400' : 'text-slate-500'}`} />
-            <span className={`text-sm font-bold ${activeSubTab === 'recharges' ? 'text-lime-400' : 'text-slate-300'}`}>
+            <Calendar className={`h-4 w-4 ${activeSubTab === 'recharges' ? 'text-fuchsia-300' : 'text-slate-500'}`} />
+            <span className={`text-sm font-bold ${activeSubTab === 'recharges' ? 'text-fuchsia-300' : 'text-slate-300'}`}>
               Recargas por Fecha
             </span>
           </div>
           <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
             activeSubTab === 'recharges'
-              ? 'bg-lime-400 text-slate-950'
+              ? 'bg-[#F00091] text-white'
               : 'bg-slate-800 text-slate-400'
           }`}>
             {activeSubTab === 'recharges'
@@ -731,13 +731,13 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
           onClick={() => { setActiveSubTab('with_balance'); setCurrentPage(1); }}
           className={`w-full flex items-center justify-between px-4 py-3 transition-all ${
             activeSubTab === 'with_balance'
-              ? 'bg-emerald-400/10 border-l-[3px] border-l-emerald-400'
+              ? 'bg-cyan-400/10 border-l-[3px] border-l-cyan-400'
               : 'hover:bg-slate-800/50 border-l-[3px] border-l-transparent'
           }`}
         >
           <div className="flex items-center gap-3">
-            <TrendingUp className={`h-4 w-4 ${activeSubTab === 'with_balance' ? 'text-emerald-400' : 'text-slate-500'}`} />
-            <span className={`text-sm font-bold ${activeSubTab === 'with_balance' ? 'text-emerald-400' : 'text-slate-300'}`}>
+            <TrendingUp className={`h-4 w-4 ${activeSubTab === 'with_balance' ? 'text-cyan-300' : 'text-slate-500'}`} />
+            <span className={`text-sm font-bold ${activeSubTab === 'with_balance' ? 'text-cyan-300' : 'text-slate-300'}`}>
               Jugadores con Saldo
             </span>
             <span className="text-[11px] text-slate-500 hidden sm:inline">
@@ -746,8 +746,8 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
           </div>
           <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
             activeSubTab === 'with_balance'
-              ? 'bg-emerald-400 text-slate-950'
-              : 'bg-slate-800 text-emerald-400'
+              ? 'bg-cyan-400 text-slate-950'
+              : 'bg-slate-800 text-cyan-300'
           }`}>
             {globalStats?.players_with_balance_count ?? 0}
           </span>
@@ -813,7 +813,7 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
       <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3.5 shadow-xl">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
           {/* Search bar */}
-          <div className="flex items-center gap-3 bg-slate-950 px-3.5 py-2.5 rounded-xl border border-slate-800 focus-within:border-lime-400/50 focus-within:ring-1 focus-within:ring-lime-400/30 transition-all flex-1 shadow-inner">
+          <div className="flex items-center gap-3 bg-slate-950 px-3.5 py-2.5 rounded-xl border border-slate-800 focus-within:border-cyan-400/50 focus-within:ring-1 focus-within:ring-cyan-400/30 transition-all flex-1 shadow-inner">
             <Search className="h-4 w-4 text-slate-400 shrink-0" />
             <input
               type="text"
@@ -882,7 +882,7 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
                   setRechargeStatus(e.target.value as any);
                   setCurrentPage(1);
                 }}
-                className="bg-slate-950 border border-slate-800 text-xs font-bold text-white px-3 py-2.5 rounded-xl outline-none focus:border-lime-400/50"
+                className="bg-slate-950 border border-slate-800 text-xs font-bold text-white px-3 py-2.5 rounded-xl outline-none focus:border-cyan-400/50"
               >
                 <option value="all">Todos los estados</option>
                 <option value="aprobado">Solo Aprobados</option>
@@ -899,7 +899,7 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
                   setWithoutBalanceSubFilter(e.target.value as any);
                   setCurrentPage(1);
                 }}
-                className="bg-slate-950 border border-slate-800 text-xs font-bold text-white px-3 py-2.5 rounded-xl outline-none focus:border-lime-400/50"
+                className="bg-slate-950 border border-slate-800 text-xs font-bold text-white px-3 py-2.5 rounded-xl outline-none focus:border-cyan-400/50"
               >
                 <option value="all">Todos sin saldo (S/ 0.00 y deudas)</option>
                 <option value="zero">Solo con saldo S/ 0.00 exacto</option>
@@ -912,7 +912,7 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
               <Button
                 type="button"
                 onClick={exportToExcel}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 shadow-md shadow-emerald-950/40 transition-all shrink-0"
+                className="bg-[#F00091] hover:bg-[#d90082] text-white font-bold text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 shadow-md shadow-fuchsia-950/40 transition-all shrink-0"
                 title="Descargar este reporte formateado en Excel / CSV"
               >
                 <FileSpreadsheet className="h-4 w-4" />
@@ -1525,7 +1525,7 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
                           </td>
                           <td className="py-3.5 px-4 text-right whitespace-nowrap">
                             <span className={`font-mono font-bold text-xs ${
-                              p.current_balance > 0 ? 'text-emerald-400' : p.current_balance < 0 ? 'text-red-400' : 'text-slate-400'
+                              p.current_balance > 0 ? 'text-cyan-300' : p.current_balance < 0 ? 'text-red-400' : 'text-slate-400'
                             }`}>
                               S/ {p.current_balance.toFixed(2)}
                             </span>
