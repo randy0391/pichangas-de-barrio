@@ -3,100 +3,159 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-primary: #00d2ff;
-  --color-primary-light: #5ce1ff;
-  --color-primary-dark: #0096b8;
-  
-  --color-accent: #ff007f;
-  --color-accent-light: #ff4da6;
-  --color-accent-dark: #b30059;
-  
-  --color-lime: #a3ff00;
-  --color-dark-bg: #0f172a;
+  /* Pichangas de Barrio — colores tomados de la identidad del logo */
+  --color-primary: #F00091;
+  --color-primary-light: #FF4DB5;
+  --color-primary-dark: #B8006D;
+
+  --color-accent: #00C9E8;
+  --color-accent-light: #5CE5F7;
+  --color-accent-dark: #0098B5;
+
+  --color-lime: #A5E900;
+  --color-dark-bg: #08090D;
 }
 
 @layer base {
   :root {
-    --background: 225 30% 6%;
-    --foreground: 210 40% 98%;
-    --card: 225 30% 10%;
-    --card-foreground: 210 40% 98%;
-    --popover: 225 30% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 191 100% 50%;
+    color-scheme: dark;
+    --background: 240 14% 4%;
+    --foreground: 210 20% 98%;
+    --card: 240 12% 8%;
+    --card-foreground: 210 20% 98%;
+    --popover: 240 12% 8%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 324 100% 47%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 330 100% 50%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 225 30% 15%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 78 100% 50%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 62.8% 30.6%;
+    --secondary: 188 100% 45%;
+    --secondary-foreground: 220 20% 8%;
+    --muted: 225 14% 13%;
+    --muted-foreground: 215 12% 66%;
+    --accent: 77 100% 45%;
+    --accent-foreground: 220 20% 8%;
+    --destructive: 0 63% 40%;
     --destructive-foreground: 210 40% 98%;
-    --border: 225 30% 15%;
-    --input: 225 30% 15%;
-    --ring: 191 100% 50%;
-    --radius: 0.75rem;
+    --border: 225 14% 17%;
+    --input: 225 14% 17%;
+    --ring: 324 100% 58%;
+    --radius: 0.9rem;
   }
 
   .dark {
-    --background: 225 30% 6%;
-    --foreground: 210 40% 98%;
-    --card: 225 30% 10%;
-    --card-foreground: 210 40% 98%;
-    --popover: 225 30% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 191 100% 50%;
+    --background: 240 14% 4%;
+    --foreground: 210 20% 98%;
+    --card: 240 12% 8%;
+    --card-foreground: 210 20% 98%;
+    --popover: 240 12% 8%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 324 100% 47%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 330 100% 50%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 225 30% 15%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 78 100% 50%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 62.8% 30.6%;
+    --secondary: 188 100% 45%;
+    --secondary-foreground: 220 20% 8%;
+    --muted: 225 14% 13%;
+    --muted-foreground: 215 12% 66%;
+    --accent: 77 100% 45%;
+    --accent-foreground: 220 20% 8%;
+    --destructive: 0 63% 40%;
     --destructive-foreground: 210 40% 98%;
-    --border: 225 30% 15%;
-    --input: 225 30% 15%;
-    --ring: 191 100% 50%;
+    --border: 225 14% 17%;
+    --input: 225 14% 17%;
+    --ring: 324 100% 58%;
   }
-}
 
-@layer base {
   * {
     @apply border-gray-200;
     scrollbar-width: thin;
-    scrollbar-color: #334155 #0f172a;
-  }
-  body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    scrollbar-color: #39404d #090a10;
   }
 
-  /* Custom WebKit Scrollbar */
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+  html {
+    scroll-behavior: smooth;
+    background: #08090d;
   }
-  ::-webkit-scrollbar-track {
-    background: #070b14; 
+
+  body {
+    min-width: 320px;
+    background:
+      radial-gradient(ellipse at 12% 0%, rgb(240 0 145 / 7%), transparent 34rem),
+      radial-gradient(ellipse at 92% 12%, rgb(0 201 232 / 6%), transparent 32rem),
+      hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
+
+  button, a, input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :focus-visible {
+    outline: 2px solid #00c9e8;
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    color: #08090d;
+    background: #a5e900;
+  }
+
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: #090a10; }
   ::-webkit-scrollbar-thumb {
-    background: #1e293b; 
-    border-radius: 5px;
-    border: 2px solid #070b14;
+    background: linear-gradient(180deg, #343b49, #202633);
+    border: 2px solid #090a10;
+    border-radius: 99px;
   }
-  ::-webkit-scrollbar-thumb:hover {
-    background: #334155; 
-  }
+  ::-webkit-scrollbar-thumb:hover { background: #596174; }
 }
 
-@layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
+@layer components {
+  .pdb-shell { isolation: isolate; }
+  .pdb-header {
+    background: rgb(8 9 13 / 88%);
+    border-color: rgb(255 255 255 / 8%);
+    box-shadow: 0 10px 35px rgb(0 0 0 / 18%);
   }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  .pdb-sidebar {
+    background:
+      radial-gradient(ellipse at 0% 0%, rgb(240 0 145 / 8%), transparent 22rem),
+      rgb(8 9 13 / 96%);
+    border-color: rgb(255 255 255 / 8%);
+  }
+  .pdb-main { background: transparent; }
+  .pdb-content { animation: pdb-page-enter 520ms cubic-bezier(.2,.75,.25,1) both; }
+  .pdb-mobile-nav {
+    background: rgb(8 9 13 / 92%);
+    border-color: rgb(255 255 255 / 10%);
+    box-shadow: 0 -12px 36px rgb(0 0 0 / 24%);
+  }
+
+  .pdb-shell a, .pdb-shell button {
+    transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+    transition-duration: 220ms;
+    transition-timing-function: cubic-bezier(.2,.75,.25,1);
+  }
+  .pdb-sidebar nav a:not([aria-current="page"]):hover {
+    transform: translateX(3px);
+  }
+  .pdb-shell img { image-rendering: auto; }
+}
+
+@keyframes pdb-page-enter {
+  from { opacity: 0; transform: translateY(9px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pdb-soft-glow {
+  0%, 100% { box-shadow: 0 0 0 rgb(240 0 145 / 0%); }
+  50% { box-shadow: 0 0 24px rgb(240 0 145 / 13%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -170,9 +170,9 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
   const displayName = getDisplayName();
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 font-sans antialiased selection:bg-lime-400 selection:text-slate-950">
+    <div className="pdb-shell min-h-screen flex flex-col bg-slate-950 font-sans antialiased selection:bg-lime-400 selection:text-slate-950">
       {/* ===== Top Header Bar ===== */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#060913]/95 backdrop-blur-xl border-b border-slate-800/80 h-16">
+      <header className="pdb-header fixed top-0 left-0 right-0 z-50 bg-[#060913]/95 backdrop-blur-xl border-b border-slate-800/80 h-16">
         <div className="flex items-center justify-between h-full px-3.5 sm:px-6">
           {/* Left: Brand Logo + Club Name */}
           <Link 
@@ -377,7 +377,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
       {/* ===== Main Content Area ===== */}
       <div className="flex-grow flex pt-16 pb-16 md:pb-0">
         {/* ===== Desktop Sidebar ===== */}
-        <aside className="w-64 bg-[#060913]/98 backdrop-blur-2xl border-r border-slate-800/80 hidden md:flex flex-col shrink-0 fixed top-16 bottom-0 left-0 z-30 overflow-y-auto">
+        <aside className="pdb-sidebar w-64 bg-[#060913]/98 backdrop-blur-2xl border-r border-slate-800/80 hidden md:flex flex-col shrink-0 fixed top-16 bottom-0 left-0 z-30 overflow-y-auto">
           <div className="p-3.5 flex-grow">
             {/* VIP Club Member Card at Top of Sidebar */}
             <Link 
@@ -514,18 +514,18 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
         </aside>
 
         {/* ===== Page Content ===== */}
-        <main className="flex-grow md:ml-64 overflow-x-hidden relative min-w-0">
+        <main className="pdb-main flex-grow md:ml-64 overflow-x-hidden relative min-w-0">
           {/* Subtle grid background */}
           <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
           
-          <div className="relative z-10 max-w-7xl mx-auto w-full p-4 md:p-6 lg:p-8">
+          <div className="pdb-content relative z-10 max-w-7xl mx-auto w-full p-4 md:p-6 lg:p-8">
             {children || <Outlet />}
           </div>
         </main>
       </div>
 
       {/* ===== Mobile Bottom Tab Bar ===== */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#060913]/95 backdrop-blur-xl border-t border-slate-800/80 safe-area-bottom">
+      <nav className="pdb-mobile-nav md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#060913]/95 backdrop-blur-xl border-t border-slate-800/80 safe-area-bottom">
         <div className="flex items-center justify-around h-16 px-2">
           {mobileTabs.map((tab) => {
             const Icon = tab.icon;
