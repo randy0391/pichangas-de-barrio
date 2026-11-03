@@ -97,6 +97,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
   const { user, isLoading, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarExpandedAll, setSidebarExpandedAll] = useState(false);
+  const [hoveredSidebarLink, setHoveredSidebarLink] = useState<{ name: string; top: number } | null>(null);
 
   const mobileTabs = user?.role === 'admin' ? adminMobileTabs : userMobileTabs;
 
@@ -380,7 +381,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
         {/* ===== Desktop Sidebar ===== */}
         <aside
           onMouseLeave={() => setSidebarExpandedAll(false)}
-          className={cn("pdb-sidebar bg-[#080d19] border-r border-cyan-400/15 hidden md:flex flex-col shrink-0 fixed top-16 bottom-0 left-0 z-30 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden transition-all duration-300", sidebarExpandedAll ? "w-64" : "w-[84px]")}
+          className={cn("pdb-sidebar bg-[#080d19] border-r border-cyan-400/15 hidden md:flex flex-col shrink-0 fixed top-16 bottom-0 left-0 z-30 overflow-y-auto overflow-x-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden transition-all duration-300", sidebarExpandedAll ? "w-64" : "w-[84px]")}
         >
           <div className={cn("py-3 flex-grow", sidebarExpandedAll ? "px-3.5" : "px-2")}>
             <div className={cn("flex mb-4", sidebarExpandedAll ? "justify-end" : "justify-center")}>
@@ -471,10 +472,17 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                           key={link.path}
                           to={link.path}
                           onClick={() => setSidebarExpandedAll(false)}
-                          title={!sidebarExpandedAll ? link.name : undefined}
+                          title={undefined}
+                          onMouseEnter={(event) => {
+                            if (!sidebarExpandedAll) {
+                              const rect = event.currentTarget.getBoundingClientRect();
+                              setHoveredSidebarLink({ name: link.name, top: rect.top + rect.height / 2 });
+                            }
+                          }}
+                          onMouseLeave={() => setHoveredSidebarLink(null)}
                           className={cn(
                             'relative flex items-center rounded-xl font-bold text-[13px] tracking-wide transition-all duration-200 group border',
-                            sidebarExpandedAll ? 'flex-row space-x-3 px-3.5 py-2.5' : 'flex-col justify-center w-full min-h-12 mx-auto py-2.5 gap-1 hover:py-3 hover:shadow-lg hover:shadow-black/30 hover:z-40',
+                            sidebarExpandedAll ? 'flex-row space-x-3 px-3.5 py-2.5' : 'justify-center w-12 mx-auto py-3',
                             active
                               ? 'bg-gradient-to-r from-fuchsia-500/15 to-cyan-400/10 text-white border-fuchsia-400/40 shadow-[inset_3px_0_0_#f00091,0_8px_22px_rgba(0,0,0,.18)]'
                               : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5 hover:border-white/10'
@@ -494,7 +502,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                           )} />
 
                           {/* Text */}
-                          <span className={cn("min-w-0", sidebarExpandedAll ? "flex-1 truncate" : "hidden group-hover:flex w-full whitespace-normal break-words text-center leading-tight text-[10px] px-1")}>{link.name}</span>
+                          <span className={cn("min-w-0", sidebarExpandedAll ? "flex-1 truncate" : "hidden")}>{link.name}</span>
 
                           {/* Badge or chevron */}
                           {link.badge ? (
@@ -530,6 +538,18 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
             </div>
           </div>
         </aside>
+
+        {!sidebarExpandedAll && hoveredSidebarLink && (
+          <div
+            className="hidden md:block fixed left-[94px] z-[60] -translate-y-1/2 pointer-events-none"
+            style={{ top: hoveredSidebarLink.top }}
+          >
+            <div className="relative rounded-lg border border-cyan-300/30 bg-[#101b2d] px-3.5 py-2 text-xs font-extrabold tracking-wide text-white shadow-[0_8px_28px_rgba(0,0,0,.55)] whitespace-nowrap">
+              <span className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 border-l border-b border-cyan-300/30 bg-[#101b2d]" />
+              {hoveredSidebarLink.name}
+            </div>
+          </div>
+        )}
 
         {/* ===== Page Content ===== */}
         <main className={cn("pdb-main flex-grow overflow-x-hidden relative min-w-0 transition-all duration-300", sidebarExpandedAll ? "md:ml-64" : "md:ml-[84px]")}>
