@@ -173,7 +173,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
   return (
     <div className="pdb-shell min-h-screen flex flex-col bg-slate-950 font-sans antialiased selection:bg-lime-400 selection:text-slate-950">
       {/* ===== Top Header Bar ===== */}
-      <header className="pdb-header fixed top-0 left-0 right-0 z-50 bg-[#060913]/95 backdrop-blur-xl border-b border-slate-800/80 h-16">
+      <header className="pdb-header fixed top-0 left-0 right-0 z-50 bg-[#080d19]/95 backdrop-blur-xl border-b border-cyan-400/15 shadow-lg shadow-black/20 h-16">
         <div className="flex items-center justify-between h-full px-3.5 sm:px-6">
           {/* Left: Brand Logo + Club Name */}
           <Link 
@@ -505,7 +505,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
               className={cn("flex items-center rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all font-bold text-xs uppercase tracking-wider w-full group", sidebarCollapsed ? "justify-center p-3" : "space-x-3 px-3.5 py-2.5")} title="Cerrar Sesión"
             >
               <LogOut className="h-[18px] w-[18px] text-slate-400 group-hover:text-red-400 group-hover:-translate-x-0.5 transition-all" />
-              <span>Cerrar Sesión</span>
+              {!sidebarCollapsed && <span>Cerrar Sesión</span>}
             </button>
             <div className={cn("px-3 pt-3 items-center justify-between text-[10px] text-slate-500 font-mono", sidebarCollapsed ? "hidden" : "flex")}>
               <span>PDB FC • 2026</span>
@@ -528,7 +528,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
       </div>
 
       {/* ===== Mobile Bottom Tab Bar ===== */}
-      <nav className="pdb-mobile-nav md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#060913]/95 backdrop-blur-xl border-t border-slate-800/80 safe-area-bottom">
+      <nav className="pdb-mobile-nav md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#080d19]/95 backdrop-blur-2xl border-t border-fuchsia-500/25 shadow-[0_-12px_35px_rgba(0,0,0,.35)] safe-area-bottom">
         <div className="flex items-center justify-around h-16 px-2">
           {mobileTabs.map((tab) => {
             const Icon = tab.icon;
@@ -541,22 +541,22 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                 key={tab.path}
                 to={tab.path}
                 className={cn(
-                  'flex flex-col items-center justify-center space-y-1 flex-1 py-1.5 transition-colors relative',
-                  active ? 'text-lime-400' : 'text-slate-400 hover:text-slate-200'
+                  'flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-all relative',
+                  active ? 'text-white' : 'text-slate-500 hover:text-white'
                 )}
               >
                 {active && (
-                  <span className="absolute top-0 w-8 h-0.5 bg-lime-400 rounded-full shadow-[0_0_8px_#a3e635]" />
+                  <span className="absolute top-0 w-10 h-[3px] bg-gradient-to-r from-fuchsia-500 to-cyan-300 rounded-full shadow-[0_0_10px_rgba(0,201,232,.55)]" />
                 )}
                 <div className="relative">
-                  <Icon className={cn("h-5 w-5 transition-transform", active && "scale-110 drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]")} />
+                  <Icon className={cn("h-5 w-5 transition-transform", active && "scale-110 text-cyan-300 drop-shadow-[0_0_8px_rgba(0,201,232,.5)]")} />
                   {showBadge && (
                     <span className="absolute -top-1.5 -right-2.5 bg-red-500 text-white text-[9px] font-black rounded-full h-4 min-w-4 px-1 flex items-center justify-center border border-slate-950 animate-pulse">
                       {pendingCount}
                     </span>
                   )}
                 </div>
-                <span className={cn("text-[10px] tracking-wide", active ? "font-black text-lime-400" : "font-semibold")}>
+                <span className={cn("text-[10px] tracking-wide", active ? "font-black text-white" : "font-semibold")}>
                   {tab.name}
                 </span>
               </Link>
