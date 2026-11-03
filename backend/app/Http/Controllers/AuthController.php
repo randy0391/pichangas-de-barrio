@@ -81,8 +81,9 @@ class AuthController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nombres' => 'sometimes|string|max:100', 'apellido_paterno' => 'sometimes|string|max:100', 'apellido_materno' => 'sometimes|string|max:100',
+            'dni' => 'sometimes|string|max:20|unique:users,dni,' . $request->user()->id,
             'email' => 'sometimes|email|unique:users,email,' . $request->user()->id,
             'phone' => 'nullable|string|max:20',
             'position' => 'nullable|in:portero,defensa,medio,delantero',
@@ -94,7 +95,10 @@ class AuthController extends Controller
         ]);
 
         $user = $request->user();
-        $user->update($request->only(['nombres', 'apellido_paterno', 'apellido_materno', 'email', 'phone', 'position', 'jersey_number', 'bio', 'birth_date', 'blood_type', 'nickname']));
+        if (isset($validated['dni']) && $validated['dni'] !== $user->dni) {
+            $validated['password'] = Hash::make($validated['dni']);
+        }
+        $user->update(collect($validated)->only(['nombres', 'apellido_paterno', 'apellido_materno', 'dni', 'email', 'phone', 'position', 'jersey_number', 'bio', 'birth_date', 'blood_type', 'nickname', 'password'])->all());
 
         return new UserResource($user->fresh());
     }
