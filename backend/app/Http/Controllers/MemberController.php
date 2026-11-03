@@ -151,7 +151,10 @@ class MemberController extends Controller
             'nickname' => 'nullable|string|max:50',
         ]);
 
-        // Changing a DNI must never reset the account password to a predictable value.
+        // La contraseña del jugador se mantiene sincronizada con su DNI.
+        if (isset($validated['dni']) && $validated['dni'] !== $user->dni) {
+            $validated['password'] = \\Illuminate\\Support\\Facades\\Hash::make($validated['dni']);
+        }
         if (isset($validated['is_approved'])) {
             $validated['is_approved'] = $validated['is_approved'] ? 'true' : 'false';
         }
