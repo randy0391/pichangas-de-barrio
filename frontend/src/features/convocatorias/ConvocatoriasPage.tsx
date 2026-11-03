@@ -159,21 +159,21 @@ export const ConvocatoriasPage = () => {
         const isSabado = c.dayCategory === 'sabado';
 
         const dayColorClass = isMartes 
-            ? 'text-cyan-400 border-cyan-500/40 bg-cyan-500/10'
+            ? 'text-[#00C9E8] border-[#00C9E8]/40 bg-cyan-500/10'
             : isJueves 
-            ? 'text-lime-400 border-lime-500/40 bg-lime-500/10'
+            ? 'text-[#A5E900] border-[#A5E900]/40 bg-[#A5E900]/10'
             : isSabado 
-            ? 'text-amber-400 border-amber-500/40 bg-amber-500/10'
+            ? 'text-[#F00091] border-[#F00091]/40 bg-[#F00091]/10'
             : 'text-primary border-primary/40 bg-primary/10';
 
         const cardBorderClass = isConfirmed
             ? 'border-emerald-500/60 shadow-[0_0_25px_rgba(16,185,129,0.12)]'
             : isMartes 
-            ? 'hover:border-cyan-500/50 shadow-cyan-950/20'
+            ? 'hover:border-[#00C9E8]/50 shadow-cyan-950/20'
             : isJueves 
-            ? 'hover:border-lime-500/50 shadow-lime-950/20'
+            ? 'hover:border-[#A5E900]/50 shadow-lime-950/20'
             : isSabado 
-            ? 'hover:border-amber-500/50 shadow-amber-950/20'
+            ? 'hover:border-[#F00091]/50 shadow-amber-950/20'
             : 'hover:border-primary/50';
 
         return (
@@ -186,7 +186,7 @@ export const ConvocatoriasPage = () => {
             >
                 {/* Neon accent left line */}
                 <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${
-                    isConfirmed ? 'bg-emerald-500' : isMartes ? 'bg-cyan-400' : isJueves ? 'bg-lime-400' : isSabado ? 'bg-amber-400' : 'bg-primary'
+                    isConfirmed ? 'bg-emerald-500' : isMartes ? 'bg-[#00C9E8]' : isJueves ? 'bg-[#A5E900]' : isSabado ? 'bg-[#F00091]' : 'bg-primary'
                 }`}></div>
 
                 {/* Left: Day & Date Pill */}
@@ -222,7 +222,7 @@ export const ConvocatoriasPage = () => {
 
                         {/* Cost badge */}
                         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950 border border-slate-800 text-white font-mono text-xs font-black shadow-sm">
-                            <Wallet className="w-3.5 h-3.5 text-lime-400" />
+                            <Wallet className="w-3.5 h-3.5 text-[#A5E900]" />
                             <span>{cost > 0 ? `S/ ${cost.toFixed(2)}` : 'Gratis'}</span>
                         </div>
 
@@ -233,7 +233,7 @@ export const ConvocatoriasPage = () => {
 
                         {/* Breakdown tag */}
                         <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-900/90 text-slate-300 text-[11px] font-bold border border-slate-800">
-                            <span className={c.is_porteros_full ? 'text-red-400' : 'text-amber-400'}>
+                            <span className={c.is_porteros_full ? 'text-red-400' : 'text-[#F00091]'}>
                                 🧤 {c.porteros_count || 0}/{c.max_porteros || c.num_teams || 2}
                             </span>
                             <span className="text-slate-600">·</span>
@@ -247,8 +247,8 @@ export const ConvocatoriasPage = () => {
                             isFull 
                                 ? 'bg-red-500/15 text-red-400 border-red-500/30' 
                                 : spotsLeft <= 3 
-                                ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' 
-                                : 'bg-lime-500/15 text-lime-400 border-lime-500/30'
+                                ? 'bg-[#F00091]/15 text-[#F00091] border-[#F00091]/30' 
+                                : 'bg-[#A5E900]/15 text-[#A5E900] border-[#A5E900]/30'
                         }`}>
                             {isFull ? 'Cupos Llenos' : `Quedan ${spotsLeft} cupos`}
                         </span>
@@ -281,7 +281,7 @@ export const ConvocatoriasPage = () => {
                         <div className="flex flex-col justify-center bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
                             <div className="flex justify-between items-center text-xs font-bold mb-1">
                                 <span className="text-slate-400 flex items-center gap-1">
-                                    <Users className="w-3.5 h-3.5 text-lime-400" />
+                                    <Users className="w-3.5 h-3.5 text-[#A5E900]" />
                                     <span>Jugadores:</span>
                                 </span>
                                 <span className="text-white font-mono">{confirmados} / {maximos}</span>
@@ -289,7 +289,7 @@ export const ConvocatoriasPage = () => {
                             <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
                                 <div 
                                     className={`h-full rounded-full transition-all duration-700 ${
-                                        isFull ? 'bg-red-500' : 'bg-gradient-to-r from-lime-400 to-emerald-400'
+                                        isFull ? 'bg-red-500' : 'bg-gradient-to-r from-[#A5E900] to-[#00C9E8]'
                                     }`}
                                     style={{ width: `${progress}%` }}
                                 />
@@ -306,7 +306,7 @@ export const ConvocatoriasPage = () => {
                                 ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20'
                                 : isFull 
                                 ? 'bg-slate-800 hover:bg-slate-700 text-slate-300'
-                                : 'bg-lime-400 hover:bg-lime-300 text-slate-950 shadow-lime-400/20 hover:scale-[1.02]'
+                                : 'bg-[#A5E900] hover:bg-[#C8F34A] text-slate-950 shadow-lime-400/20 hover:scale-[1.02]'
                         }`}>
                             {isConfirmed ? (
                                 <>
@@ -337,13 +337,13 @@ export const ConvocatoriasPage = () => {
             {/* ===== Top Hero & Weekly Fixed Schedule Banner ===== */}
             <div className="bg-gradient-to-br from-slate-900 via-slate-900/90 to-slate-950 p-6 sm:p-8 rounded-3xl border border-slate-800 shadow-2xl relative overflow-hidden space-y-6">
                 {/* Decorative neon ambient glows */}
-                <div className="absolute -right-20 -top-20 w-80 h-80 bg-lime-400/10 blur-[120px] rounded-full pointer-events-none"></div>
-                <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-cyan-400/10 blur-[120px] rounded-full pointer-events-none"></div>
+                <div className="absolute -right-20 -top-20 w-80 h-80 bg-[#A5E900]/10 blur-[120px] rounded-full pointer-events-none"></div>
+                <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-[#00C9E8]/10 blur-[120px] rounded-full pointer-events-none"></div>
 
                 <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="px-3 py-1 rounded-full bg-lime-400/10 text-lime-400 border border-lime-400/30 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                            <span className="px-3 py-1 rounded-full bg-[#A5E900]/10 text-[#A5E900] border border-[#A5E900]/30 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
                                 <Sparkles className="w-3.5 h-3.5" /> Temporada Oficial 2026
                             </span>
                         </div>
@@ -356,7 +356,7 @@ export const ConvocatoriasPage = () => {
                     </div>
 
                     <Link to="/billetera" className="shrink-0">
-                        <Button className="bg-slate-800/90 hover:bg-slate-800 text-lime-400 border border-lime-400/30 hover:border-lime-400 rounded-2xl h-12 px-5 font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg">
+                        <Button className="bg-slate-800/90 hover:bg-slate-800 text-[#A5E900] border border-[#A5E900]/30 hover:border-[#A5E900] rounded-2xl h-12 px-5 font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg">
                             <Wallet className="w-4 h-4" /> Recargar Mi Billetera
                         </Button>
                     </Link>
@@ -365,49 +365,49 @@ export const ConvocatoriasPage = () => {
                 {/* Fixed Weekly Schedule Cards: Martes S/ 15, Jueves S/ 15, Sabado S/ 18 */}
                 <div className="relative z-10 pt-2 border-t border-slate-800/80">
                     <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                        <Calendar className="w-3.5 h-3.5 text-lime-400" />
+                        <Calendar className="w-3.5 h-3.5 text-[#A5E900]" />
                         Horario Fijo Semanal del Club:
                     </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                         {/* Martes */}
-                        <div className="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:border-cyan-500/60 transition-colors">
+                        <div className="bg-slate-950/80 border border-[#00C9E8]/30 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:border-[#00C9E8]/60 transition-colors">
                             <div className="space-y-0.5">
-                                <span className="text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center gap-1">
+                                <span className="text-xs font-black uppercase tracking-wider text-[#00C9E8] flex items-center gap-1">
                                     ⚽ Martes
                                 </span>
                                 <p className="text-xs text-slate-300 font-medium">9:00 PM • Cancha Sintética</p>
                             </div>
                             <div className="text-right">
-                                <span className="text-base font-black font-mono text-cyan-400">S/ 15.00</span>
+                                <span className="text-base font-black font-mono text-[#00C9E8]">S/ 15.00</span>
                                 <p className="text-[10px] text-slate-500 font-bold">por cupo</p>
                             </div>
                         </div>
 
                         {/* Jueves */}
-                        <div className="bg-slate-950/80 border border-lime-500/30 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:border-lime-500/60 transition-colors">
+                        <div className="bg-slate-950/80 border border-[#A5E900]/30 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:border-[#A5E900]/60 transition-colors">
                             <div className="space-y-0.5">
-                                <span className="text-xs font-black uppercase tracking-wider text-lime-400 flex items-center gap-1">
+                                <span className="text-xs font-black uppercase tracking-wider text-[#A5E900] flex items-center gap-1">
                                     ⚽ Jueves
                                 </span>
                                 <p className="text-xs text-slate-300 font-medium">9:00 PM • Cancha Sintética</p>
                             </div>
                             <div className="text-right">
-                                <span className="text-base font-black font-mono text-lime-400">S/ 15.00</span>
+                                <span className="text-base font-black font-mono text-[#A5E900]">S/ 15.00</span>
                                 <p className="text-[10px] text-slate-500 font-bold">por cupo</p>
                             </div>
                         </div>
 
                         {/* Sabado */}
-                        <div className="bg-slate-950/80 border border-amber-500/30 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:border-amber-500/60 transition-colors">
+                        <div className="bg-slate-950/80 border border-[#F00091]/30 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:border-[#F00091]/60 transition-colors">
                             <div className="space-y-0.5">
-                                <span className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1">
+                                <span className="text-xs font-black uppercase tracking-wider text-[#F00091] flex items-center gap-1">
                                     🏆 Sábados
                                 </span>
                                 <p className="text-xs text-slate-300 font-medium">6:00 AM • Cancha Sintética</p>
                             </div>
                             <div className="text-right">
-                                <span className="text-base font-black font-mono text-amber-400">S/ 18.00</span>
+                                <span className="text-base font-black font-mono text-[#F00091]">S/ 18.00</span>
                                 <p className="text-[10px] text-slate-500 font-bold">por cupo</p>
                             </div>
                         </div>
@@ -424,7 +424,7 @@ export const ConvocatoriasPage = () => {
                             onClick={() => setPeriodFilter('todos')}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
                                 periodFilter === 'todos' 
-                                    ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20' 
+                                    ? 'bg-[#A5E900] text-slate-950 shadow-md shadow-lime-400/20' 
                                     : 'text-slate-400 hover:text-white bg-slate-950/60'
                             }`}
                         >
@@ -434,7 +434,7 @@ export const ConvocatoriasPage = () => {
                             onClick={() => setPeriodFilter('esta_semana')}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
                                 periodFilter === 'esta_semana' 
-                                    ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20' 
+                                    ? 'bg-[#A5E900] text-slate-950 shadow-md shadow-lime-400/20' 
                                     : 'text-slate-400 hover:text-white bg-slate-950/60'
                             }`}
                         >
@@ -444,7 +444,7 @@ export const ConvocatoriasPage = () => {
                             onClick={() => setPeriodFilter('proxima_semana')}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
                                 periodFilter === 'proxima_semana' 
-                                    ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20' 
+                                    ? 'bg-[#A5E900] text-slate-950 shadow-md shadow-lime-400/20' 
                                     : 'text-slate-400 hover:text-white bg-slate-950/60'
                             }`}
                         >
@@ -454,7 +454,7 @@ export const ConvocatoriasPage = () => {
                             onClick={() => setPeriodFilter('futuro')}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
                                 periodFilter === 'futuro' 
-                                    ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20' 
+                                    ? 'bg-[#A5E900] text-slate-950 shadow-md shadow-lime-400/20' 
                                     : 'text-slate-400 hover:text-white bg-slate-950/60'
                             }`}
                         >
@@ -476,7 +476,7 @@ export const ConvocatoriasPage = () => {
                             <button
                                 onClick={() => setDayFilter('martes')}
                                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                                    dayFilter === 'martes' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-slate-500 hover:text-cyan-400'
+                                    dayFilter === 'martes' ? 'bg-cyan-500/20 text-[#00C9E8] border border-[#00C9E8]/30' : 'text-slate-500 hover:text-[#00C9E8]'
                                 }`}
                             >
                                 Martes (S/ 15)
@@ -484,7 +484,7 @@ export const ConvocatoriasPage = () => {
                             <button
                                 onClick={() => setDayFilter('jueves')}
                                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                                    dayFilter === 'jueves' ? 'bg-lime-500/20 text-lime-400 border border-lime-500/30' : 'text-slate-500 hover:text-lime-400'
+                                    dayFilter === 'jueves' ? 'bg-[#A5E900]/20 text-[#A5E900] border border-[#A5E900]/30' : 'text-slate-500 hover:text-[#A5E900]'
                                 }`}
                             >
                                 Jueves (S/ 15)
@@ -492,7 +492,7 @@ export const ConvocatoriasPage = () => {
                             <button
                                 onClick={() => setDayFilter('sabado')}
                                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                                    dayFilter === 'sabado' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'text-slate-500 hover:text-amber-400'
+                                    dayFilter === 'sabado' ? 'bg-[#F00091]/20 text-[#F00091] border border-[#F00091]/30' : 'text-slate-500 hover:text-[#F00091]'
                                 }`}
                             >
                                 Sábados (S/ 18)
@@ -501,7 +501,7 @@ export const ConvocatoriasPage = () => {
 
                         {/* Selector interactivo de Fecha */}
                         <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-slate-300">
-                            <Calendar className="w-3.5 h-3.5 text-lime-400 shrink-0" />
+                            <Calendar className="w-3.5 h-3.5 text-[#A5E900] shrink-0" />
                             <span className="text-[11px] text-slate-400 font-bold whitespace-nowrap">Fecha:</span>
                             <input 
                                 type="date" 
@@ -561,8 +561,8 @@ export const ConvocatoriasPage = () => {
                     {estaSemana.length > 0 && (
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 px-1">
-                                <span className="w-2.5 h-2.5 rounded-full bg-lime-400 shadow-[0_0_8px_#a3e635]"></span>
-                                <h2 className="text-sm font-black text-lime-400 uppercase tracking-widest">
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#A5E900] shadow-[0_0_8px_#a3e635]"></span>
+                                <h2 className="text-sm font-black text-[#A5E900] uppercase tracking-widest">
                                     Esta Semana
                                 </h2>
                                 <div className="flex-1 h-[1px] bg-slate-800"></div>
@@ -580,8 +580,8 @@ export const ConvocatoriasPage = () => {
                     {proximaSemana.length > 0 && (
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 px-1">
-                                <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]"></span>
-                                <h2 className="text-sm font-black text-cyan-400 uppercase tracking-widest">
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#00C9E8] shadow-[0_0_8px_#22d3ee]"></span>
+                                <h2 className="text-sm font-black text-[#00C9E8] uppercase tracking-widest">
                                     Próxima Semana
                                 </h2>
                                 <div className="flex-1 h-[1px] bg-slate-800"></div>
@@ -599,8 +599,8 @@ export const ConvocatoriasPage = () => {
                     {futuro.length > 0 && (
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 px-1">
-                                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]"></span>
-                                <h2 className="text-sm font-black text-amber-400 uppercase tracking-widest">
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#F00091] shadow-[0_0_8px_#f59e0b]"></span>
+                                <h2 className="text-sm font-black text-[#F00091] uppercase tracking-widest">
                                     Próximas Fechas Programadas (Futuro)
                                 </h2>
                                 <div className="flex-1 h-[1px] bg-slate-800"></div>
