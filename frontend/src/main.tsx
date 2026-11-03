@@ -6,6 +6,7 @@ import { queryClient } from './lib/queryClient';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
+import './App.css';
 
 // Automatically handle chunk loading failures when a new deployment is published on Vercel
 window.addEventListener('vite:preloadError', () => {
