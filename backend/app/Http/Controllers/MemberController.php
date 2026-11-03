@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class MemberController extends Controller
 {
@@ -153,7 +154,7 @@ class MemberController extends Controller
 
         // La contraseña del jugador se mantiene sincronizada con su DNI.
         if (isset($validated['dni']) && $validated['dni'] !== $user->dni) {
-            $validated['password'] = \\Illuminate\\Support\\Facades\\Hash::make($validated['dni']);
+            $validated['password'] = Hash::make($validated['dni']);
         }
         if (isset($validated['is_approved'])) {
             $validated['is_approved'] = $validated['is_approved'] ? 'true' : 'false';
