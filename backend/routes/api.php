@@ -34,19 +34,7 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
-    // Security protected routes
-    Route::get('/run-migrations', function (\Illuminate\Http\Request $request) {
-        if (!$request->user()->isAdmin()) return response()->json(['error' => 'Unauthorized'], 403);
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        return response()->json(['message' => 'OK', 'output' => \Illuminate\Support\Facades\Artisan::output()]);
-    });
-
-    Route::get('/logs', function (\Illuminate\Http\Request $request) {
-        if (!$request->user()->isAdmin()) return response()->json(['error' => 'Unauthorized'], 403);
-        $path = storage_path('logs/laravel.log');
-        if (!file_exists($path)) return 'No log file';
-        return response(file_get_contents($path), 200)->header('Content-Type', 'text/plain');
-    });
+    // Maintenance tasks run through deployment/CLI, not public HTTP endpoints.
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class MemberController extends Controller
 {
@@ -75,17 +76,22 @@ class MemberController extends Controller
             ]);
         }
 
+        // Only allow known sortable columns and directions; never pass raw
+        // request values as SQL identifiers.
+        $allowedOrderColumns = ['created_at', 'nombres', 'apellido_paterno', 'role', 'status'];
         $orderBy = $request->get('order_by', 'created_at');
-        $orderDir = $request->get('order_dir', 'desc');
+        $orderDir = strtolower($request->get('order_dir', 'desc'));
 
         if ($orderBy === 'name') {
             $query->orderBy('nombres', 'asc')->orderBy('apellido_paterno', 'asc');
         } else {
-            $query->orderBy($orderBy, $orderDir);
+            $safeOrderBy = in_array($orderBy, $allowedOrderColumns, true) ? $orderBy : 'created_at';
+            $safeOrderDir = in_array($orderDir, ['asc', 'desc'], true) ? $orderDir : 'desc';
+            $query->orderBy($safeOrderBy, $safeOrderDir);
         }
 
         if ($request->has('limit')) {
-            $limit = min((int) $request->get('limit'), 1000);
+            $limit = max(1, min((int) $request->get('limit'), 100));
             return UserResource::collection($query->paginate($limit));
         }
 
@@ -122,7 +128,8 @@ class MemberController extends Controller
             $user = User::create($validated);
             return new UserResource($user);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
+            report($e);
+            return response()->json(['message' => 'No se pudo crear el jugador. Inténtalo nuevamente.'], 500);
         }
     }
 
@@ -145,12 +152,10 @@ class MemberController extends Controller
             'nickname' => 'nullable|string|max:50',
         ]);
 
+        // La contraseña del jugador se mantiene sincronizada con su DNI.
         if (isset($validated['dni']) && $validated['dni'] !== $user->dni) {
-            if (empty($validated['position'])) $validated['position'] = null;
-        if (empty($validated['jersey_number'])) $validated['jersey_number'] = null;
-        $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['dni']); // Update password if DNI changes
+            $validated['password'] = Hash::make($validated['dni']);
         }
-
         if (isset($validated['is_approved'])) {
             $validated['is_approved'] = $validated['is_approved'] ? 'true' : 'false';
         }

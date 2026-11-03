@@ -344,16 +344,17 @@ class WalletController extends Controller
 
     public function approveRecharge(Request $request, $id)
     {
-        $tx = WalletTransaction::findOrFail($id);
+        return DB::transaction(function () use ($id, $request) {
+            // Lock and re-check the transaction itself to prevent double approval.
+            $tx = WalletTransaction::whereKey($id)->lockForUpdate()->firstOrFail();
 
-        if ($tx->status !== 'pendiente') {
-            return response()->json(['message' => 'Esta transaccion ya no esta pendiente.'], 400);
-        }
+            if ($tx->status !== 'pendiente' || $tx->type !== 'recarga') {
+                return response()->json(['message' => 'Esta transaccion ya no esta pendiente.'], 400);
+            }
 
-        return DB::transaction(function () use ($tx, $request) {
-            $wallet = Wallet::where('id', $tx->wallet_id)->lockForUpdate()->firstOrFail();
+            $wallet = Wallet::whereKey($tx->wallet_id)->lockForUpdate()->firstOrFail();
+            $newBalance = (float) $wallet->balance + (float) $tx->amount;
 
-            $newBalance = $wallet->balance + $tx->amount;
             $wallet->balance = $newBalance;
             $wallet->save();
 
@@ -372,20 +373,23 @@ class WalletController extends Controller
 
     public function rejectRecharge(Request $request, $id)
     {
-        $tx = WalletTransaction::findOrFail($id);
+        return DB::transaction(function () use ($id, $request) {
+            // Use the same transaction-row lock as approval so both actions serialize.
+            $tx = WalletTransaction::whereKey($id)->lockForUpdate()->firstOrFail();
 
-        if ($tx->status !== 'pendiente') {
-            return response()->json(['message' => 'Esta transaccion ya no esta pendiente.'], 400);
-        }
+            if ($tx->status !== 'pendiente' || $tx->type !== 'recarga') {
+                return response()->json(['message' => 'Esta transaccion ya no esta pendiente.'], 400);
+            }
 
-        $tx->status = 'rechazado';
-        $tx->approved_by = $request->user()->id;
-        $tx->approved_at = now();
-        $tx->save();
+            $tx->status = 'rechazado';
+            $tx->approved_by = $request->user()->id;
+            $tx->approved_at = now();
+            $tx->save();
 
-        return response()->json([
-            'message' => 'Recarga rechazada.',
-        ]);
+            return response()->json([
+                'message' => 'Recarga rechazada.',
+            ]);
+        });
     }
 
     public function adminAdjust(Request $request, $userId)
