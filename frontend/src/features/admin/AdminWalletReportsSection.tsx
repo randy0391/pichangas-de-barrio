@@ -673,245 +673,139 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
   };
 
   return (
-    <div className="space-y-6">
-      {/* KPI GLOBAL CARDS HEADER */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Total Circulation */}
-        <div className="bg-slate-900/90 border border-lime-400/30 rounded-2xl p-4 sm:p-5 relative overflow-hidden shadow-xl backdrop-blur-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total en Circulación</span>
-            <div className="p-2.5 rounded-xl bg-lime-400/10 text-lime-400">
-              <DollarSign className="h-5 w-5" />
-            </div>
+    <div className="space-y-4">
+      {/* COMPACT SUMMARY BANNER */}
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-lg">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <div className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4 text-lime-400" />
+            <span className="text-xs text-slate-400 font-medium">En circulación:</span>
+            <span className="text-sm font-black text-white">S/ {(globalStats?.total_balance_circulation ?? 0).toFixed(2)}</span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            S/ {(globalStats?.total_balance_circulation ?? 0).toFixed(2)}
+          <div className="hidden sm:block w-px h-5 bg-slate-700" />
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-slate-400" />
+            <span className="text-xs text-slate-400 font-medium">Total jugadores:</span>
+            <span className="text-sm font-black text-white">{globalStats?.total_users_count ?? 0}</span>
           </div>
-          <p className="text-xs text-lime-400/80 font-medium mt-1">Saldo disponible en todas las billeteras</p>
-        </div>
-
-        {/* Players with balance */}
-        <div 
-          onClick={() => { setActiveSubTab('with_balance'); setCurrentPage(1); }}
-          className={`border rounded-2xl p-4 sm:p-5 relative overflow-hidden shadow-xl backdrop-blur-sm cursor-pointer transition-all ${
-            activeSubTab === 'with_balance'
-              ? 'bg-emerald-500/15 border-emerald-400 ring-2 ring-emerald-400/30'
-              : 'bg-slate-900/90 border-slate-800 hover:border-emerald-500/40'
-          }`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Con Saldo Disponible</span>
-            <div className="p-2.5 rounded-xl bg-emerald-400/10 text-emerald-400">
-              <TrendingUp className="h-5 w-5" />
-            </div>
+          <div className="hidden sm:block w-px h-5 bg-slate-700" />
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400 font-medium">Recaudado:</span>
+            <span className="text-sm font-black text-lime-400">S/ {(globalStats?.total_approved_recharges_amount ?? 0).toFixed(2)}</span>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-400 tracking-tight">
-            {globalStats?.players_with_balance_count ?? 0}
-            <span className="text-xs font-bold text-slate-400 ml-2">jugadores</span>
-          </div>
-          <p className="text-xs text-slate-400 font-medium mt-1 flex items-center justify-between">
-            <span>Suma a favor: S/ {(globalStats?.total_with_balance_amount ?? 0).toFixed(2)}</span>
-            <ArrowRight className="h-3.5 w-3.5 text-emerald-400" />
-          </p>
-        </div>
-
-        {/* Players without balance */}
-        <div 
-          onClick={() => { setActiveSubTab('without_balance'); setCurrentPage(1); }}
-          className={`border rounded-2xl p-4 sm:p-5 relative overflow-hidden shadow-xl backdrop-blur-sm cursor-pointer transition-all ${
-            activeSubTab === 'without_balance'
-              ? 'bg-rose-500/15 border-rose-400 ring-2 ring-rose-400/30'
-              : 'bg-slate-900/90 border-slate-800 hover:border-rose-500/40'
-          }`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Sin Saldo / En Deuda</span>
-            <div className="p-2.5 rounded-xl bg-rose-400/10 text-rose-400">
-              <AlertCircle className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-rose-400 tracking-tight">
-            {globalStats?.players_without_balance_count ?? 0}
-            <span className="text-xs font-bold text-slate-400 ml-2">jugadores</span>
-          </div>
-          <p className="text-xs text-slate-400 font-medium mt-1 flex items-center justify-between">
-            <span>{globalStats?.players_in_debt_count ?? 0} en deuda (S/ {(globalStats?.total_debt_amount ?? 0).toFixed(2)})</span>
-            <ArrowRight className="h-3.5 w-3.5 text-rose-400" />
-          </p>
-        </div>
-
-        {/* Total Rechargers */}
-        <div 
-          onClick={() => { setActiveSubTab('all_recharged'); setCurrentPage(1); }}
-          className={`border rounded-2xl p-4 sm:p-5 relative overflow-hidden shadow-xl backdrop-blur-sm cursor-pointer transition-all ${
-            activeSubTab === 'all_recharged'
-              ? 'bg-cyan-500/15 border-cyan-400 ring-2 ring-cyan-400/30'
-              : 'bg-slate-900/90 border-slate-800 hover:border-cyan-500/40'
-          }`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Recargadores</span>
-            <div className="p-2.5 rounded-xl bg-cyan-400/10 text-cyan-400">
-              <Trophy className="h-5 w-5" />
-            </div>
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-cyan-400 tracking-tight">
-            {globalStats?.unique_rechargers_count ?? 0}
-            <span className="text-xs font-bold text-slate-400 ml-2">jugadores</span>
-          </div>
-          <p className="text-xs text-slate-400 font-medium mt-1 flex items-center justify-between">
-            <span>Histórico: S/ {(globalStats?.total_approved_recharges_amount ?? 0).toFixed(2)}</span>
-            <ArrowRight className="h-3.5 w-3.5 text-cyan-400" />
-          </p>
         </div>
       </div>
 
-      {/* REPORT SUB-TABS SELECTOR (Spacious 2x2 grid on mobile/tablet, 4x1 on desktop) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-        {/* Tab 1: Recargas por Fecha */}
+      {/* SIMPLE TAB LIST */}
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-lg divide-y divide-slate-800/60">
+        {/* Tab 1 */}
         <button
           type="button"
           onClick={() => { setActiveSubTab('recharges'); setCurrentPage(1); }}
-          className={`p-3 sm:p-4 rounded-2xl border transition-all text-left flex flex-col justify-between gap-2.5 relative overflow-hidden group shadow-lg ${
+          className={`w-full flex items-center justify-between px-4 py-3 transition-all ${
             activeSubTab === 'recharges'
-              ? 'bg-gradient-to-br from-lime-400 to-lime-500 text-slate-950 border-lime-400 shadow-lime-400/20 ring-2 ring-lime-400/40'
-              : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-lime-500/40 hover:bg-slate-850'
+              ? 'bg-lime-400/10 border-l-[3px] border-l-lime-400'
+              : 'hover:bg-slate-800/50 border-l-[3px] border-l-transparent'
           }`}
         >
-          <div className="flex items-center justify-between w-full">
-            <div className={`p-2 rounded-xl transition-colors ${
-              activeSubTab === 'recharges' ? 'bg-slate-950/15 text-slate-950' : 'bg-lime-400/10 text-lime-400'
-            }`}>
-              <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
-            </div>
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-black tracking-wide ${
-              activeSubTab === 'recharges'
-                ? 'bg-slate-950 text-lime-400 shadow-sm'
-                : 'bg-slate-800 text-lime-400 border border-slate-700'
-            }`}>
-              {activeSubTab === 'recharges'
-                ? (periodStats?.period_total_count ?? rawData.length)
-                : (globalStats?.total_approved_recharges_count ?? 0)}
+          <div className="flex items-center gap-3">
+            <Calendar className={`h-4 w-4 ${activeSubTab === 'recharges' ? 'text-lime-400' : 'text-slate-500'}`} />
+            <span className={`text-sm font-bold ${activeSubTab === 'recharges' ? 'text-lime-400' : 'text-slate-300'}`}>
+              Recargas por Fecha
             </span>
           </div>
-          <div>
-            <p className="text-xs sm:text-sm font-black uppercase tracking-wider line-clamp-1">
-              1. Recargas por Fecha
-            </p>
-            <p className={`text-[11px] font-medium line-clamp-1 mt-0.5 ${
-              activeSubTab === 'recharges' ? 'text-slate-950/80 font-bold' : 'text-slate-400'
-            }`}>
-              Historial y comprobantes
-            </p>
-          </div>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
+            activeSubTab === 'recharges'
+              ? 'bg-lime-400 text-slate-950'
+              : 'bg-slate-800 text-slate-400'
+          }`}>
+            {activeSubTab === 'recharges'
+              ? (periodStats?.period_total_count ?? rawData.length)
+              : (globalStats?.total_approved_recharges_count ?? 0)}
+          </span>
         </button>
 
-        {/* Tab 2: Con Saldo Disponible */}
+        {/* Tab 2 */}
         <button
           type="button"
           onClick={() => { setActiveSubTab('with_balance'); setCurrentPage(1); }}
-          className={`p-3 sm:p-4 rounded-2xl border transition-all text-left flex flex-col justify-between gap-2.5 relative overflow-hidden group shadow-lg ${
+          className={`w-full flex items-center justify-between px-4 py-3 transition-all ${
             activeSubTab === 'with_balance'
-              ? 'bg-gradient-to-br from-emerald-400 to-emerald-500 text-slate-950 border-emerald-400 shadow-emerald-400/20 ring-2 ring-emerald-400/40'
-              : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-emerald-500/40 hover:bg-slate-850'
+              ? 'bg-emerald-400/10 border-l-[3px] border-l-emerald-400'
+              : 'hover:bg-slate-800/50 border-l-[3px] border-l-transparent'
           }`}
         >
-          <div className="flex items-center justify-between w-full">
-            <div className={`p-2 rounded-xl transition-colors ${
-              activeSubTab === 'with_balance' ? 'bg-slate-950/15 text-slate-950' : 'bg-emerald-400/10 text-emerald-400'
-            }`}>
-              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
-            </div>
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-black tracking-wide ${
-              activeSubTab === 'with_balance'
-                ? 'bg-slate-950 text-emerald-400 shadow-sm'
-                : 'bg-slate-800 text-emerald-400 border border-emerald-500/30'
-            }`}>
-              {globalStats?.players_with_balance_count ?? 0}
+          <div className="flex items-center gap-3">
+            <TrendingUp className={`h-4 w-4 ${activeSubTab === 'with_balance' ? 'text-emerald-400' : 'text-slate-500'}`} />
+            <span className={`text-sm font-bold ${activeSubTab === 'with_balance' ? 'text-emerald-400' : 'text-slate-300'}`}>
+              Jugadores con Saldo
+            </span>
+            <span className="text-[11px] text-slate-500 hidden sm:inline">
+              S/ {(globalStats?.total_with_balance_amount ?? 0).toFixed(2)} a favor
             </span>
           </div>
-          <div>
-            <p className="text-xs sm:text-sm font-black uppercase tracking-wider line-clamp-1">
-              2. Con Saldo
-            </p>
-            <p className={`text-[11px] font-medium line-clamp-1 mt-0.5 ${
-              activeSubTab === 'with_balance' ? 'text-slate-950/80 font-bold' : 'text-slate-400'
-            }`}>
-              Saldo a favor (&gt; S/ 0)
-            </p>
-          </div>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
+            activeSubTab === 'with_balance'
+              ? 'bg-emerald-400 text-slate-950'
+              : 'bg-slate-800 text-emerald-400'
+          }`}>
+            {globalStats?.players_with_balance_count ?? 0}
+          </span>
         </button>
 
-        {/* Tab 3: Sin Saldo / En Deuda */}
+        {/* Tab 3 */}
         <button
           type="button"
           onClick={() => { setActiveSubTab('without_balance'); setCurrentPage(1); }}
-          className={`p-3 sm:p-4 rounded-2xl border transition-all text-left flex flex-col justify-between gap-2.5 relative overflow-hidden group shadow-lg ${
+          className={`w-full flex items-center justify-between px-4 py-3 transition-all ${
             activeSubTab === 'without_balance'
-              ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-slate-950 border-rose-400 shadow-rose-400/20 ring-2 ring-rose-400/40'
-              : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-rose-500/40 hover:bg-slate-850'
+              ? 'bg-rose-400/10 border-l-[3px] border-l-rose-400'
+              : 'hover:bg-slate-800/50 border-l-[3px] border-l-transparent'
           }`}
         >
-          <div className="flex items-center justify-between w-full">
-            <div className={`p-2 rounded-xl transition-colors ${
-              activeSubTab === 'without_balance' ? 'bg-slate-950/15 text-slate-950' : 'bg-rose-400/10 text-rose-400'
-            }`}>
-              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-            </div>
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-black tracking-wide ${
-              activeSubTab === 'without_balance'
-                ? 'bg-slate-950 text-rose-400 shadow-sm'
-                : 'bg-slate-800 text-rose-400 border border-rose-500/30'
-            }`}>
-              {globalStats?.players_without_balance_count ?? 0}
+          <div className="flex items-center gap-3">
+            <AlertCircle className={`h-4 w-4 ${activeSubTab === 'without_balance' ? 'text-rose-400' : 'text-slate-500'}`} />
+            <span className={`text-sm font-bold ${activeSubTab === 'without_balance' ? 'text-rose-400' : 'text-slate-300'}`}>
+              Sin Saldo / En Deuda
             </span>
+            {(globalStats?.players_in_debt_count ?? 0) > 0 && (
+              <span className="text-[11px] text-rose-400/70 hidden sm:inline">
+                {globalStats?.players_in_debt_count} en deuda
+              </span>
+            )}
           </div>
-          <div>
-            <p className="text-xs sm:text-sm font-black uppercase tracking-wider line-clamp-1">
-              3. Sin Saldo / Deuda
-            </p>
-            <p className={`text-[11px] font-medium line-clamp-1 mt-0.5 ${
-              activeSubTab === 'without_balance' ? 'text-slate-950/80 font-bold' : 'text-slate-400'
-            }`}>
-              Saldo S/ 0 y deudores
-            </p>
-          </div>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
+            activeSubTab === 'without_balance'
+              ? 'bg-rose-400 text-slate-950'
+              : 'bg-slate-800 text-rose-400'
+          }`}>
+            {globalStats?.players_without_balance_count ?? 0}
+          </span>
         </button>
 
-        {/* Tab 4: Todos los que Recargaron */}
+        {/* Tab 4 */}
         <button
           type="button"
           onClick={() => { setActiveSubTab('all_recharged'); setCurrentPage(1); }}
-          className={`p-3 sm:p-4 rounded-2xl border transition-all text-left flex flex-col justify-between gap-2.5 relative overflow-hidden group shadow-lg ${
+          className={`w-full flex items-center justify-between px-4 py-3 transition-all ${
             activeSubTab === 'all_recharged'
-              ? 'bg-gradient-to-br from-cyan-400 to-cyan-500 text-slate-950 border-cyan-400 shadow-cyan-400/20 ring-2 ring-cyan-400/40'
-              : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-cyan-500/40 hover:bg-slate-850'
+              ? 'bg-cyan-400/10 border-l-[3px] border-l-cyan-400'
+              : 'hover:bg-slate-800/50 border-l-[3px] border-l-transparent'
           }`}
         >
-          <div className="flex items-center justify-between w-full">
-            <div className={`p-2 rounded-xl transition-colors ${
-              activeSubTab === 'all_recharged' ? 'bg-slate-950/15 text-slate-950' : 'bg-cyan-400/10 text-cyan-400'
-            }`}>
-              <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
-            </div>
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-black tracking-wide ${
-              activeSubTab === 'all_recharged'
-                ? 'bg-slate-950 text-cyan-400 shadow-sm'
-                : 'bg-slate-800 text-cyan-400 border border-cyan-500/30'
-            }`}>
-              {globalStats?.unique_rechargers_count ?? 0}
+          <div className="flex items-center gap-3">
+            <Trophy className={`h-4 w-4 ${activeSubTab === 'all_recharged' ? 'text-cyan-400' : 'text-slate-500'}`} />
+            <span className={`text-sm font-bold ${activeSubTab === 'all_recharged' ? 'text-cyan-400' : 'text-slate-300'}`}>
+              Todos los Recargadores
             </span>
           </div>
-          <div>
-            <p className="text-xs sm:text-sm font-black uppercase tracking-wider line-clamp-1">
-              4. Recargadores
-            </p>
-            <p className={`text-[11px] font-medium line-clamp-1 mt-0.5 ${
-              activeSubTab === 'all_recharged' ? 'text-slate-950/80 font-bold' : 'text-slate-400'
-            }`}>
-              Ranking histórico total
-            </p>
-          </div>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
+            activeSubTab === 'all_recharged'
+              ? 'bg-cyan-400 text-slate-950'
+              : 'bg-slate-800 text-cyan-400'
+          }`}>
+            {globalStats?.unique_rechargers_count ?? 0}
+          </span>
         </button>
       </div>
 
