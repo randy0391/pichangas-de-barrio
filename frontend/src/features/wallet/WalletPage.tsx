@@ -224,20 +224,20 @@ export const WalletPage = () => {
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Admin Bridge Banner (If current user is admin) */}
       {user?.role === 'admin' && (
-        <div className="bg-gradient-to-r from-indigo-950/80 via-slate-900 to-indigo-950/60 border border-indigo-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+        <div className="bg-gradient-to-r from-fuchsia-950/80 via-slate-900 to-cyan-950/50 border border-fuchsia-500/30 shadow-[0_12px_40px_rgba(240,0,145,0.08)] rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-300">
+            <div className="p-2.5 rounded-xl bg-fuchsia-500/15 text-fuchsia-300 ring-1 ring-fuchsia-400/20">
               <Shield className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-indigo-300">Modo Administrador</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-fuchsia-300">Modo Administrador</p>
               <p className="text-sm font-semibold text-white">Esta es tu billetera personal. Puedes acceder al panel general y al centro de reportes de todos los jugadores.</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <Link
               to="/admin/billeteras?tab=reports"
-              className="flex-1 sm:flex-none px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-md shadow-emerald-950/50"
+              className="flex-1 sm:flex-none px-3.5 py-2 bg-cyan-400 hover:bg-cyan-300 text-slate-950 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-cyan-500/20 hover:-translate-y-0.5"
               title="Abrir Centro de Reportes de Billetera"
             >
               <FileSpreadsheet className="h-3.5 w-3.5" />
@@ -245,7 +245,7 @@ export const WalletPage = () => {
             </Link>
             <Link
               to="/admin/billeteras"
-              className="flex-1 sm:flex-none px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shrink-0 shadow-md shadow-indigo-950/50"
+              className="flex-1 sm:flex-none px-3.5 py-2 bg-[#F00091] hover:bg-[#d90082] text-white rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all shrink-0 shadow-lg shadow-fuchsia-500/20 hover:-translate-y-0.5"
             >
               <span>Gestionar Todo</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -258,7 +258,7 @@ export const WalletPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight flex items-center gap-2.5">
-            <Wallet className="h-7 w-7 text-lime-400" />
+            <Wallet className="h-7 w-7 text-cyan-400" />
             <span>Mi Billetera Digital</span>
           </h1>
           <p className="text-slate-400 text-sm mt-0.5">Controla tu saldo para las pichangas, recarga con Yape y revisa tu historial</p>
@@ -266,7 +266,7 @@ export const WalletPage = () => {
         <button
           onClick={() => refetch()}
           disabled={isFetching}
-          className="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold transition-all flex items-center gap-1.5"
+          className="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 hover:border-cyan-400/40 text-xs font-bold transition-all duration-300 flex items-center gap-1.5"
           title="Actualizar saldo"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin text-lime-400' : 'text-slate-400'}`} />
@@ -322,11 +322,11 @@ export const WalletPage = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 rounded-3xl p-6 sm:p-8 border border-slate-700/80 shadow-2xl overflow-hidden group"
+        className="relative bg-gradient-to-br from-[#111827] via-[#0d1422] to-[#080d18] rounded-3xl p-6 sm:p-8 border border-slate-700/80 shadow-2xl shadow-black/30 overflow-hidden group"
       >
         {/* Glow & Patterns */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-lime-400/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2 group-hover:bg-lime-400/15 transition-all"></div>
-        <div className="absolute bottom-0 left-0 w-60 h-60 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none translate-y-1/2 -translate-x-1/2"></div>
+        <div className="absolute top-0 right-0 w-80 h-80 bg-[#F00091]/15 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2 group-hover:bg-[#F00091]/25 transition-all duration-700"></div>
+        <div className="absolute bottom-0 left-0 w-60 h-60 bg-[#00C9E8]/10 rounded-full blur-2xl pointer-events-none translate-y-1/2 -translate-x-1/2"></div>
         
         {/* Subtle geometric line pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:28px_28px] opacity-40 pointer-events-none"></div>
@@ -335,11 +335,11 @@ export const WalletPage = () => {
           {/* Card Top: Branding & Chip */}
           <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-lime-400 text-slate-950 flex items-center justify-center font-black text-sm shadow-md shadow-lime-400/20">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#F00091] to-[#00C9E8] text-white flex items-center justify-center font-black text-sm shadow-lg shadow-fuchsia-500/20 ring-1 ring-white/15">
                 ⚽
               </div>
               <div>
-                <span className="text-[11px] font-black uppercase tracking-widest text-lime-400 block">
+                <span className="text-[11px] font-black uppercase tracking-widest text-cyan-300 block">
                   Pichangas de Barrio FC
                 </span>
                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
@@ -499,7 +499,7 @@ export const WalletPage = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-black text-white uppercase tracking-tight flex items-center gap-2">
-              <History className="h-5 w-5 text-lime-400" />
+              <History className="h-5 w-5 text-fuchsia-400" />
               <span>Historial de Movimientos</span>
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">Registro de todas tus recargas, pagos de partidos y devoluciones</p>
@@ -522,8 +522,8 @@ export const WalletPage = () => {
                 onClick={() => setActiveFilter('recarga')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                   activeFilter === 'recarga'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow'
-                    : 'text-slate-400 hover:text-emerald-300'
+                    ? 'bg-lime-400/15 text-lime-300 border border-lime-400/40 shadow shadow-lime-400/10'
+                    : 'text-slate-400 hover:text-lime-300'
                 }`}
               >
                 Recargas
@@ -532,8 +532,8 @@ export const WalletPage = () => {
                 onClick={() => setActiveFilter('descuento')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                   activeFilter === 'descuento'
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow'
-                    : 'text-slate-400 hover:text-rose-300'
+                    ? 'bg-fuchsia-500/15 text-fuchsia-300 border border-fuchsia-400/40 shadow shadow-fuchsia-500/10'
+                    : 'text-slate-400 hover:text-fuchsia-300'
                 }`}
               >
                 Pagos Pichangas
@@ -542,8 +542,8 @@ export const WalletPage = () => {
                 onClick={() => setActiveFilter('devolucion')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                   activeFilter === 'devolucion'
-                    ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 shadow'
-                    : 'text-slate-400 hover:text-blue-300'
+                    ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/40 shadow shadow-cyan-500/10'
+                    : 'text-slate-400 hover:text-cyan-300'
                 }`}
               >
                 Devoluciones
@@ -554,7 +554,7 @@ export const WalletPage = () => {
               <button
                 type="button"
                 onClick={exportMyMovementsToExcel}
-                className="px-3 py-2 rounded-xl text-xs font-bold transition-all bg-emerald-600/90 hover:bg-emerald-500 text-white flex items-center gap-1.5 shadow-md shadow-emerald-950/40 shrink-0"
+                className="px-3 py-2 rounded-xl text-xs font-bold transition-all bg-cyan-400 hover:bg-cyan-300 text-slate-950 flex items-center gap-1.5 shadow-lg shadow-cyan-500/20 shrink-0 hover:-translate-y-0.5"
                 title="Descargar mi estado de cuenta en Excel (CSV)"
               >
                 <FileSpreadsheet className="h-3.5 w-3.5" />
@@ -594,7 +594,7 @@ export const WalletPage = () => {
                   key={tx.id}
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-slate-900/90 hover:bg-slate-850 rounded-2xl p-4 border border-slate-800/80 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md"
+                  className="bg-slate-900/80 hover:bg-slate-800/90 rounded-2xl p-4 border border-slate-800/80 hover:border-cyan-500/30 transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md hover:shadow-lg hover:shadow-cyan-950/10"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
                     <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 shrink-0">
@@ -638,7 +638,7 @@ export const WalletPage = () => {
 
                     <div className="text-right">
                       <span className={`text-base sm:text-lg font-black tracking-tight ${
-                        isPositive ? 'text-emerald-400' : 'text-rose-400'
+                        isPositive ? 'text-lime-300' : 'text-rose-400'
                       }`}>
                         {isPositive ? '+' : ''}S/ {amt.toFixed(2)}
                       </span>
@@ -659,7 +659,7 @@ export const WalletPage = () => {
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative bg-slate-900 border border-slate-700/80 rounded-3xl p-6 sm:p-7 w-full max-w-lg shadow-2xl z-10 space-y-5 my-8"
+            className="relative bg-slate-900 border border-cyan-500/20 rounded-3xl p-6 sm:p-7 w-full max-w-lg shadow-2xl shadow-black/50 z-10 space-y-5 my-8"
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -741,7 +741,7 @@ export const WalletPage = () => {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="0.00"
-                    className="bg-slate-800 border-slate-700 text-white pl-10 h-12 text-lg font-black rounded-xl focus:border-lime-400"
+                    className="bg-slate-800 border-slate-700 text-white pl-10 h-12 text-lg font-black rounded-xl focus:border-cyan-400"
                   />
                 </div>
               </div>
@@ -775,7 +775,7 @@ export const WalletPage = () => {
                     </button>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-lime-400/60 rounded-2xl p-6 cursor-pointer bg-slate-950/40 hover:bg-slate-950 transition-all group">
+                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-700 hover:border-cyan-400/60 rounded-2xl p-6 cursor-pointer bg-slate-950/40 hover:bg-slate-950 transition-all duration-300 group">
                     <div className="p-3 rounded-full bg-slate-900 group-hover:bg-lime-400/10 text-slate-400 group-hover:text-lime-400 transition-colors mb-2">
                       <Upload className="h-6 w-6" />
                     </div>
