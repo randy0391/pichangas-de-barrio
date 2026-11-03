@@ -165,16 +165,25 @@
     box-shadow: var(--pdb-shadow);
   }
 
-  .pdb-content [class~="text-white"],
-  .pdb-content [class~="text-slate-50"],
-  .pdb-content [class~="text-slate-100"],
-  .pdb-content [class~="text-slate-200"] {
+  :is(
+    .pdb-content [class~="bg-slate-950"],
+    .pdb-content [class~="bg-slate-900"],
+    .pdb-content [class~="bg-slate-800"],
+    .pdb-content [class*="bg-slate-950/"],
+    .pdb-content [class*="bg-slate-900/"],
+    .pdb-content [class*="bg-slate-800/"]
+  ) :is([class~="text-white"], [class~="text-slate-50"], [class~="text-slate-100"], [class~="text-slate-200"]) {
     color: #172033 !important;
   }
 
-  .pdb-content [class~="text-slate-300"],
-  .pdb-content [class~="text-slate-400"],
-  .pdb-content [class~="text-slate-500"] {
+  :is(
+    .pdb-content [class~="bg-slate-950"],
+    .pdb-content [class~="bg-slate-900"],
+    .pdb-content [class~="bg-slate-800"],
+    .pdb-content [class*="bg-slate-950/"],
+    .pdb-content [class*="bg-slate-900/"],
+    .pdb-content [class*="bg-slate-800/"]
+  ) :is([class~="text-slate-300"], [class~="text-slate-400"], [class~="text-slate-500"]) {
     color: #687386 !important;
   }
 
