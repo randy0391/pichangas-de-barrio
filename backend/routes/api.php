@@ -70,6 +70,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin routes
     Route::middleware('admin')->group(function () {
+        // Admin-only member statistics
+        Route::get('/members/stats', [MemberController::class, 'stats']);
+
         // Admin Wallets
         Route::get('/admin/wallets', [\App\Http\Controllers\WalletController::class, 'adminListAll']);
         Route::get('/admin/wallets/pending', [\App\Http\Controllers\WalletController::class, 'adminListPending']);
