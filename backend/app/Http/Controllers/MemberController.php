@@ -127,7 +127,8 @@ class MemberController extends Controller
             $user = User::create($validated);
             return new UserResource($user);
         } catch (\Exception $e) {
-            report($e);\n            return response()->json(['message' => 'No se pudo crear el jugador. Inténtalo nuevamente.'], 500);
+            report($e);
+            return response()->json(['message' => 'No se pudo crear el jugador. Inténtalo nuevamente.'], 500);
         }
     }
 
