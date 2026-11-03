@@ -159,3 +159,128 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* ===== Sports navigation refresh: desktop + mobile ===== */
+@layer components {
+  .pdb-header {
+    background:
+      linear-gradient(105deg, rgb(240 0 145 / 9%), transparent 34%),
+      linear-gradient(275deg, rgb(0 201 232 / 8%), transparent 38%),
+      rgb(7 10 18 / 94%);
+    border-bottom: 1px solid rgb(0 201 232 / 20%);
+    box-shadow: 0 12px 36px rgb(0 0 0 / 34%);
+  }
+
+  .pdb-header a:first-child img {
+    border-color: #f00091;
+    box-shadow: 0 0 0 3px rgb(240 0 145 / 12%), 0 0 22px rgb(240 0 145 / 24%);
+  }
+
+  .pdb-header a:first-child span:first-child {
+    letter-spacing: -.045em;
+  }
+
+  .pdb-header a[title="Mi Billetera Digital"] {
+    border-color: rgb(0 201 232 / 34%);
+    background: linear-gradient(120deg, rgb(0 201 232 / 10%), rgb(240 0 145 / 8%)), #0d1420;
+    box-shadow: inset 0 1px rgb(255 255 255 / 5%);
+  }
+
+  .pdb-header a[title="Mi Billetera Digital"]:hover {
+    border-color: #00c9e8;
+    box-shadow: 0 0 22px rgb(0 201 232 / 13%);
+    transform: translateY(-1px);
+  }
+
+  .pdb-header a[title="Ver mi perfil"] {
+    background: linear-gradient(120deg, rgb(240 0 145 / 8%), rgb(0 201 232 / 7%)), #0d1420;
+    border-color: rgb(255 255 255 / 10%);
+  }
+
+  .pdb-sidebar {
+    background:
+      radial-gradient(ellipse at 0 0, rgb(240 0 145 / 12%), transparent 22rem),
+      radial-gradient(ellipse at 100% 65%, rgb(0 201 232 / 7%), transparent 20rem),
+      #080b13;
+    border-right-color: rgb(0 201 232 / 18%);
+  }
+
+  .pdb-sidebar > div:first-child > a:first-child {
+    background: linear-gradient(135deg, rgb(240 0 145 / 12%), rgb(0 201 232 / 7%) 75%), #0d1420;
+    border-color: rgb(255 255 255 / 11%);
+    box-shadow: 0 12px 30px rgb(0 0 0 / 20%), inset 0 1px rgb(255 255 255 / 5%);
+  }
+
+  .pdb-sidebar nav a {
+    min-height: 43px;
+    border-radius: 12px;
+    letter-spacing: -.01em;
+  }
+
+  .pdb-sidebar nav a[class*="bg-slate-800/90"] {
+    background: linear-gradient(105deg, rgb(240 0 145 / 20%), rgb(0 201 232 / 10%)) !important;
+    border: 1px solid rgb(240 0 145 / 45%) !important;
+    box-shadow: 0 8px 22px rgb(240 0 145 / 9%), inset 0 1px rgb(255 255 255 / 6%);
+  }
+
+  .pdb-sidebar nav a[class*="bg-slate-800/90"] svg {
+    color: #ff4db5 !important;
+    filter: drop-shadow(0 0 7px rgb(240 0 145 / 35%));
+  }
+
+  .pdb-sidebar nav a:not([class*="bg-slate-800/90"]):hover {
+    background: linear-gradient(90deg, rgb(0 201 232 / 9%), rgb(255 255 255 / 2%));
+    border-color: rgb(0 201 232 / 20%);
+  }
+
+  .pdb-sidebar nav a[class*="bg-slate-800/90"] > span:first-child {
+    background: linear-gradient(180deg, #f00091, #00c9e8);
+    box-shadow: 0 0 12px rgb(240 0 145 / 55%);
+  }
+
+  .pdb-sidebar > div:last-child {
+    background: linear-gradient(90deg, rgb(240 0 145 / 5%), rgb(0 201 232 / 4%)), #080b13;
+    border-top-color: rgb(255 255 255 / 9%);
+  }
+
+  .pdb-mobile-menu {
+    background: rgb(0 0 0 / 58%);
+    backdrop-filter: blur(12px);
+  }
+
+  .pdb-mobile-menu-panel {
+    background:
+      radial-gradient(ellipse at 0 0, rgb(240 0 145 / 12%), transparent 24rem),
+      radial-gradient(ellipse at 100% 45%, rgb(0 201 232 / 8%), transparent 22rem),
+      #080b13;
+    border-bottom-color: rgb(0 201 232 / 22%);
+    box-shadow: 0 24px 55px rgb(0 0 0 / 45%);
+  }
+
+  .pdb-mobile-menu-panel a[class*="bg-slate-800/90"] {
+    background: linear-gradient(105deg, rgb(240 0 145 / 20%), rgb(0 201 232 / 10%)) !important;
+    border-color: rgb(240 0 145 / 45%) !important;
+  }
+
+  .pdb-mobile-nav {
+    background:
+      linear-gradient(90deg, rgb(240 0 145 / 8%), transparent 48%, rgb(0 201 232 / 8%)),
+      rgb(7 10 18 / 96%);
+    border-top-color: rgb(0 201 232 / 22%);
+    box-shadow: 0 -12px 36px rgb(0 0 0 / 34%);
+  }
+
+  .pdb-mobile-nav a.text-lime-400 {
+    color: #ff4db5;
+  }
+
+  .pdb-mobile-nav a > span:first-child {
+    background: linear-gradient(90deg, #f00091, #00c9e8);
+  }
+}
+
+@media (max-width: 767px) {
+  .pdb-header { height: 60px; }
+  .pdb-mobile-menu-panel { border-radius: 0 0 22px 22px; }
+}
