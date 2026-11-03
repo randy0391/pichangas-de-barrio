@@ -30,14 +30,14 @@ export const useMembers = (page = 1, search = '', limit = 15, filters?: MemberFi
   });
 };
 
-export const useAllMembers = () => {
+export interface MemberStats { total: number; admins: number; jugadores: number; porteros: number; pendientes: number; inactivos: number; activos: number; }\n\nexport const useMemberStats = () => {\n  return useQuery({\n    queryKey: ['member-stats'],\n    queryFn: async () => {\n      const { data } = await api.get<{ stats: MemberStats }>('/members/stats');\n      return data.stats;\n    },\n    staleTime: 1000 * 30,\n  });\n};\n\nexport const useAllMembers = (enabled = true) => {
   return useQuery({
     queryKey: ['members', 'all'],
     queryFn: async () => {
       const { data } = await api.get<{ data: User[] }>('/members?all=true');
       return data.data || [];
     },
-    staleTime: 1000 * 60 * 3,
+    staleTime: 1000 * 60 * 3,\n    enabled,
   });
 };
 
