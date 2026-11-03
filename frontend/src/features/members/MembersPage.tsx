@@ -36,13 +36,13 @@ export const MembersPage = () => {
     };
 
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
+        <div className="space-y-8 pb-10">
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="relative isolate flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8 overflow-hidden rounded-[2rem] border border-white/10 bg-[#080D1B] p-6 shadow-2xl shadow-black/20 sm:p-8">
                 <div>
                     <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2">
-                        Plantel <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-lime-500">Oficial</span>
+                        Plantel <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F00091] via-[#00C9E8] to-[#A5E900]">Oficial</span>
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium">Conoce a los jugadores que sudan la camiseta.</p>
+                    <p className="text-slate-400 font-medium">Conoce a los jugadores que sudan la camiseta.</p><div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#00C9E8]/25 bg-[#00C9E8]/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-[#58E5F5]"><Sparkles size={12} /> Comunidad Pichangas de Barrio</div>
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
@@ -52,13 +52,13 @@ export const MembersPage = () => {
                             placeholder="Buscar jugador..." 
                             value={search} 
                             onChange={e => setSearch(e.target.value)} 
-                            className="pl-10 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 rounded-xl focus-visible:ring-primary"
+                            className="pl-10 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 h-12 rounded-xl focus-visible:ring-[#00C9E8]"
                         />
                     </div>
                     <div className="relative">
                         <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <select 
-                            className="w-full sm:w-48 pl-10 pr-4 h-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-primary appearance-none cursor-pointer"
+                            className="w-full sm:w-48 pl-10 pr-4 h-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-[#00C9E8] appearance-none cursor-pointer"
                             value={position} 
                             onChange={e => setPosition(e.target.value)}
                         >
@@ -83,11 +83,11 @@ export const MembersPage = () => {
                         {/* Player Card Layout */}
                         <div 
                             onClick={() => setSelectedPlayer(m)}
-                            className="group relative bg-white dark:bg-slate-900 rounded-3xl p-1 overflow-hidden shadow-xl hover:shadow-[0_0_30px_rgba(0,210,255,0.2)] transition-all duration-300 cursor-pointer"
+                            className="group relative bg-white dark:bg-[#101827] rounded-3xl p-1 overflow-hidden shadow-xl hover:shadow-[0_0_34px_rgba(0,201,232,0.16)] transition-all duration-300 cursor-pointer"
                             title="Clic para ver Carta FUT 3D"
                         >
                             {/* Glowing border effect on hover */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#F00091] via-[#00C9E8] to-[#A5E900] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
                             
                             <div className="relative h-full bg-slate-50 dark:bg-[#0b1221] rounded-[1.4rem] p-6 flex flex-col items-center text-center z-10 border border-slate-200 dark:border-slate-800 group-hover:border-transparent">
                                 
@@ -103,7 +103,7 @@ export const MembersPage = () => {
 
                                 {/* Avatar */}
                                 <div className="mt-8 mb-4 relative">
-                                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-200 dark:border-slate-800 group-hover:border-primary transition-colors bg-slate-200 dark:bg-slate-800 flex items-center justify-center shrink-0 aspect-square">
+                                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-200 dark:border-slate-800 group-hover:border-[#00C9E8] transition-colors bg-slate-200 dark:bg-slate-800 flex items-center justify-center shrink-0 aspect-square">
                                         {m.avatar ? (
                                             <img loading="lazy" src={m.avatar} alt={m.name} className="w-full h-full object-cover shrink-0" />
                                         ) : (
@@ -125,7 +125,7 @@ export const MembersPage = () => {
                                     </p>
                                 )}
 
-                                <span className="mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-black uppercase tracking-wider group-hover:bg-amber-400 group-hover:text-slate-950 transition-all">
+                                <span className="mt-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F00091]/10 border border-[#F00091]/25 text-[#F00091] text-[10px] font-black uppercase tracking-wider group-hover:bg-[#F00091] group-hover:text-white transition-all">
                                     <Sparkles size={11} /> Ver Carta FUT 3D
                                 </span>
                             </div>
