@@ -107,9 +107,9 @@ class MemberController extends Controller
             ->selectRaw("SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) as admins")
             ->selectRaw("SUM(CASE WHEN role = 'member' THEN 1 ELSE 0 END) as jugadores")
             ->selectRaw("SUM(CASE WHEN LOWER(COALESCE(position, '')) = 'portero' THEN 1 ELSE 0 END) as porteros")
-            ->selectRaw("SUM(CASE WHEN is_approved = 0 OR is_approved IS NULL THEN 1 ELSE 0 END) as pendientes")
+            ->selectRaw("SUM(CASE WHEN is_approved IS FALSE OR is_approved IS NULL THEN 1 ELSE 0 END) as pendientes")
             ->selectRaw("SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactivos")
-            ->selectRaw("SUM(CASE WHEN status = 'active' AND is_approved = 1 THEN 1 ELSE 0 END) as activos")
+            ->selectRaw("SUM(CASE WHEN status = 'active' AND is_approved IS TRUE THEN 1 ELSE 0 END) as activos")
             ->first();
 
         return response()->json([
