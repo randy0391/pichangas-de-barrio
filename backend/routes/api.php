@@ -55,7 +55,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Members
     Route::get('/members', [MemberController::class, 'index']);
-    Route::get('/members/{id}', [MemberController::class, 'show']);
+    Route::get('/members/stats', [MemberController::class, 'stats'])->middleware('admin');
+    Route::get('/members/{id}', [MemberController::class, 'show'])->whereNumber('id');
 
     // Dashboard
     Route::get('/dashboard/user', [DashboardController::class, 'userDashboard']);

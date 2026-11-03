@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useMembers, useUpdateMember, useDeleteMember, useAllMembers } from '@/hooks/useMembers';
+import { useMembers, useUpdateMember, useDeleteMember, useAllMembers, useMemberStats } from '@/hooks/useMembers';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { User } from '@/types';
@@ -36,20 +36,10 @@ export const AdminMembersPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterTab, setFilterTab] = useState<'todos' | 'jugadores' | 'admins' | 'porteros' | 'pendientes' | 'inactivos'>('todos');
 
-    const { data: allMembers = [] } = useAllMembers();
-
-    // Métricas globales calculadas sobre la totalidad de miembros registrados
-    const stats = useMemo(() => {
-        const total = allMembers.length;
-        const admins = allMembers.filter(m => m.role === 'admin').length;
-        const jugadores = allMembers.filter(m => m.role === 'member').length;
-        const porteros = allMembers.filter(m => (m.position || '').toLowerCase() === 'portero').length;
-        const pendientes = allMembers.filter(m => !m.is_approved || String(m.is_approved) === 'false' || String(m.is_approved) === '0').length;
-        const inactivos = allMembers.filter(m => m.status === 'inactive').length;
-        const activos = allMembers.filter(m => m.status === 'active' && (m.is_approved === true || String(m.is_approved) === 'true' || String(m.is_approved) === '1')).length;
-
-        return { total, admins, jugadores, porteros, pendientes, inactivos, activos };
-    }, [allMembers]);
+    // Los indicadores se calculan en el servidor y solo devuelven totales.
+    const { data: stats = { total: 0, admins: 0, jugadores: 0, porteros: 0, pendientes: 0, inactivos: 0, activos: 0 } } = useMemberStats();
+    // La lista completa solo se solicita cuando el administrador quiere copiar contactos.
+    const { refetch: fetchAllMembers, isFetching: isFetchingAllMembers } = useAllMembers(false);
 
     // Filtros activos para enviar al backend
     const currentFilters = useMemo(() => {
@@ -122,49 +112,40 @@ export const AdminMembersPage = () => {
     };
 
     // Copiar lista completa de teléfonos usando allMembers (los 150+ miembros)
-    const copyContactsList = () => {
-        let targetList = [...allMembers];
+    const copyContactsList = async () => {
+        try {
+            const { data: allMembers = [] } = await fetchAllMembers();
+            let targetList = [...allMembers];
+            if (filterTab === 'jugadores') targetList = targetList.filter(m => m.role === 'member');
+            else if (filterTab === 'admins') targetList = targetList.filter(m => m.role === 'admin');
+            else if (filterTab === 'porteros') targetList = targetList.filter(m => (m.position || '').toLowerCase() === 'portero');
+            else if (filterTab === 'pendientes') targetList = targetList.filter(m => !m.is_approved || String(m.is_approved) === 'false' || String(m.is_approved) === '0');
+            else if (filterTab === 'inactivos') targetList = targetList.filter(m => m.status === 'inactive');
 
-        // Aplicar filtro de tab activo
-        if (filterTab === 'jugadores') {
-            targetList = targetList.filter(m => m.role === 'member');
-        } else if (filterTab === 'admins') {
-            targetList = targetList.filter(m => m.role === 'admin');
-        } else if (filterTab === 'porteros') {
-            targetList = targetList.filter(m => (m.position || '').toLowerCase() === 'portero');
-        } else if (filterTab === 'pendientes') {
-            targetList = targetList.filter(m => !m.is_approved || String(m.is_approved) === 'false' || String(m.is_approved) === '0');
-        } else if (filterTab === 'inactivos') {
-            targetList = targetList.filter(m => m.status === 'inactive');
-        }
-
-        // Aplicar búsqueda si existe
-        if (searchQuery.trim()) {
-            const q = searchQuery.toLowerCase().trim();
-            targetList = targetList.filter(m => {
-                const fullName = `${m.nombres || ''} ${m.apellido_paterno || ''} ${m.apellido_materno || ''} ${m.name || ''}`.toLowerCase();
-                const phone = (m.phone || '').toLowerCase();
-                const dni = (m.dni || '').toLowerCase();
-                const nickname = (m.nickname || '').toLowerCase();
-                return fullName.includes(q) || phone.includes(q) || dni.includes(q) || nickname.includes(q);
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase().trim();
+                targetList = targetList.filter(m => {
+                    const fullName = `${m.nombres || ''} ${m.apellido_paterno || ''} ${m.apellido_materno || ''} ${m.name || ''}`.toLowerCase();
+                    return fullName.includes(q) || (m.phone || '').toLowerCase().includes(q) ||
+                        (m.dni || '').toLowerCase().includes(q) || (m.nickname || '').toLowerCase().includes(q);
+                });
+            }
+            const withPhone = targetList.filter(m => m.phone && m.phone.trim().length >= 6);
+            if (!withPhone.length) {
+                toast.info('No se encontraron teléfonos para copiar con este filtro');
+                return;
+            }
+            const lines = withPhone.map((m, idx) => {
+                const name = (m.full_name || `${m.nombres || ''} ${m.apellido_paterno || ''}`.trim() || m.name || 'Sin nombre').trim();
+                const nickname = m.nickname ? ` "${m.nickname}"` : '';
+                return `${idx + 1}. ${name}${nickname}: ${m.phone}`;
             });
+            const tabLabel = filterTab === 'todos' ? 'Todos los Miembros' : filterTab.toUpperCase();
+            await navigator.clipboard.writeText(`📲 Directorio Telefónico (${tabLabel} - ${withPhone.length} contactos) - Pichangas de Barrio:\n\n${lines.join('\n')}`);
+            toast.success(`¡${withPhone.length} teléfonos copiados al portapapeles!`);
+        } catch {
+            toast.error('No se pudo cargar o copiar el directorio de contactos');
         }
-
-        const withPhone = targetList.filter(m => m.phone && m.phone.trim().length >= 6);
-        if (withPhone.length === 0) {
-            toast.info('No se encontraron teléfonos para copiar con este filtro');
-            return;
-        }
-
-        const lines = withPhone.map((m, idx) => {
-            const name = (m.full_name || `${m.nombres || ''} ${m.apellido_paterno || ''}`.trim() || m.name || 'Sin nombre').trim();
-            const nickname = m.nickname ? ` "${m.nickname}"` : '';
-            return `${idx + 1}. ${name}${nickname}: ${m.phone}`;
-        });
-
-        const tabLabel = filterTab === 'todos' ? 'Todos los Miembros' : filterTab.toUpperCase();
-        navigator.clipboard.writeText(`📲 Directorio Telefónico (${tabLabel} - ${withPhone.length} contactos) - Pichangas de Barrio:\n\n${lines.join('\n')}`);
-        toast.success(`¡${withPhone.length} teléfonos copiados al portapapeles!`);
     };
 
     return (
@@ -182,10 +163,11 @@ export const AdminMembersPage = () => {
                 <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                     <Button 
                         onClick={copyContactsList}
+                        disabled={isFetchingAllMembers}
                         variant="outline"
                         className="h-12 px-4 rounded-xl border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs uppercase tracking-wider flex items-center gap-2"
                     >
-                        <Copy size={16} /> Copiar Teléfonos
+                        <Copy size={16} /> {isFetchingAllMembers ? 'Cargando contactos...' : 'Copiar Teléfonos'}
                     </Button>
                     <Button 
                         onClick={openCreate} 
@@ -208,7 +190,7 @@ export const AdminMembersPage = () => {
                         <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Habilitados</p>
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     </div>
-                    <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{stats.activos || stats.total}</p>
+                    <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{stats.activos}</p>
                     <p className="text-xs text-slate-400">Jugadores activos</p>
                 </div>
                 <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-amber-500/20 shadow-md">
