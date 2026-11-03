@@ -150,12 +150,7 @@ class MemberController extends Controller
             'nickname' => 'nullable|string|max:50',
         ]);
 
-        if (isset($validated['dni']) && $validated['dni'] !== $user->dni) {
-            if (empty($validated['position'])) $validated['position'] = null;
-        if (empty($validated['jersey_number'])) $validated['jersey_number'] = null;
-        $validated['password'] = \Illuminate\Support\Facades\Hash::make($validated['dni']); // Update password if DNI changes
-        }
-
+        // Changing a DNI must never reset the account password to a predictable value.
         if (isset($validated['is_approved'])) {
             $validated['is_approved'] = $validated['is_approved'] ? 'true' : 'false';
         }
