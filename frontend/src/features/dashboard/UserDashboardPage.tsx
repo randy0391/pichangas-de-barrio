@@ -62,7 +62,7 @@ export const UserDashboardPage = () => {
                 <div className="absolute right-0 top-0 w-80 h-full bg-[#A5E900]/5 -skew-x-12 transform origin-top pointer-events-none"></div>
                 <div className="relative z-10 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
                     <div className="relative">
-                        <div className="w-20 h-20 sm:w-22 sm:h-22 bg-slate-800 rounded-2xl border-2 border-[#A5E900]/50 flex items-center justify-center overflow-hidden shadow-lg shadow-lime-400/10 cursor-pointer" onClick={() => setShowFutModal(true)} title="Clic para ver tu Carta FUT">
+                        <div className="w-20 h-20 sm:w-22 sm:h-22 bg-slate-800 rounded-2xl border-2 border-[#A5E900]/50 flex items-center justify-center overflow-hidden shadow-lg shadow-[#A5E900]/10 cursor-pointer" onClick={() => setShowFutModal(true)} title="Clic para ver tu Carta FUT">
                             {user?.avatar ? (
                                 <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                             ) : (
@@ -108,7 +108,7 @@ export const UserDashboardPage = () => {
                         </Button>
                     </Link>
                     <Link to="/convocatorias">
-                        <Button className="bg-[#A5E900] hover:bg-[#C8F34A] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-1.5 shadow-lime-400/20">
+                        <Button className="bg-[#A5E900] hover:bg-[#C8F34A] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-1.5 shadow-[#A5E900]/20">
                             <Trophy className="w-4 h-4" /> Convocatorias
                         </Button>
                     </Link>
