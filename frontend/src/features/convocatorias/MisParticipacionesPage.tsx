@@ -22,7 +22,7 @@ export const MisParticipacionesPage = () => {
                     <p className="text-slate-500 dark:text-slate-400">Historial de partidos en los que te has inscrito o participado.</p>
                 </div>
                 <Link to="/convocatorias">
-                    <Button className="bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-1.5">
+                    <Button className="bg-[#A5E900] hover:bg-[#C8F34A] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-1.5">
                         <Trophy className="w-4 h-4" /> Ver Convocatorias Disponibles
                     </Button>
                 </Link>
@@ -33,7 +33,7 @@ export const MisParticipacionesPage = () => {
                     <Trophy className="w-12 h-12 text-slate-400 mx-auto opacity-60" />
                     <p className="text-slate-500 text-lg">Aún no te has inscrito a ninguna convocatoria.</p>
                     <Link to="/convocatorias">
-                        <Button className="bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl">
+                        <Button className="bg-[#A5E900] hover:bg-[#C8F34A] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl">
                             Explorar Próximas Pichangas
                         </Button>
                     </Link>
@@ -48,14 +48,14 @@ export const MisParticipacionesPage = () => {
                         return (
                             <Link to={`/convocatorias/${c.id}`} key={c.id} className="block group">
                                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
-                                    className={`rounded-3xl border shadow-lg overflow-hidden transition-all group-hover:-translate-y-1 ${isConfirmed ? 'bg-white dark:bg-slate-900 border-lime-200 dark:border-lime-900/50 group-hover:border-lime-400/80 shadow-lime-500/5' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 opacity-80'}`}
+                                    className={`rounded-3xl border shadow-lg overflow-hidden transition-all group-hover:-translate-y-1 ${isConfirmed ? 'bg-white dark:bg-slate-900 border-lime-200 dark:border-lime-900/50 group-hover:border-[#A5E900]/80 shadow-lime-500/5' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 opacity-80'}`}
                                 >
-                                    <div className={`h-2 w-full ${isConfirmed ? 'bg-gradient-to-r from-lime-400 to-lime-500' : 'bg-slate-300 dark:bg-slate-700'}`}></div>
+                                    <div className={`h-2 w-full ${isConfirmed ? 'bg-gradient-to-r from-[#A5E900] to-lime-500' : 'bg-slate-300 dark:bg-slate-700'}`}></div>
                                     <div className="p-6">
                                         <div className="flex justify-between items-start mb-4">
-                                            <h3 className="text-xl font-black text-slate-900 dark:text-white leading-tight group-hover:text-lime-400 transition-colors">{c.title}</h3>
+                                            <h3 className="text-xl font-black text-slate-900 dark:text-white leading-tight group-hover:text-[#A5E900] transition-colors">{c.title}</h3>
                                             {isConfirmed ? (
-                                                <div className="bg-lime-100 text-lime-700 dark:bg-lime-900/30 dark:text-lime-400 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 uppercase tracking-wider">
+                                                <div className="bg-lime-100 text-lime-700 dark:bg-lime-900/30 dark:text-[#A5E900] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 uppercase tracking-wider">
                                                     <CheckCircle2 size={14} /> Confirmado
                                                 </div>
                                             ) : (
