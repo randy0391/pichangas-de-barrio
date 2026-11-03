@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/authStore';
 import {
   LayoutDashboard, Trophy, Users, User, Image, AlertCircle,
   History, Newspaper, CalendarDays, Wallet, ClipboardCheck,
-  LogOut, Menu, X, ChevronRight, ShieldCheck, Sparkles, Award
+  LogOut, Menu, X, ChevronRight, PanelLeftClose, PanelLeftOpen, ShieldCheck, Sparkles, Award
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
@@ -96,6 +96,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
   const navigate = useNavigate();
   const { user, isLoading, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const mobileTabs = user?.role === 'admin' ? adminMobileTabs : userMobileTabs;
 
@@ -277,7 +278,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-40 pt-16">
           <div className="absolute inset-0 bg-black/75 backdrop-blur-md" onClick={() => setMobileMenuOpen(false)}></div>
-          <div className="relative bg-[#060913] border-b border-slate-800 max-h-[85vh] overflow-y-auto shadow-2xl">
+          <div className="absolute left-0 top-16 bottom-0 w-[min(88vw,360px)] bg-[#080d19] border-r border-cyan-400/20 overflow-y-auto shadow-2xl">
             <div className="p-4 space-y-4">
               {/* Mobile User Profile Card */}
               <Link
@@ -366,7 +367,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                   className="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 font-bold text-sm w-full transition-all"
                 >
                   <LogOut className="h-4.5 w-4.5" />
-                  <span>Cerrar Sesión</span>
+                  {!sidebarCollapsed && <span>Cerrar Sesión</span>}
                 </button>
               </div>
             </div>
@@ -377,12 +378,13 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
       {/* ===== Main Content Area ===== */}
       <div className="flex-grow flex pt-16 pb-16 md:pb-0">
         {/* ===== Desktop Sidebar ===== */}
-        <aside className="pdb-sidebar w-64 bg-[#060913]/98 backdrop-blur-2xl border-r border-slate-800/80 hidden md:flex flex-col shrink-0 fixed top-16 bottom-0 left-0 z-30 overflow-y-auto">
-          <div className="p-3.5 flex-grow">
+        <aside className={cn("pdb-sidebar bg-[#080d19] border-r border-cyan-400/15 hidden md:flex flex-col shrink-0 fixed top-16 bottom-0 left-0 z-30 overflow-y-auto transition-all duration-300", sidebarCollapsed ? "w-[84px]" : "w-64")}>
+          <div className={cn("py-3 flex-grow", sidebarCollapsed ? "px-2" : "px-3.5")}>
+            <div className={cn("flex mb-4", sidebarCollapsed ? "justify-center" : "justify-end")}><button type="button" onClick={() => setSidebarCollapsed(v => !v)} className="h-9 w-9 flex items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 hover:text-cyan-300 hover:border-cyan-400/40 transition-all" aria-label={sidebarCollapsed ? "Expandir menú" : "Contraer menú"} title={sidebarCollapsed ? "Expandir menú" : "Contraer menú"}>{sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}</button></div>
             {/* VIP Club Member Card at Top of Sidebar */}
             <Link 
               to="/perfil"
-              className="flex items-center space-x-3 p-3 bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-slate-950 border border-slate-800 hover:border-lime-400/40 rounded-2xl mb-4 shadow-lg relative group transition-all duration-300"
+              className={cn("flex items-center p-3 bg-gradient-to-br from-[#111c2e] to-[#0b1220] border border-white/10 hover:border-cyan-400/40 rounded-2xl mb-4 shadow-lg relative group transition-all duration-300", sidebarCollapsed ? "justify-center" : "space-x-3")}
               title="Ver mi perfil"
             >
               {/* Subtle neon glow on card corner */}
@@ -399,8 +401,8 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                 <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#060913] shadow-[0_0_6px_#10b981]"></span>
               </div>
               
-              <div className="min-w-0 flex-1">
-                <p className="font-black text-white text-sm leading-tight group-hover:text-lime-300 transition-colors truncate">
+              {!sidebarCollapsed && <div className="min-w-0 flex-1">
+                <p className="font-black text-white text-sm leading-tight group-hover:text-cyan-300 transition-colors truncate">
                   {displayName}
                 </p>
                 {user.nickname ? (
@@ -430,9 +432,9 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                     )}
                   </span>
                 </div>
-              </div>
+              </div>}
 
-              <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-lime-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+              {!sidebarCollapsed && <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all shrink-0" />}
             </Link>
             
             {/* Nav sections */}
@@ -440,10 +442,9 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
               {sections.map((section) => (
                 <div key={section.title} className="space-y-1">
                   {/* Modern Section Header */}
-                  <div className="flex items-center space-x-2 px-3 pt-2 pb-1">
+                  <div className={cn("flex items-center space-x-2 pt-2 pb-1", sidebarCollapsed ? "justify-center" : "px-3")}>
                     <span className="w-1.5 h-1.5 rounded-full bg-lime-400/70 shadow-[0_0_6px_#a3e635]"></span>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{section.title}</p>
-                    <div className="flex-1 h-[1px] bg-gradient-to-r from-slate-800 to-transparent"></div>
+                    {!sidebarCollapsed && <><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{section.title}</p><div className="flex-1 h-px bg-gradient-to-r from-slate-700 to-transparent"></div></>}
                   </div>
 
                   {/* Links */}
@@ -455,11 +456,13 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                         <Link
                           key={link.path}
                           to={link.path}
+                          title={sidebarCollapsed ? link.name : undefined}
                           className={cn(
-                            'relative flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-bold text-[13px] tracking-wide transition-all duration-200 group',
+                            'relative flex items-center rounded-xl font-bold text-[13px] tracking-wide transition-all duration-200 group border',
+                            sidebarCollapsed ? 'justify-center w-12 mx-auto py-3' : 'space-x-3 px-3.5 py-2.5',
                             active
-                              ? 'bg-slate-800/90 text-white border border-lime-400/40 shadow-[0_0_16px_rgba(163,230,53,0.12)]'
-                              : 'text-slate-400 hover:text-white hover:bg-slate-900/70 hover:border hover:border-slate-800 border border-transparent'
+                              ? 'bg-gradient-to-r from-fuchsia-500/15 to-cyan-400/10 text-white border-fuchsia-400/40 shadow-[inset_3px_0_0_#f00091,0_8px_22px_rgba(0,0,0,.18)]'
+                              : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5 hover:border-white/10'
                           )}
                         >
                           {/* Active Neon Bar Indicator */}
@@ -476,15 +479,15 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                           )} />
 
                           {/* Text */}
-                          <span className="truncate flex-1">{link.name}</span>
+                          {!sidebarCollapsed && <span className="truncate flex-1">{link.name}</span>}
 
                           {/* Badge or chevron */}
                           {link.badge ? (
                             <span className="bg-red-500 text-white text-[10px] font-black rounded-full px-2 py-0.5 leading-none shadow-[0_0_10px_rgba(239,68,68,0.6)] animate-pulse">
                               {link.badge}
                             </span>
-                          ) : active ? (
-                            <ChevronRight className="h-3.5 w-3.5 text-lime-400/80 shrink-0" />
+                          ) : active && !sidebarCollapsed ? (
+                            <ChevronRight className="h-3.5 w-3.5 text-cyan-300 shrink-0" />
                           ) : null}
                         </Link>
                       );
@@ -496,15 +499,15 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
           </div>
           
           {/* Sidebar footer */}
-          <div className="p-3.5 border-t border-slate-800/80 bg-slate-950/40">
+          <div className={cn("border-t border-white/10 bg-black/20", sidebarCollapsed ? "p-2" : "p-3.5")}>
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all font-bold text-xs uppercase tracking-wider w-full group"
+              className={cn("flex items-center rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all font-bold text-xs uppercase tracking-wider w-full group", sidebarCollapsed ? "justify-center p-3" : "space-x-3 px-3.5 py-2.5")} title="Cerrar Sesión"
             >
               <LogOut className="h-[18px] w-[18px] text-slate-400 group-hover:text-red-400 group-hover:-translate-x-0.5 transition-all" />
               <span>Cerrar Sesión</span>
             </button>
-            <div className="px-3 pt-3 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+            <div className={cn("px-3 pt-3 items-center justify-between text-[10px] text-slate-500 font-mono", sidebarCollapsed ? "hidden" : "flex")}>
               <span>PDB FC • 2026</span>
               <span className="text-lime-400 font-bold flex items-center gap-1">
                 <Sparkles className="w-3 h-3" /> CLUB
@@ -514,7 +517,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
         </aside>
 
         {/* ===== Page Content ===== */}
-        <main className="pdb-main flex-grow md:ml-64 overflow-x-hidden relative min-w-0">
+        <main className={cn("pdb-main flex-grow overflow-x-hidden relative min-w-0 transition-all duration-300", sidebarCollapsed ? "md:ml-[84px]" : "md:ml-64")}>
           {/* Subtle grid background */}
           <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
           
