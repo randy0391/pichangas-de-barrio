@@ -162,7 +162,8 @@ export const AdminMembersPage = () => {
                 </div>
                 <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                     <Button 
-                        onClick={copyContactsList}\n                        disabled={isFetchingAllMembers}\n                        disabled={isFetchingAllMembers}
+                        onClick={copyContactsList}
+                        disabled={isFetchingAllMembers}
                         variant="outline"
                         className="h-12 px-4 rounded-xl border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs uppercase tracking-wider flex items-center gap-2"
                     >
