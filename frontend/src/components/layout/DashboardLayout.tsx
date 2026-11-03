@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/authStore';
 import {
   LayoutDashboard, Trophy, Users, User, Image, AlertCircle,
   History, Newspaper, CalendarDays, Wallet, ClipboardCheck,
-  LogOut, Menu, X, ChevronRight, ShieldCheck, Sparkles, Award
+  LogOut, Menu, X, ChevronRight, PanelLeftOpen, PanelLeftClose, ShieldCheck, Sparkles, Award
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
@@ -96,7 +96,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
   const navigate = useNavigate();
   const { user, isLoading, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [sidebarExpandedAll, setSidebarExpandedAll] = useState(false);
 
   const mobileTabs = user?.role === 'admin' ? adminMobileTabs : userMobileTabs;
 
@@ -379,16 +379,26 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
       <div className="flex-grow flex pt-16 pb-16 md:pb-0">
         {/* ===== Desktop Sidebar ===== */}
         <aside
-          onMouseEnter={() => setSidebarCollapsed(false)}
-          onMouseLeave={() => setSidebarCollapsed(true)}
-          className={cn("pdb-sidebar bg-[#080d19] border-r border-cyan-400/15 hidden md:flex flex-col shrink-0 fixed top-16 bottom-0 left-0 z-30 overflow-y-auto transition-all duration-300", sidebarCollapsed ? "w-[84px]" : "w-64")}
+          onMouseLeave={() => setSidebarExpandedAll(false)}
+          className={cn("pdb-sidebar bg-[#080d19] border-r border-cyan-400/15 hidden md:flex flex-col shrink-0 fixed top-16 bottom-0 left-0 z-30 overflow-y-auto transition-all duration-300", sidebarExpandedAll ? "w-64" : "w-[84px]")}
         >
-          <div className={cn("py-3 flex-grow", sidebarCollapsed ? "px-2" : "px-3.5")}>
+          <div className={cn("py-3 flex-grow", sidebarExpandedAll ? "px-3.5" : "px-2")}>
+            <div className={cn("flex mb-4", sidebarExpandedAll ? "justify-end" : "justify-center")}>
+              <button
+                type="button"
+                onClick={() => setSidebarExpandedAll(true)}
+                className="h-10 w-10 flex items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300 hover:bg-cyan-400/20 hover:border-cyan-300/50 transition-all"
+                aria-label="Expandir todo el menú"
+                title="Expandir todo el menú"
+              >
+                <PanelLeftOpen className="h-5 w-5" />
+              </button>
+            </div>
 
             {/* VIP Club Member Card at Top of Sidebar */}
             <Link 
               to="/perfil"
-              className={cn("flex items-center p-3 bg-gradient-to-br from-[#111c2e] to-[#0b1220] border border-white/10 hover:border-cyan-400/40 rounded-2xl mb-4 shadow-lg relative group transition-all duration-300", sidebarCollapsed ? "justify-center" : "space-x-3")}
+              className={cn("flex items-center p-3 bg-gradient-to-br from-[#111c2e] to-[#0b1220] border border-white/10 hover:border-cyan-400/40 rounded-2xl mb-4 shadow-lg relative group transition-all duration-300", sidebarExpandedAll ? "space-x-3" : "justify-center")}
               title="Ver mi perfil"
             >
               {/* Subtle neon glow on card corner */}
@@ -405,7 +415,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                 <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#060913] shadow-[0_0_6px_#10b981]"></span>
               </div>
               
-              {!sidebarCollapsed && <div className="min-w-0 flex-1">
+              {sidebarExpandedAll && <div className="min-w-0 flex-1">
                 <p className="font-black text-white text-sm leading-tight group-hover:text-cyan-300 transition-colors truncate">
                   {displayName}
                 </p>
@@ -438,7 +448,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                 </div>
               </div>}
 
-              {!sidebarCollapsed && <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all shrink-0" />}
+              {sidebarExpandedAll && <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all shrink-0" />}
             </Link>
             
             {/* Nav sections */}
@@ -446,9 +456,9 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
               {sections.map((section) => (
                 <div key={section.title} className="space-y-1">
                   {/* Modern Section Header */}
-                  <div className={cn("flex items-center space-x-2 pt-2 pb-1", sidebarCollapsed ? "justify-center" : "px-3")}>
+                  <div className={cn("flex items-center space-x-2 pt-2 pb-1", sidebarExpandedAll ? "px-3" : "justify-center")}>
                     <span className="w-1.5 h-1.5 rounded-full bg-lime-400/70 shadow-[0_0_6px_#a3e635]"></span>
-                    {!sidebarCollapsed && <><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{section.title}</p><div className="flex-1 h-px bg-gradient-to-r from-slate-700 to-transparent"></div></>}
+                    {sidebarExpandedAll && <><p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{section.title}</p><div className="flex-1 h-px bg-gradient-to-r from-slate-700 to-transparent"></div></>}
                   </div>
 
                   {/* Links */}
@@ -460,11 +470,11 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                         <Link
                           key={link.path}
                           to={link.path}
-                          onClick={() => setSidebarCollapsed(true)}
+                          onClick={() => setSidebarExpandedAll(false)}
                           title={sidebarCollapsed ? link.name : undefined}
                           className={cn(
                             'relative flex items-center rounded-xl font-bold text-[13px] tracking-wide transition-all duration-200 group border',
-                            sidebarCollapsed ? 'justify-center w-12 mx-auto py-3' : 'space-x-3 px-3.5 py-2.5',
+                            sidebarExpandedAll ? 'space-x-3 px-3.5 py-2.5' : 'relative justify-center w-12 mx-auto py-3 hover:w-[230px] hover:justify-start hover:px-3.5 hover:shadow-xl hover:shadow-black/40 hover:z-40',
                             active
                               ? 'bg-gradient-to-r from-fuchsia-500/15 to-cyan-400/10 text-white border-fuchsia-400/40 shadow-[inset_3px_0_0_#f00091,0_8px_22px_rgba(0,0,0,.18)]'
                               : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5 hover:border-white/10'
@@ -484,14 +494,14 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                           )} />
 
                           {/* Text */}
-                          {!sidebarCollapsed && <span className="truncate flex-1">{link.name}</span>}
+                          <span className={cn("truncate flex-1", sidebarExpandedAll ? "" : "hidden group-hover:inline-flex")}>{link.name}</span>
 
                           {/* Badge or chevron */}
                           {link.badge ? (
                             <span className="bg-red-500 text-white text-[10px] font-black rounded-full px-2 py-0.5 leading-none shadow-[0_0_10px_rgba(239,68,68,0.6)] animate-pulse">
                               {link.badge}
                             </span>
-                          ) : active && !sidebarCollapsed ? (
+                          ) : active && sidebarExpandedAll ? (
                             <ChevronRight className="h-3.5 w-3.5 text-cyan-300 shrink-0" />
                           ) : null}
                         </Link>
@@ -504,15 +514,15 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
           </div>
           
           {/* Sidebar footer */}
-          <div className={cn("border-t border-white/10 bg-black/20", sidebarCollapsed ? "p-2" : "p-3.5")}>
+          <div className={cn("border-t border-white/10 bg-black/20", sidebarExpandedAll ? "p-3.5" : "p-2")}>
             <button
               onClick={handleLogout}
-              className={cn("flex items-center rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all font-bold text-xs uppercase tracking-wider w-full group", sidebarCollapsed ? "justify-center p-3" : "space-x-3 px-3.5 py-2.5")} title="Cerrar Sesión"
+              className={cn("flex items-center rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all font-bold text-xs uppercase tracking-wider w-full group", sidebarExpandedAll ? "space-x-3 px-3.5 py-2.5" : "justify-center p-3")} title="Cerrar Sesión"
             >
               <LogOut className="h-[18px] w-[18px] text-slate-400 group-hover:text-red-400 group-hover:-translate-x-0.5 transition-all" />
-              {!sidebarCollapsed && <span>Cerrar Sesión</span>}
+              {sidebarExpandedAll && <span>Cerrar Sesión</span>}
             </button>
-            <div className={cn("px-3 pt-3 items-center justify-between text-[10px] text-slate-500 font-mono", sidebarCollapsed ? "hidden" : "flex")}>
+            <div className={cn("px-3 pt-3 items-center justify-between text-[10px] text-slate-500 font-mono", sidebarExpandedAll ? "flex" : "hidden")}>
               <span>PDB FC • 2026</span>
               <span className="text-lime-400 font-bold flex items-center gap-1">
                 <Sparkles className="w-3 h-3" /> CLUB
@@ -522,7 +532,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
         </aside>
 
         {/* ===== Page Content ===== */}
-        <main className={cn("pdb-main flex-grow overflow-x-hidden relative min-w-0 transition-all duration-300", sidebarCollapsed ? "md:ml-[84px]" : "md:ml-64")}>
+        <main className={cn("pdb-main flex-grow overflow-x-hidden relative min-w-0 transition-all duration-300", sidebarExpandedAll ? "md:ml-64" : "md:ml-[84px]")}>
           {/* Subtle grid background */}
           <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
           
