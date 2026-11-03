@@ -471,7 +471,7 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
                           key={link.path}
                           to={link.path}
                           onClick={() => setSidebarExpandedAll(false)}
-                          title={sidebarCollapsed ? link.name : undefined}
+                          title={!sidebarExpandedAll ? link.name : undefined}
                           className={cn(
                             'relative flex items-center rounded-xl font-bold text-[13px] tracking-wide transition-all duration-200 group border',
                             sidebarExpandedAll ? 'space-x-3 px-3.5 py-2.5' : 'relative justify-center w-12 mx-auto py-3 hover:w-[230px] hover:justify-start hover:px-3.5 hover:shadow-xl hover:shadow-black/40 hover:z-40',
