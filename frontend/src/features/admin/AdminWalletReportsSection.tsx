@@ -140,10 +140,10 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 15;
 
-  // Fetch report data based on active filters (with seamless fallback to existing live endpoints)
-  const { data: response, isLoading, isFetching } = useQuery<ReportApiResponse>({
+  // Fetch report data directly from live production endpoints (instant 200 OK, zero console 404 errors)
+  const { data: response, isLoading, isFetching, refetch } = useQuery<ReportApiResponse>({
     queryKey: [
-      'admin-wallets-report',
+      'admin-wallets-report-live',
       activeSubTab,
       startDate,
       endDate,
@@ -151,35 +151,9 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
       withoutBalanceSubFilter,
       searchQuery
     ],
+    staleTime: 30000,
     queryFn: async () => {
-      const typeParam =
-        activeSubTab === 'recharges'
-          ? 'recharges_by_date'
-          : activeSubTab === 'with_balance'
-          ? 'with_balance'
-          : activeSubTab === 'without_balance'
-          ? 'without_balance'
-          : 'recharged_players';
-
-      try {
-        const res = await api.get('/admin/wallets/report', {
-          params: {
-            report_type: typeParam,
-            start_date: startDate || undefined,
-            end_date: endDate || undefined,
-            status: rechargeStatus !== 'all' ? rechargeStatus : undefined,
-            sub_filter: activeSubTab === 'without_balance' && withoutBalanceSubFilter !== 'all' ? withoutBalanceSubFilter : undefined,
-            search: searchQuery.trim() || undefined,
-          }
-        });
-        if (res.data && res.data.global_stats) {
-          return res.data;
-        }
-      } catch (err) {
-        // Fallback to client-side aggregation from live endpoints if backend endpoint is not yet live
-      }
-
-      // FALLBACK AGGREGATION FROM LIVE PRODUCTION ENDPOINTS
+      // Query directly from live production endpoints that are always available
       const [walletsRes, rechargesRes] = await Promise.all([
         api.get('/admin/wallets', { params: { all: true, per_page: 500 } }).catch(() => ({ data: { data: [] } })),
         api.get<any>('/admin/wallets/recharges', { params: { all: true, per_page: 1000 } }).catch(() => ({ data: { data: [] } }))
@@ -792,58 +766,152 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
         </div>
       </div>
 
-      {/* REPORT SUB-TABS SELECTOR */}
-      <div className="bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 flex flex-wrap gap-1.5 shadow-lg">
+      {/* REPORT SUB-TABS SELECTOR (Spacious 2x2 grid on mobile/tablet, 4x1 on desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        {/* Tab 1: Recargas por Fecha */}
         <button
           type="button"
           onClick={() => { setActiveSubTab('recharges'); setCurrentPage(1); }}
-          className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
+          className={`p-3 sm:p-4 rounded-2xl border transition-all text-left flex flex-col justify-between gap-2.5 relative overflow-hidden group shadow-lg ${
             activeSubTab === 'recharges'
-              ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              ? 'bg-gradient-to-br from-lime-400 to-lime-500 text-slate-950 border-lime-400 shadow-lime-400/20 ring-2 ring-lime-400/40'
+              : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-lime-500/40 hover:bg-slate-850'
           }`}
         >
-          <Calendar className="h-4 w-4" />
-          <span>1. Recargas por Fecha ({periodStats?.period_total_count ?? (activeSubTab === 'recharges' ? rawData.length : '')})</span>
+          <div className="flex items-center justify-between w-full">
+            <div className={`p-2 rounded-xl transition-colors ${
+              activeSubTab === 'recharges' ? 'bg-slate-950/15 text-slate-950' : 'bg-lime-400/10 text-lime-400'
+            }`}>
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-black tracking-wide ${
+              activeSubTab === 'recharges'
+                ? 'bg-slate-950 text-lime-400 shadow-sm'
+                : 'bg-slate-800 text-lime-400 border border-slate-700'
+            }`}>
+              {activeSubTab === 'recharges'
+                ? (periodStats?.period_total_count ?? rawData.length)
+                : (globalStats?.total_approved_recharges_count ?? 0)}
+            </span>
+          </div>
+          <div>
+            <p className="text-xs sm:text-sm font-black uppercase tracking-wider line-clamp-1">
+              1. Recargas por Fecha
+            </p>
+            <p className={`text-[11px] font-medium line-clamp-1 mt-0.5 ${
+              activeSubTab === 'recharges' ? 'text-slate-950/80 font-bold' : 'text-slate-400'
+            }`}>
+              Historial y comprobantes
+            </p>
+          </div>
         </button>
 
+        {/* Tab 2: Con Saldo Disponible */}
         <button
           type="button"
           onClick={() => { setActiveSubTab('with_balance'); setCurrentPage(1); }}
-          className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
+          className={`p-3 sm:p-4 rounded-2xl border transition-all text-left flex flex-col justify-between gap-2.5 relative overflow-hidden group shadow-lg ${
             activeSubTab === 'with_balance'
-              ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              ? 'bg-gradient-to-br from-emerald-400 to-emerald-500 text-slate-950 border-emerald-400 shadow-emerald-400/20 ring-2 ring-emerald-400/40'
+              : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-emerald-500/40 hover:bg-slate-850'
           }`}
         >
-          <TrendingUp className="h-4 w-4" />
-          <span>2. Jugadores Con Saldo ({globalStats?.players_with_balance_count ?? ''})</span>
+          <div className="flex items-center justify-between w-full">
+            <div className={`p-2 rounded-xl transition-colors ${
+              activeSubTab === 'with_balance' ? 'bg-slate-950/15 text-slate-950' : 'bg-emerald-400/10 text-emerald-400'
+            }`}>
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-black tracking-wide ${
+              activeSubTab === 'with_balance'
+                ? 'bg-slate-950 text-emerald-400 shadow-sm'
+                : 'bg-slate-800 text-emerald-400 border border-emerald-500/30'
+            }`}>
+              {globalStats?.players_with_balance_count ?? 0}
+            </span>
+          </div>
+          <div>
+            <p className="text-xs sm:text-sm font-black uppercase tracking-wider line-clamp-1">
+              2. Con Saldo
+            </p>
+            <p className={`text-[11px] font-medium line-clamp-1 mt-0.5 ${
+              activeSubTab === 'with_balance' ? 'text-slate-950/80 font-bold' : 'text-slate-400'
+            }`}>
+              Saldo a favor (&gt; S/ 0)
+            </p>
+          </div>
         </button>
 
+        {/* Tab 3: Sin Saldo / En Deuda */}
         <button
           type="button"
           onClick={() => { setActiveSubTab('without_balance'); setCurrentPage(1); }}
-          className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
+          className={`p-3 sm:p-4 rounded-2xl border transition-all text-left flex flex-col justify-between gap-2.5 relative overflow-hidden group shadow-lg ${
             activeSubTab === 'without_balance'
-              ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              ? 'bg-gradient-to-br from-rose-400 to-rose-500 text-slate-950 border-rose-400 shadow-rose-400/20 ring-2 ring-rose-400/40'
+              : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-rose-500/40 hover:bg-slate-850'
           }`}
         >
-          <AlertCircle className="h-4 w-4" />
-          <span>3. Jugadores Sin Saldo / En Deuda ({globalStats?.players_without_balance_count ?? ''})</span>
+          <div className="flex items-center justify-between w-full">
+            <div className={`p-2 rounded-xl transition-colors ${
+              activeSubTab === 'without_balance' ? 'bg-slate-950/15 text-slate-950' : 'bg-rose-400/10 text-rose-400'
+            }`}>
+              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-black tracking-wide ${
+              activeSubTab === 'without_balance'
+                ? 'bg-slate-950 text-rose-400 shadow-sm'
+                : 'bg-slate-800 text-rose-400 border border-rose-500/30'
+            }`}>
+              {globalStats?.players_without_balance_count ?? 0}
+            </span>
+          </div>
+          <div>
+            <p className="text-xs sm:text-sm font-black uppercase tracking-wider line-clamp-1">
+              3. Sin Saldo / Deuda
+            </p>
+            <p className={`text-[11px] font-medium line-clamp-1 mt-0.5 ${
+              activeSubTab === 'without_balance' ? 'text-slate-950/80 font-bold' : 'text-slate-400'
+            }`}>
+              Saldo S/ 0 y deudores
+            </p>
+          </div>
         </button>
 
+        {/* Tab 4: Todos los que Recargaron */}
         <button
           type="button"
           onClick={() => { setActiveSubTab('all_recharged'); setCurrentPage(1); }}
-          className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
+          className={`p-3 sm:p-4 rounded-2xl border transition-all text-left flex flex-col justify-between gap-2.5 relative overflow-hidden group shadow-lg ${
             activeSubTab === 'all_recharged'
-              ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              ? 'bg-gradient-to-br from-cyan-400 to-cyan-500 text-slate-950 border-cyan-400 shadow-cyan-400/20 ring-2 ring-cyan-400/40'
+              : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:border-cyan-500/40 hover:bg-slate-850'
           }`}
         >
-          <Trophy className="h-4 w-4" />
-          <span>4. Todos los que Recargaron ({globalStats?.unique_rechargers_count ?? ''})</span>
+          <div className="flex items-center justify-between w-full">
+            <div className={`p-2 rounded-xl transition-colors ${
+              activeSubTab === 'all_recharged' ? 'bg-slate-950/15 text-slate-950' : 'bg-cyan-400/10 text-cyan-400'
+            }`}>
+              <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-black tracking-wide ${
+              activeSubTab === 'all_recharged'
+                ? 'bg-slate-950 text-cyan-400 shadow-sm'
+                : 'bg-slate-800 text-cyan-400 border border-cyan-500/30'
+            }`}>
+              {globalStats?.unique_rechargers_count ?? 0}
+            </span>
+          </div>
+          <div>
+            <p className="text-xs sm:text-sm font-black uppercase tracking-wider line-clamp-1">
+              4. Recargadores
+            </p>
+            <p className={`text-[11px] font-medium line-clamp-1 mt-0.5 ${
+              activeSubTab === 'all_recharged' ? 'text-slate-950/80 font-bold' : 'text-slate-400'
+            }`}>
+              Ranking histórico total
+            </p>
+          </div>
         </button>
       </div>
 
@@ -976,6 +1044,16 @@ export const AdminWalletReportsSection: React.FC<AdminWalletReportsSectionProps>
               >
                 <Printer className="h-4 w-4" />
                 <span>Imprimir</span>
+              </Button>
+
+              <Button
+                type="button"
+                onClick={() => { refetch(); toast.info('Actualizando datos de billeteras...'); }}
+                variant="outline"
+                className="border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 font-bold text-xs p-2.5 rounded-xl flex items-center justify-center shrink-0"
+                title="Actualizar datos en tiempo real"
+              >
+                <RotateCcw className={`h-4 w-4 ${isFetching ? 'animate-spin text-lime-400' : ''}`} />
               </Button>
             </div>
           </div>
