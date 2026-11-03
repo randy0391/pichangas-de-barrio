@@ -280,7 +280,7 @@ export const ConvocatoriaDetailPage = () => {
                     <div className="flex flex-wrap items-center gap-2.5">
                         <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-sm ${
                             c.status === 'abierta' 
-                                ? 'bg-lime-400 text-slate-950 shadow-lime-400/20' 
+                                ? 'bg-[#A5E900] text-slate-950 shadow-lime-400/20' 
                                 : 'bg-slate-800 text-slate-300 border border-slate-700'
                         }`}>
                             <span className={`w-2 h-2 rounded-full ${c.status === 'abierta' ? 'bg-slate-950 animate-pulse' : 'bg-slate-400'}`}></span>
@@ -323,7 +323,7 @@ export const ConvocatoriaDetailPage = () => {
                         </div>
 
                         <div className="bg-slate-900/90 border border-slate-800 p-3.5 rounded-2xl flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-amber-400/15 text-amber-400 flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 rounded-xl bg-[#F00091]/15 text-[#F00091] flex items-center justify-center shrink-0">
                                 <Clock size={20} />
                             </div>
                             <div className="min-w-0">
@@ -343,7 +343,7 @@ export const ConvocatoriaDetailPage = () => {
                         </div>
 
                         <div className="bg-slate-900/90 border border-slate-800 p-3.5 rounded-2xl flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-lime-400/15 text-lime-400 flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 rounded-xl bg-[#A5E900]/15 text-[#A5E900] flex items-center justify-center shrink-0">
                                 <Users size={20} />
                             </div>
                             <div className="min-w-0">
@@ -357,8 +357,8 @@ export const ConvocatoriaDetailPage = () => {
                     <div className="bg-slate-900/80 border border-slate-800/90 p-4 rounded-2xl space-y-2">
                         <div className="flex items-center justify-between text-xs font-bold">
                             <span className="text-white flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-lime-400"></span>
-                                Cupos confirmados: <span className="text-lime-400 font-black">{c.confirmed_count} / {c.max_players}</span> ({fillPercent}%)
+                                <span className="w-2 h-2 rounded-full bg-[#A5E900]"></span>
+                                Cupos confirmados: <span className="text-[#A5E900] font-black">{c.confirmed_count} / {c.max_players}</span> ({fillPercent}%)
                             </span>
                             <span className="text-slate-400">
                                 {cupoLleno ? '🚫 Cupo Completo' : `Quedan ${Math.max(0, c.max_players - c.confirmed_count)} disponibles`}
@@ -378,7 +378,7 @@ export const ConvocatoriaDetailPage = () => {
                         </div>
 
                         <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1">
-                            <span>🧤 Arqueros: <strong className="text-amber-400">{porterosActuales}/{porterosMax}</strong></span>
+                            <span>🧤 Arqueros: <strong className="text-[#F00091]">{porterosActuales}/{porterosMax}</strong></span>
                             <span>⚽ Jugadores de campo: <strong className="text-emerald-400">{jugadoresActuales}/{jugadoresMax}</strong></span>
                         </div>
                     </div>
@@ -388,7 +388,7 @@ export const ConvocatoriaDetailPage = () => {
                         {isAdmin && (
                             <Button 
                                 onClick={() => setShowFlyerModal(true)}
-                                className="bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-5 shadow-lg shadow-lime-400/20 flex items-center gap-2 transition-transform hover:scale-105"
+                                className="bg-gradient-to-r from-[#A5E900] to-[#00C9E8] hover:from-lime-300 hover:to-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-5 shadow-lg shadow-lime-400/20 flex items-center gap-2 transition-transform hover:scale-105"
                             >
                                 <Sparkles className="w-4 h-4" /> 📲 Generar Flyer WhatsApp
                             </Button>
@@ -398,7 +398,7 @@ export const ConvocatoriaDetailPage = () => {
                             variant="outline" 
                             className="border-slate-700 bg-slate-900/90 text-white hover:bg-slate-800 text-xs font-bold uppercase tracking-wider rounded-xl h-11 px-4 flex items-center gap-2"
                         >
-                            <Copy className="w-4 h-4 text-lime-400" /> Copiar Lista
+                            <Copy className="w-4 h-4 text-[#A5E900]" /> Copiar Lista
                         </Button>
                         {isAdmin && (
                             <Button 
@@ -466,7 +466,7 @@ export const ConvocatoriaDetailPage = () => {
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-lime-500 block">Inscripción Oficial</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#A5E900] block">Inscripción Oficial</span>
                             <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
                                 ¿Vas a Jugar en esta Pichanga?
                             </h2>
@@ -514,7 +514,7 @@ export const ConvocatoriaDetailPage = () => {
                     ) : cupoLleno ? (
                         /* Caso 3: Cupo lleno */
                         <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-6 text-center">
-                            <p className="text-amber-700 dark:text-amber-400 font-black text-base">
+                            <p className="text-amber-700 dark:text-[#F00091] font-black text-base">
                                 ⚠️ El cupo para este partido está completo ({c.max_players} jugadores).
                             </p>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -584,13 +584,13 @@ export const ConvocatoriaDetailPage = () => {
                                             porterosLlenos
                                                 ? 'border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 opacity-60 cursor-not-allowed'
                                                 : selectedRole === 'portero'
-                                                    ? 'border-amber-400 bg-amber-400/10 text-amber-600 dark:text-amber-400 shadow-[0_0_20px_rgba(250,204,21,0.15)] ring-2 ring-amber-400/20'
+                                                    ? 'border-[#F00091] bg-[#F00091]/10 text-amber-600 dark:text-[#F00091] shadow-[0_0_20px_rgba(250,204,21,0.15)] ring-2 ring-amber-400/20'
                                                     : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600'
                                         }`}
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl transition-transform group-hover:scale-110 ${
-                                                selectedRole === 'portero' && !porterosLlenos ? 'bg-amber-400 text-slate-950 shadow-md' : 'bg-slate-200 dark:bg-slate-700'
+                                                selectedRole === 'portero' && !porterosLlenos ? 'bg-[#F00091] text-slate-950 shadow-md' : 'bg-slate-200 dark:bg-slate-700'
                                             }`}>
                                                 🧤
                                             </div>
@@ -606,14 +606,14 @@ export const ConvocatoriaDetailPage = () => {
                                                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                                     Defensa del arco (1 por equipo)
                                                 </p>
-                                                <span className={`inline-block mt-1 text-[10px] font-bold uppercase ${porterosLlenos ? 'text-red-500 font-extrabold' : 'text-amber-600 dark:text-amber-400'}`}>
+                                                <span className={`inline-block mt-1 text-[10px] font-bold uppercase ${porterosLlenos ? 'text-red-500 font-extrabold' : 'text-amber-600 dark:text-[#F00091]'}`}>
                                                     {porterosLlenos ? `CUPOS COMPLETOS (${porterosMax}/${porterosMax})` : `${porterosActuales}/${porterosMax} disponibles`}
                                                 </span>
                                             </div>
                                         </div>
 
                                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                                            selectedRole === 'portero' && !porterosLlenos ? 'border-amber-400 bg-amber-400 text-slate-950' : 'border-slate-300 dark:border-slate-600'
+                                            selectedRole === 'portero' && !porterosLlenos ? 'border-[#F00091] bg-[#F00091] text-slate-950' : 'border-slate-300 dark:border-slate-600'
                                         }`}>
                                             {selectedRole === 'portero' && !porterosLlenos && <Check size={14} className="stroke-[3]" />}
                                         </div>
@@ -631,7 +631,7 @@ export const ConvocatoriaDetailPage = () => {
                                     <div className="space-y-3">
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-lime-400/20 text-lime-600 dark:text-lime-400 flex items-center justify-center shrink-0">
+                                                <div className="w-10 h-10 rounded-xl bg-[#A5E900]/20 text-lime-600 dark:text-[#A5E900] flex items-center justify-center shrink-0">
                                                     <Wallet size={20} />
                                                 </div>
                                                 <div>
@@ -649,7 +649,7 @@ export const ConvocatoriaDetailPage = () => {
                                                 </div>
                                                 {!hasEnoughBalance && (
                                                     <Link to="/billetera">
-                                                        <Button className="bg-lime-400 hover:bg-lime-500 text-slate-950 font-black text-xs h-10 px-4 rounded-xl border-0 shadow-md">
+                                                        <Button className="bg-[#A5E900] hover:bg-[#A5E900] text-slate-950 font-black text-xs h-10 px-4 rounded-xl border-0 shadow-md">
                                                             + Recargar
                                                         </Button>
                                                     </Link>
@@ -676,7 +676,7 @@ export const ConvocatoriaDetailPage = () => {
                                 <div>
                                     {!hasEnoughBalance && cost > 0 ? (
                                         <Link to="/billetera" className="block">
-                                            <Button className="w-full h-14 bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-slate-950 font-black uppercase tracking-wider rounded-2xl shadow-xl shadow-lime-400/20 border-0 text-base flex items-center justify-center gap-2">
+                                            <Button className="w-full h-14 bg-gradient-to-r from-[#A5E900] to-lime-500 hover:from-lime-500 hover:to-lime-600 text-slate-950 font-black uppercase tracking-wider rounded-2xl shadow-xl shadow-lime-400/20 border-0 text-base flex items-center justify-center gap-2">
                                                 <Wallet size={18} /> Recargar Billetera para Confirmar Cupo
                                             </Button>
                                         </Link>
@@ -685,7 +685,7 @@ export const ConvocatoriaDetailPage = () => {
                                             disabled={true} 
                                             className="w-full h-14 bg-slate-800 text-slate-400 font-black uppercase tracking-wider rounded-2xl border border-slate-700 text-sm flex items-center justify-center gap-2 cursor-not-allowed"
                                         >
-                                            <AlertCircle size={20} className="text-amber-400" />
+                                            <AlertCircle size={20} className="text-[#F00091]" />
                                             {selectedRole === 'portero' 
                                                 ? `Cupos de Arquero Llenos (${porterosMax}/${porterosMax})` 
                                                 : `Cupos de Jugador de Campo Llenos (${jugadoresMax}/${jugadoresMax})`
@@ -738,7 +738,7 @@ export const ConvocatoriaDetailPage = () => {
                     {selectedMember ? (
                         <div className="bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
                             <div className="flex items-center gap-3 w-full sm:w-auto">
-                                <div className="w-12 h-12 rounded-full bg-slate-800 text-lime-400 border border-indigo-500/50 flex items-center justify-center font-black text-base shrink-0 overflow-hidden">
+                                <div className="w-12 h-12 rounded-full bg-slate-800 text-[#A5E900] border border-indigo-500/50 flex items-center justify-center font-black text-base shrink-0 overflow-hidden">
                                     {selectedMember.avatar ? (
                                         <img src={selectedMember.avatar} alt={selectedMember.name} className="w-full h-full object-cover" />
                                     ) : (
@@ -749,7 +749,7 @@ export const ConvocatoriaDetailPage = () => {
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <span className="text-base font-black text-white truncate">{selectedMember.name}</span>
                                         {selectedMember.nickname && (
-                                            <span className="text-xs font-bold text-lime-400 bg-lime-400/10 border border-lime-400/20 px-2.5 py-0.5 rounded-full">
+                                            <span className="text-xs font-bold text-[#A5E900] bg-[#A5E900]/10 border border-[#A5E900]/20 px-2.5 py-0.5 rounded-full">
                                                 "{selectedMember.nickname}"
                                             </span>
                                         )}
@@ -845,7 +845,7 @@ export const ConvocatoriaDetailPage = () => {
                                                 className="w-full text-left p-3 hover:bg-indigo-950/50 transition-colors flex items-center justify-between gap-3 group"
                                             >
                                                 <div className="flex items-center gap-3 min-w-0">
-                                                    <div className="w-10 h-10 rounded-full bg-slate-800 text-lime-400 border border-slate-700 flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden group-hover:border-lime-400 transition-colors">
+                                                    <div className="w-10 h-10 rounded-full bg-slate-800 text-[#A5E900] border border-slate-700 flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden group-hover:border-[#A5E900] transition-colors">
                                                         {m.avatar ? (
                                                             <img src={m.avatar} alt={m.name} className="w-full h-full object-cover" />
                                                         ) : (
@@ -854,7 +854,7 @@ export const ConvocatoriaDetailPage = () => {
                                                     </div>
                                                     <div className="min-w-0">
                                                         <div className="flex items-center gap-1.5 flex-wrap">
-                                                            <span className="text-sm font-bold text-white group-hover:text-lime-400 transition-colors truncate">
+                                                            <span className="text-sm font-bold text-white group-hover:text-[#A5E900] transition-colors truncate">
                                                                 {m.name}
                                                             </span>
                                                             {m.nickname && (
@@ -875,7 +875,7 @@ export const ConvocatoriaDetailPage = () => {
                                                     </div>
                                                 </div>
                                                 <div className="shrink-0">
-                                                    <span className="text-xs font-bold text-indigo-400 group-hover:text-lime-400 opacity-0 group-hover:opacity-100 transition-all inline-flex items-center gap-1">
+                                                    <span className="text-xs font-bold text-indigo-400 group-hover:text-[#A5E900] opacity-0 group-hover:opacity-100 transition-all inline-flex items-center gap-1">
                                                         Elegir <Check className="h-3.5 w-3.5" />
                                                     </span>
                                                 </div>
@@ -914,7 +914,7 @@ export const ConvocatoriaDetailPage = () => {
                             <Button 
                                 onClick={handleAdminAddPlayer} 
                                 disabled={isAddingPlayer || !adminSelectedUserId || (adminSelectedRole === 'portero' ? porterosLlenos : jugadoresLlenos)} 
-                                className="w-full h-12 bg-lime-400 hover:bg-lime-500 text-slate-950 font-black uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-lime-400/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm border-0"
+                                className="w-full h-12 bg-[#A5E900] hover:bg-[#A5E900] text-slate-950 font-black uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-lime-400/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm border-0"
                             >
                                 <UserPlus className="h-4 w-4" />
                                 {isAddingPlayer 
@@ -946,7 +946,7 @@ export const ConvocatoriaDetailPage = () => {
                                     onClick={() => setViewMode('pitch')}
                                     className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
                                         viewMode === 'pitch'
-                                            ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
+                                            ? 'bg-[#A5E900] text-slate-950 shadow-md shadow-lime-400/20'
                                             : 'bg-slate-800 text-slate-300 hover:text-white'
                                     }`}
                                 >
@@ -957,7 +957,7 @@ export const ConvocatoriaDetailPage = () => {
                                     onClick={() => setViewMode('cards')}
                                     className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${
                                         viewMode === 'cards'
-                                            ? 'bg-lime-400 text-slate-950 shadow-md shadow-lime-400/20'
+                                            ? 'bg-[#A5E900] text-slate-950 shadow-md shadow-lime-400/20'
                                             : 'bg-slate-800 text-slate-300 hover:text-white'
                                     }`}
                                 >
@@ -970,7 +970,7 @@ export const ConvocatoriaDetailPage = () => {
                                     <>
                                         <Button
                                             onClick={() => setShowFlyerModal(true)}
-                                            className="bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-10 px-4 flex items-center gap-1.5 shadow-md shadow-lime-400/20"
+                                            className="bg-gradient-to-r from-[#A5E900] to-[#00C9E8] hover:from-lime-300 hover:to-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-10 px-4 flex items-center gap-1.5 shadow-md shadow-lime-400/20"
                                         >
                                             <Sparkles className="w-3.5 h-3.5" /> 📲 Flyer WhatsApp
                                         </Button>
@@ -1062,13 +1062,13 @@ export const ConvocatoriaDetailPage = () => {
                                                         onClick={() => setSelectedPlayerCard(p)}
                                                         className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer hover:scale-[1.01] ${
                                                             isMe 
-                                                                ? 'bg-amber-400/15 border-amber-400/40 shadow-sm' 
-                                                                : 'bg-amber-400/5 dark:bg-amber-400/10 border-amber-400/20 hover:border-amber-400'
+                                                                ? 'bg-[#F00091]/15 border-[#F00091]/40 shadow-sm' 
+                                                                : 'bg-[#F00091]/5 dark:bg-[#F00091]/10 border-[#F00091]/20 hover:border-[#F00091]'
                                                         }`}
                                                         title="Clic para ver Carta FUT 3D"
                                                     >
                                                         <div className="flex items-center gap-3 min-w-0">
-                                                            <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-base shrink-0 shadow-sm">
+                                                            <div className="w-10 h-10 rounded-xl bg-[#F00091] text-slate-950 flex items-center justify-center font-black text-base shrink-0 shadow-sm">
                                                                 🧤
                                                             </div>
                                                             <div className="min-w-0">
@@ -1077,7 +1077,7 @@ export const ConvocatoriaDetailPage = () => {
                                                                         {pName}
                                                                     </span>
                                                                     {p.user?.nickname && (
-                                                                        <span className="text-xs text-amber-600 dark:text-amber-400 font-bold">
+                                                                        <span className="text-xs text-amber-600 dark:text-[#F00091] font-bold">
                                                                             "{p.user.nickname}"
                                                                         </span>
                                                                     )}
@@ -1087,7 +1087,7 @@ export const ConvocatoriaDetailPage = () => {
                                                                         </span>
                                                                     )}
                                                                 </div>
-                                                                <span className="text-[11px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
+                                                                <span className="text-[11px] font-black text-amber-600 dark:text-[#F00091] uppercase tracking-wider block">
                                                                     Arquero Titular
                                                                 </span>
                                                             </div>
@@ -1134,7 +1134,7 @@ export const ConvocatoriaDetailPage = () => {
                                                         className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer hover:scale-[1.01] ${
                                                             isMe 
                                                                 ? 'bg-emerald-500/10 border-emerald-500/40 shadow-sm' 
-                                                                : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-800 hover:border-lime-400/50'
+                                                                : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-800 hover:border-[#A5E900]/50'
                                                         }`}
                                                         title="Clic para ver Carta FUT 3D"
                                                     >
@@ -1263,8 +1263,8 @@ export const ConvocatoriaDetailPage = () => {
                                                     isMe 
                                                         ? 'bg-emerald-500/10 border-emerald-500/40 shadow-sm' 
                                                         : isGoalkeeper 
-                                                            ? 'bg-amber-400/5 dark:bg-amber-400/10 border-amber-400/30 hover:border-amber-400' 
-                                                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 hover:border-lime-400/50'
+                                                            ? 'bg-[#F00091]/5 dark:bg-[#F00091]/10 border-[#F00091]/30 hover:border-[#F00091]' 
+                                                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 hover:border-[#A5E900]/50'
                                                 }`}
                                                 title="Clic para ver Carta FUT 3D"
                                             >
@@ -1273,7 +1273,7 @@ export const ConvocatoriaDetailPage = () => {
                                                     <div className="relative shrink-0">
                                                         <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm border ${
                                                             isGoalkeeper 
-                                                                ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm' 
+                                                                ? 'bg-[#F00091] text-slate-950 border-amber-300 shadow-sm' 
                                                                 : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600'
                                                         }`}>
                                                             {p.user?.avatar ? (
@@ -1313,7 +1313,7 @@ export const ConvocatoriaDetailPage = () => {
                                                         <div className="mt-1 flex items-center gap-2">
                                                             <span className={`inline-flex items-center gap-1 text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
                                                                 isGoalkeeper 
-                                                                    ? 'bg-amber-400/20 text-amber-600 dark:text-amber-400' 
+                                                                    ? 'bg-[#F00091]/20 text-amber-600 dark:text-[#F00091]' 
                                                                     : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                                                             }`}>
                                                                 {isGoalkeeper ? '🧤 Arquero' : '⚽ Jugador'}
