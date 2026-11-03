@@ -21,13 +21,13 @@ class UserResource extends JsonResource
             'full_name' => $this->full_name,
             'position' => $this->position,
             'jersey_number' => $this->jersey_number,
-            'avatar' => \\App\\Helpers\\ImageHelper::getUrl($this->avatar),
+            'avatar' => \App\Helpers\ImageHelper::getUrl($this->avatar),
             'bio' => $this->bio,
             'nickname' => $this->nickname,
             'role' => $this->role,
             'status' => $this->status,
             'is_approved' => (bool) $this->is_approved,
-            'has_pending_multas' => $this->resource instanceof \\App\\Models\\User ? $this->hasPendingMultas() : false,
+            'has_pending_multas' => $this->resource instanceof \App\Models\User ? $this->hasPendingMultas() : false,
             'created_at' => $this->created_at,
         ];
 
@@ -38,7 +38,7 @@ class UserResource extends JsonResource
                 'phone' => $this->phone,
                 'birth_date' => $this->birth_date,
                 'blood_type' => $this->blood_type,
-                'payment_receipt' => \\App\\Helpers\\ImageHelper::getUrl($this->payment_receipt),
+                'payment_receipt' => \App\Helpers\ImageHelper::getUrl($this->payment_receipt),
             ];
         }
 
