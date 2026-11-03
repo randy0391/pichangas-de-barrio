@@ -112,49 +112,40 @@ export const AdminMembersPage = () => {
     };
 
     // Copiar lista completa de teléfonos usando allMembers (los 150+ miembros)
-    const copyContactsList = () => {
-        let targetList = [...allMembers];
+    const copyContactsList = async () => {
+        try {
+            const { data: allMembers = [] } = await fetchAllMembers();
+            let targetList = [...allMembers];
+            if (filterTab === 'jugadores') targetList = targetList.filter(m => m.role === 'member');
+            else if (filterTab === 'admins') targetList = targetList.filter(m => m.role === 'admin');
+            else if (filterTab === 'porteros') targetList = targetList.filter(m => (m.position || '').toLowerCase() === 'portero');
+            else if (filterTab === 'pendientes') targetList = targetList.filter(m => !m.is_approved || String(m.is_approved) === 'false' || String(m.is_approved) === '0');
+            else if (filterTab === 'inactivos') targetList = targetList.filter(m => m.status === 'inactive');
 
-        // Aplicar filtro de tab activo
-        if (filterTab === 'jugadores') {
-            targetList = targetList.filter(m => m.role === 'member');
-        } else if (filterTab === 'admins') {
-            targetList = targetList.filter(m => m.role === 'admin');
-        } else if (filterTab === 'porteros') {
-            targetList = targetList.filter(m => (m.position || '').toLowerCase() === 'portero');
-        } else if (filterTab === 'pendientes') {
-            targetList = targetList.filter(m => !m.is_approved || String(m.is_approved) === 'false' || String(m.is_approved) === '0');
-        } else if (filterTab === 'inactivos') {
-            targetList = targetList.filter(m => m.status === 'inactive');
-        }
-
-        // Aplicar búsqueda si existe
-        if (searchQuery.trim()) {
-            const q = searchQuery.toLowerCase().trim();
-            targetList = targetList.filter(m => {
-                const fullName = `${m.nombres || ''} ${m.apellido_paterno || ''} ${m.apellido_materno || ''} ${m.name || ''}`.toLowerCase();
-                const phone = (m.phone || '').toLowerCase();
-                const dni = (m.dni || '').toLowerCase();
-                const nickname = (m.nickname || '').toLowerCase();
-                return fullName.includes(q) || phone.includes(q) || dni.includes(q) || nickname.includes(q);
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase().trim();
+                targetList = targetList.filter(m => {
+                    const fullName = `${m.nombres || ''} ${m.apellido_paterno || ''} ${m.apellido_materno || ''} ${m.name || ''}`.toLowerCase();
+                    return fullName.includes(q) || (m.phone || '').toLowerCase().includes(q) ||
+                        (m.dni || '').toLowerCase().includes(q) || (m.nickname || '').toLowerCase().includes(q);
+                });
+            }
+            const withPhone = targetList.filter(m => m.phone && m.phone.trim().length >= 6);
+            if (!withPhone.length) {
+                toast.info('No se encontraron teléfonos para copiar con este filtro');
+                return;
+            }
+            const lines = withPhone.map((m, idx) => {
+                const name = (m.full_name || `${m.nombres || ''} ${m.apellido_paterno || ''}`.trim() || m.name || 'Sin nombre').trim();
+                const nickname = m.nickname ? ` "${m.nickname}"` : '';
+                return `${idx + 1}. ${name}${nickname}: ${m.phone}`;
             });
+            const tabLabel = filterTab === 'todos' ? 'Todos los Miembros' : filterTab.toUpperCase();
+            await navigator.clipboard.writeText(`📲 Directorio Telefónico (${tabLabel} - ${withPhone.length} contactos) - Pichangas de Barrio:\n\n${lines.join('\n')}`);
+            toast.success(`¡${withPhone.length} teléfonos copiados al portapapeles!`);
+        } catch {
+            toast.error('No se pudo cargar o copiar el directorio de contactos');
         }
-
-        const withPhone = targetList.filter(m => m.phone && m.phone.trim().length >= 6);
-        if (withPhone.length === 0) {
-            toast.info('No se encontraron teléfonos para copiar con este filtro');
-            return;
-        }
-
-        const lines = withPhone.map((m, idx) => {
-            const name = (m.full_name || `${m.nombres || ''} ${m.apellido_paterno || ''}`.trim() || m.name || 'Sin nombre').trim();
-            const nickname = m.nickname ? ` "${m.nickname}"` : '';
-            return `${idx + 1}. ${name}${nickname}: ${m.phone}`;
-        });
-
-        const tabLabel = filterTab === 'todos' ? 'Todos los Miembros' : filterTab.toUpperCase();
-        navigator.clipboard.writeText(`📲 Directorio Telefónico (${tabLabel} - ${withPhone.length} contactos) - Pichangas de Barrio:\n\n${lines.join('\n')}`);
-        toast.success(`¡${withPhone.length} teléfonos copiados al portapapeles!`);
     };
 
     return (
@@ -171,7 +162,7 @@ export const AdminMembersPage = () => {
                 </div>
                 <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                     <Button 
-                        onClick={copyContactsList}\n                        disabled={isFetchingAllMembers}
+                        onClick={copyContactsList}\n                        disabled={isFetchingAllMembers}\n                        disabled={isFetchingAllMembers}
                         variant="outline"
                         className="h-12 px-4 rounded-xl border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs uppercase tracking-wider flex items-center gap-2"
                     >
