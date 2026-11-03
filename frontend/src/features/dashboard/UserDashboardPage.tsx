@@ -57,27 +57,27 @@ export const UserDashboardPage = () => {
             <motion.div 
                 initial={{ opacity: 0, y: 15 }} 
                 animate={{ opacity: 1, y: 0 }} 
-                className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 rounded-3xl p-6 sm:p-7 text-white shadow-xl border border-slate-800 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6"
+                className="bg-gradient-to-br from-[#080D1B] via-[#101827] to-[#080D1B] rounded-3xl p-6 sm:p-7 text-white shadow-xl border border-slate-800 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6"
             >
-                <div className="absolute right-0 top-0 w-80 h-full bg-lime-400/5 -skew-x-12 transform origin-top pointer-events-none"></div>
+                <div className="absolute right-0 top-0 w-80 h-full bg-[#A5E900]/5 -skew-x-12 transform origin-top pointer-events-none"></div>
                 <div className="relative z-10 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
                     <div className="relative">
-                        <div className="w-20 h-20 sm:w-22 sm:h-22 bg-slate-800 rounded-2xl border-2 border-lime-400/50 flex items-center justify-center overflow-hidden shadow-lg shadow-lime-400/10 cursor-pointer" onClick={() => setShowFutModal(true)} title="Clic para ver tu Carta FUT">
+                        <div className="w-20 h-20 sm:w-22 sm:h-22 bg-slate-800 rounded-2xl border-2 border-[#A5E900]/50 flex items-center justify-center overflow-hidden shadow-lg shadow-lime-400/10 cursor-pointer" onClick={() => setShowFutModal(true)} title="Clic para ver tu Carta FUT">
                             {user?.avatar ? (
                                 <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                             ) : (
-                                <span className="text-3xl font-black text-lime-400">{user?.name?.charAt(0)}</span>
+                                <span className="text-3xl font-black text-[#A5E900]">{user?.name?.charAt(0)}</span>
                             )}
                         </div>
                         {user?.jersey_number && (
-                            <span className="absolute -bottom-2 -right-2 w-7 h-7 bg-lime-400 text-slate-950 rounded-full font-black text-xs flex items-center justify-center shadow-md font-mono border-2 border-slate-900">
+                            <span className="absolute -bottom-2 -right-2 w-7 h-7 bg-[#A5E900] text-slate-950 rounded-full font-black text-xs flex items-center justify-center shadow-md font-mono border-2 border-slate-900">
                                 #{user.jersey_number}
                             </span>
                         )}
                     </div>
                     <div className="space-y-1">
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                            <span className="text-[11px] uppercase tracking-widest text-lime-400 font-black px-2.5 py-0.5 rounded-full bg-lime-400/10 border border-lime-400/20">
+                            <span className="text-[11px] uppercase tracking-widest text-[#A5E900] font-black px-2.5 py-0.5 rounded-full bg-[#A5E900]/10 border border-[#A5E900]/20">
                                 {user?.nickname ? `"${user.nickname}"` : 'Jugador Oficial'}
                             </span>
                             {user?.position && (
@@ -98,17 +98,17 @@ export const UserDashboardPage = () => {
                 <div className="relative z-10 flex flex-wrap items-center gap-3 w-full sm:w-auto justify-center">
                     <Button 
                         onClick={() => setShowFutModal(true)}
-                        className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-2 shadow-amber-400/20"
+                        className="bg-[#F00091] hover:bg-[#FF4DB5] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-2 shadow-[#F00091]/20"
                     >
                         <Sparkles className="w-4 h-4" /> Mi Carta FUT
                     </Button>
                     <Link to="/billetera">
-                        <Button className="bg-slate-800 hover:bg-slate-700 text-lime-400 border border-lime-400/30 hover:border-lime-400 font-bold text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-2">
+                        <Button className="bg-slate-800 hover:bg-slate-700 text-[#A5E900] border border-[#A5E900]/30 hover:border-[#A5E900] font-bold text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-2">
                             <Wallet className="w-4 h-4" /> Mi Billetera
                         </Button>
                     </Link>
                     <Link to="/convocatorias">
-                        <Button className="bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-1.5 shadow-lime-400/20">
+                        <Button className="bg-[#A5E900] hover:bg-[#C8F34A] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-4 shadow-md flex items-center gap-1.5 shadow-lime-400/20">
                             <Trophy className="w-4 h-4" /> Convocatorias
                         </Button>
                     </Link>
@@ -122,7 +122,7 @@ export const UserDashboardPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
                     { title: "Próximas Convocatorias", value: upcomingMatches.length || dashData?.stats?.upcoming_convocatorias_count || 0, icon: Activity, color: "text-primary" },
-                    { title: "Eventos Registrados", value: dashData?.stats?.registered_events || 0, icon: CalendarDays, color: "text-lime-400" },
+                    { title: "Eventos Registrados", value: dashData?.stats?.registered_events || 0, icon: CalendarDays, color: "text-[#A5E900]" },
                     { title: "Total Participaciones", value: dashData?.stats?.total_participations || 0, icon: Trophy, color: "text-accent" }
                 ].map((stat, i) => (
                     <motion.div 
@@ -152,7 +152,7 @@ export const UserDashboardPage = () => {
                         </div>
                         <Link 
                             to="/convocatorias" 
-                            className="px-3 py-1 bg-lime-400/10 hover:bg-lime-400/20 text-lime-400 text-xs font-black uppercase tracking-wider rounded-xl transition-all border border-lime-400/30 flex items-center gap-1"
+                            className="px-3 py-1 bg-[#A5E900]/10 hover:bg-[#A5E900]/20 text-[#A5E900] text-xs font-black uppercase tracking-wider rounded-xl transition-all border border-[#A5E900]/30 flex items-center gap-1"
                         >
                             Ver Todas ({upcomingMatches.length}) <ChevronRight className="w-3.5 h-3.5" />
                         </Link>
@@ -170,16 +170,16 @@ export const UserDashboardPage = () => {
                                 <Link 
                                     to={`/convocatorias/${c.id}`} 
                                     key={c.id} 
-                                    className="block group bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 dark:border-slate-800 hover:border-lime-400/50 dark:hover:border-lime-400/50 transition-all hover:scale-[1.01]"
+                                    className="block group bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 dark:border-slate-800 hover:border-[#A5E900]/50 dark:hover:border-[#A5E900]/50 transition-all hover:scale-[1.01]"
                                 >
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="space-y-1.5 min-w-0 flex-1">
-                                            <h3 className="font-black text-base text-slate-900 dark:text-white group-hover:text-lime-400 transition-colors truncate">
+                                            <h3 className="font-black text-base text-slate-900 dark:text-white group-hover:text-[#A5E900] transition-colors truncate">
                                                 {c.title}
                                             </h3>
                                             <div className="flex flex-wrap items-center text-xs text-slate-500 dark:text-slate-400 gap-x-4 gap-y-1">
                                                 <span className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
-                                                    <CalendarDays size={13} className="text-lime-500 shrink-0" />
+                                                    <CalendarDays size={13} className="text-[#A5E900] shrink-0" />
                                                     {c.match_date} • {c.match_time ? c.match_time.slice(0, 5) : '20:00'}
                                                 </span>
                                                 <span className="flex items-center gap-1 truncate">
@@ -190,7 +190,7 @@ export const UserDashboardPage = () => {
                                         </div>
 
                                         <div className="text-right shrink-0">
-                                            <span className="text-sm font-black font-mono text-lime-400">
+                                            <span className="text-sm font-black font-mono text-[#A5E900]">
                                                 {cost > 0 ? `S/ ${cost.toFixed(0)}` : 'Gratis'}
                                             </span>
                                             <div className="mt-1">
@@ -203,7 +203,7 @@ export const UserDashboardPage = () => {
                                                         Lleno
                                                     </span>
                                                 ) : (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-lime-400/10 text-lime-400 border border-lime-400/30 text-[10px] font-black uppercase tracking-wider group-hover:bg-lime-400 group-hover:text-slate-950 transition-colors">
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#A5E900]/10 text-[#A5E900] border border-[#A5E900]/30 text-[10px] font-black uppercase tracking-wider group-hover:bg-[#A5E900] group-hover:text-slate-950 transition-colors">
                                                         Unirse
                                                     </span>
                                                 )}
@@ -222,7 +222,7 @@ export const UserDashboardPage = () => {
                             <div className="pt-2 text-center">
                                 <Link 
                                     to="/convocatorias"
-                                    className="text-xs font-black uppercase tracking-wider text-lime-400 hover:text-lime-300 underline underline-offset-4"
+                                    className="text-xs font-black uppercase tracking-wider text-[#A5E900] hover:text-[#C8F34A] underline underline-offset-4"
                                 >
                                     Ver las {upcomingMatches.length - 8} convocatorias restantes →
                                 </Link>
