@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Convocatoria, Confirmacion } from '@/types';
-import { X, Download, Copy, Share2, Sparkles, Check, Key, RefreshCw, Tag, MapPin, Calendar, Phone, Palette } from 'lucide-react';
+import { X, Download, Copy, Share2, Sparkles, Check, RefreshCw, Tag, MapPin, Calendar, Phone } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useConvocatoria } from '@/hooks/useConvocatorias';
 import { toast } from 'sonner';
@@ -11,8 +11,6 @@ interface ConvocatoriaFlyerModalProps {
   convocatoria: Convocatoria;
 }
 
-type FlyerTheme = 'neon_arena' | 'fuego_barrio' | 'cyber_futsal' | 'champions_gold';
-
 export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
   isOpen,
   onClose,
@@ -21,15 +19,11 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
   const { user } = useAuthStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Fetch detailed fresh data with confirmaciones.user eager-loaded
   const { data: fullConvocatoria, isLoading: isLoadingFull, refetch } = useConvocatoria(convocatoria?.id);
   const activeConvocatoria = fullConvocatoria || convocatoria;
-
-  // Active Visual Theme
-  const [theme, setTheme] = useState<FlyerTheme>('neon_arena');
 
   // Format defaults
   const numTeams = activeConvocatoria?.num_teams || 2;
@@ -91,7 +85,7 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
     if (isOpen && activeConvocatoria) {
       renderPoster();
     }
-  }, [isOpen, activeConvocatoria, categoryText, venueText, dateTimeText, contactPhone, theme, headlineText]);
+  }, [isOpen, activeConvocatoria, categoryText, venueText, dateTimeText, contactPhone, headlineText]);
 
   const renderPoster = async () => {
     const canvas = canvasRef.current || document.createElement('canvas');
@@ -230,8 +224,8 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
     roundRect(80, 245, width - 160, 54, 18);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 26px sans-serif';
-    ctx.fillText('CONVOCATORIA OFICIAL', width / 2, 280);
+    ctx.font = '900 24px sans-serif';
+    ctx.fillText(fitText('CONVOCATORIA OFICIAL • ' + categoryText.toUpperCase() + ' • ' + teamCount + ' EQUIPOS', width - 180, '900 24px sans-serif'), width / 2, 280);
     ctx.fillStyle = '#ffffff';
     ctx.font = '900 50px sans-serif';
     ctx.fillText(fitText((activeConvocatoria.title || 'PICHANGA DE BARRIO').toUpperCase(), width - 130, '900 50px sans-serif'), width / 2, 365);
@@ -378,9 +372,6 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
     const remaining = Math.max(0, activeConvocatoria.max_players - confirmados.length);
 
     let text = `⚽ *CONVOCATORIA OFICIAL - PICHANGAS DE BARRIO FC* ⚽\n\n`;
-    if (aiHypeNarrative) {
-      text += `🔥 *${aiHypeNarrative}*\n\n`;
-    }
     text += `🏆 *${activeConvocatoria.title.toUpperCase()}*\n` +
       `⚡ *Categoría:* ${categoryText} (${numTeams} Equipos)\n` +
       `📅 *Fecha:* ${dateTimeText}\n` +
@@ -433,52 +424,6 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-4 space-y-3">
-        {/* Theme Selector Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-950 p-2 rounded-xl border border-slate-800 text-xs">
-          <div className="flex items-center gap-1.5 text-slate-400 font-bold">
-            <Palette size={14} className="text-lime-400" />
-            <span className="hidden sm:inline">Tema Visual:</span>
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setTheme('neon_arena')}
-              className={`px-2.5 py-1 rounded-lg font-black transition-all cursor-pointer ${
-                theme === 'neon_arena' ? 'bg-[#F00091] text-white shadow-md' : 'text-slate-400 hover:text-white bg-slate-900'
-              }`}
-            >
-              🟢 Neón Arena
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme('fuego_barrio')}
-              className={`px-2.5 py-1 rounded-lg font-black transition-all cursor-pointer ${
-                theme === 'fuego_barrio' ? 'bg-[#00C9E8] text-slate-950 shadow-md' : 'text-slate-400 hover:text-white bg-slate-900'
-              }`}
-            >
-              🔴 Fuego Barrio
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme('cyber_futsal')}
-              className={`px-2.5 py-1 rounded-lg font-black transition-all cursor-pointer ${
-                theme === 'cyber_futsal' ? 'bg-[#A5E900] text-slate-950 shadow-md' : 'text-slate-400 hover:text-white bg-slate-900'
-              }`}
-            >
-              🔵 Cyber Futsal
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme('champions_gold')}
-              className={`px-2.5 py-1 rounded-lg font-black transition-all cursor-pointer ${
-                theme === 'champions_gold' ? 'bg-white text-slate-950 shadow-md' : 'text-slate-400 hover:text-white bg-slate-900'
-              }`}
-            >
-              🏆 Oro Real
-            </button>
-          </div>
-        </div>
-
         {/* Quick Customization Toolbar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
           <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 min-w-0">
