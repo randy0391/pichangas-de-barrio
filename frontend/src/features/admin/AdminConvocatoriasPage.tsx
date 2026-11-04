@@ -1245,7 +1245,7 @@ export const AdminConvocatoriasPage = () => {
                                         {/* Acciones Secundarias (Ver Página, Editar, Eliminar) */}
                                         <div className="flex items-center gap-2">
                                             {/* Ver Página Pública */}
-                                            <Link to={`/convocatorias/${c.id}`} target="_blank">
+                                            <Link to={`/convocatorias/${c.id}`}>
                                                 <Button 
                                                     variant="outline" 
                                                     className="h-11 px-3.5 rounded-xl border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-emerald-500 hover:border-emerald-500/40 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5"
