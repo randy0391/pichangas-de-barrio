@@ -391,13 +391,13 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
   if (!isOpen || !isAdmin) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-hidden overscroll-contain animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[70] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-1 sm:p-2 overflow-hidden overscroll-contain animate-in fade-in duration-200">
       <canvas ref={canvasRef} className="hidden" />
 
-      <div className="relative w-full max-w-6xl max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] bg-slate-900 border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden min-h-0">
+      <div className="relative w-full h-[calc(100dvh-0.5rem)] sm:h-[calc(100dvh-1rem)] max-h-[calc(100dvh-0.5rem)] sm:max-h-[calc(100dvh-1rem)] max-w-7xl bg-slate-900 border border-slate-700/80 rounded-xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden min-h-0">
         
         {/* Header */}
-        <div className="shrink-0 flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-3 sm:px-5">
+        <div className="shrink-0 flex items-center justify-between gap-3 border-b border-slate-800 px-3 py-2 sm:px-4 sm:py-2.5">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#F00091] to-[#00C9E8] text-white flex items-center justify-center font-black shadow-md">
               <Sparkles size={20} />
@@ -426,9 +426,9 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
           </button>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-4 space-y-3">
+        <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-y-auto overscroll-contain p-2 sm:p-3">
         {/* Quick Customization Toolbar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
+        <div className="shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
           <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 min-w-0">
             <MapPin size={14} className="text-[#F00091] shrink-0" /><span className="text-slate-400 font-bold shrink-0">Lugar:</span>
             <input type="text" value={venueText} onChange={(e) => setVenueText(e.target.value)} placeholder="Lugar del encuentro" className="w-full min-w-0 bg-transparent text-white font-bold outline-none" />
@@ -455,12 +455,12 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
         </div>
 
         {/* Flyer Preview Box */}
-        <div className="relative w-full min-h-[220px] max-h-[42dvh] sm:max-h-[48dvh] lg:max-h-[min(58dvh,680px)] flex justify-center items-center bg-[#070d19] rounded-xl p-2 border border-slate-800 overflow-auto">
+        <div className="relative flex-1 min-h-[220px] w-full flex justify-center items-center bg-[#070d19] rounded-xl p-2 border border-slate-800 overflow-auto">
           {previewUrl ? (
             <img
               src={previewUrl}
               alt="Flyer Oficial Preview"
-              className="max-h-[40dvh] sm:max-h-[46dvh] lg:max-h-[min(56dvh,650px)] w-auto max-w-full rounded-lg shadow-2xl object-contain border border-slate-700/50"
+              className="h-full max-h-full w-auto max-w-full rounded-lg shadow-2xl object-contain border border-slate-700/50"
             />
           ) : (
             <div className="py-20 text-center text-slate-400 text-sm flex items-center gap-2">
@@ -472,7 +472,7 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
 
         </div>
         {/* Action Buttons */}
-        <div className="shrink-0 grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 sm:px-4 sm:py-3 border-t border-slate-800 bg-slate-950/70">
+        <div className="shrink-0 grid grid-cols-1 sm:grid-cols-3 gap-2 p-2 sm:px-3 sm:py-2 border-t border-slate-800 bg-slate-950/70">
           <button
             type="button"
             onClick={handleDownload}
