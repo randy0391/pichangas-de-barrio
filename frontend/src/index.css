@@ -341,12 +341,67 @@
   .pdb-loader-light--left {
     left: -12%;
     background: radial-gradient(ellipse, rgb(240 0 145 / 42%), transparent 68%);
+    animation: pdb-loader-light-pulse 2.4s ease-in-out infinite alternate;
   }
 
   .pdb-loader-light--right {
     right: -12%;
     background: radial-gradient(ellipse, rgb(0 201 232 / 42%), transparent 68%);
+    animation: pdb-loader-light-pulse 2.8s ease-in-out infinite alternate-reverse;
   }
+
+  .pdb-loader-beam {
+    position: absolute;
+    top: -28%;
+    width: 42%;
+    height: 115%;
+    opacity: .15;
+    filter: blur(24px);
+    transform-origin: top center;
+    pointer-events: none;
+  }
+
+  .pdb-loader-beam--left {
+    left: 8%;
+    background: linear-gradient(180deg, rgb(240 0 145 / 55%), transparent 78%);
+    clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+    animation: pdb-loader-beam-sweep 5s ease-in-out infinite alternate;
+  }
+
+  .pdb-loader-beam--right {
+    right: 8%;
+    background: linear-gradient(180deg, rgb(0 201 232 / 58%), transparent 78%);
+    clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+    animation: pdb-loader-beam-sweep 6s ease-in-out infinite alternate-reverse;
+  }
+
+  .pdb-loader-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .pdb-loader-particles i {
+    position: absolute;
+    left: calc(8% + var(--particle-x, 0%));
+    top: 110%;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #00c9e8;
+    box-shadow: 0 0 12px 2px rgb(0 201 232 / 55%);
+    animation: pdb-loader-particle-rise var(--particle-duration, 7s) linear infinite;
+    animation-delay: var(--particle-delay, 0s);
+  }
+
+  .pdb-loader-particles i:nth-child(1) { --particle-x: 4%; --particle-duration: 8s; --particle-delay: -2s; }
+  .pdb-loader-particles i:nth-child(2) { --particle-x: 18%; --particle-duration: 6.5s; --particle-delay: -5s; background: #f00091; }
+  .pdb-loader-particles i:nth-child(3) { --particle-x: 31%; --particle-duration: 9s; --particle-delay: -1s; }
+  .pdb-loader-particles i:nth-child(4) { --particle-x: 45%; --particle-duration: 7s; --particle-delay: -4s; background: #a5e900; }
+  .pdb-loader-particles i:nth-child(5) { --particle-x: 59%; --particle-duration: 8.5s; --particle-delay: -6s; }
+  .pdb-loader-particles i:nth-child(6) { --particle-x: 72%; --particle-duration: 6s; --particle-delay: -3s; background: #f00091; }
+  .pdb-loader-particles i:nth-child(7) { --particle-x: 84%; --particle-duration: 9.5s; --particle-delay: -7s; }
+  .pdb-loader-particles i:nth-child(8) { --particle-x: 94%; --particle-duration: 7.5s; --particle-delay: -2.5s; background: #a5e900; }
 
   .pdb-loader-pitch-line {
     position: absolute;
@@ -424,6 +479,17 @@
     place-items: center;
     perspective: 700px;
     filter: drop-shadow(0 18px 25px rgb(0 0 0 / 38%));
+    animation: pdb-loader-ball-bounce 1.35s cubic-bezier(.42,0,.58,1) infinite;
+  }
+
+  .pdb-loader-ball-aura {
+    position: absolute;
+    width: 76%;
+    height: 76%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(0 201 232 / 25%), rgb(240 0 145 / 12%) 48%, transparent 72%);
+    filter: blur(12px);
+    animation: pdb-loader-aura-pulse 1.8s ease-in-out infinite;
   }
 
   .pdb-loader-ball {
@@ -432,8 +498,9 @@
     width: 132px;
     height: 132px;
     transform-origin: center;
-    animation: pdb-loader-ball-spin 3.2s linear infinite, pdb-loader-ball-float 2.8s ease-in-out infinite;
-    filter: drop-shadow(0 0 18px rgb(0 201 232 / 20%));
+    animation: pdb-loader-ball-spin 1.45s linear infinite;
+    transform-style: preserve-3d;
+    filter: drop-shadow(0 0 24px rgb(0 201 232 / 35%));
   }
 
   .pdb-loader-ball-shadow {
@@ -445,7 +512,7 @@
     background: #000;
     opacity: .5;
     filter: blur(10px);
-    animation: pdb-loader-shadow 2.8s ease-in-out infinite;
+    animation: pdb-loader-shadow 1.35s ease-in-out infinite;
   }
 
   .pdb-loader-ball-orbit {
@@ -456,6 +523,7 @@
     border-radius: 50%;
     transform: rotate(-24deg);
     box-shadow: 0 0 15px rgb(0 201 232 / 10%);
+    animation: pdb-loader-orbit 3.8s linear infinite;
   }
 
   .pdb-loader-ball-orbit--two {
@@ -463,7 +531,7 @@
     height: 55%;
     border-color: rgb(240 0 145 / 38%);
     transform: rotate(58deg);
-    animation: pdb-loader-orbit 5s linear infinite;
+    animation: pdb-loader-orbit 2.6s linear infinite reverse;
   }
 
   .pdb-loader-label {
@@ -518,6 +586,11 @@
     height: 82px;
   }
 
+  .pdb-loader-ball-wrap--compact .pdb-loader-ball-aura {
+    width: 78%;
+    height: 78%;
+  }
+
   .pdb-loader-ball-wrap--compact .pdb-loader-ball {
     width: 61px;
     height: 61px;
@@ -566,14 +639,42 @@
   }
 }
 
+@keyframes pdb-loader-light-pulse {
+  from { opacity: .2; filter: blur(48px); }
+  to { opacity: .58; filter: blur(58px); }
+}
+
+@keyframes pdb-loader-beam-sweep {
+  from { transform: rotate(-18deg) scaleX(.8); opacity: .08; }
+  to { transform: rotate(18deg) scaleX(1.15); opacity: .22; }
+}
+
+@keyframes pdb-loader-particle-rise {
+  0% { transform: translate3d(0, 0, 0) scale(.5); opacity: 0; }
+  12% { opacity: .85; }
+  85% { opacity: .55; }
+  100% { transform: translate3d(24px, -125vh, 0) scale(1.4); opacity: 0; }
+}
+
+@keyframes pdb-loader-ball-bounce {
+  0%, 100% { transform: translateY(7px) scale(.98); }
+  50% { transform: translateY(-13px) scale(1.02); }
+}
+
+@keyframes pdb-loader-aura-pulse {
+  0%, 100% { transform: scale(.78); opacity: .45; }
+  50% { transform: scale(1.22); opacity: 1; }
+}
+
 @keyframes pdb-loader-appear {
   from { opacity: 0; transform: scale(.97); }
   to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes pdb-loader-ball-spin {
-  from { transform: rotateY(0deg) rotateZ(-8deg); }
-  to { transform: rotateY(360deg) rotateZ(352deg); }
+  0% { transform: perspective(420px) rotateY(0deg) rotateZ(-12deg) scale(1); }
+  50% { transform: perspective(420px) rotateY(180deg) rotateZ(168deg) scale(1.06); }
+  100% { transform: perspective(420px) rotateY(360deg) rotateZ(348deg) scale(1); }
 }
 
 @keyframes pdb-loader-ball-float {
@@ -605,8 +706,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pdb-loader-ball, .pdb-loader-ball-orbit--two, .pdb-loader-ball-shadow,
-  .pdb-loader-progress span, .pdb-loader-inline-track i {
+  .pdb-loader-ball-wrap, .pdb-loader-ball, .pdb-loader-ball-aura,
+  .pdb-loader-ball-orbit, .pdb-loader-ball-shadow, .pdb-loader-light,
+  .pdb-loader-beam, .pdb-loader-particles i, .pdb-loader-progress span,
+  .pdb-loader-inline-track i {
     animation: none !important;
   }
 }
