@@ -123,7 +123,10 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
       image.onerror = () => resolve(null);
       image.src = src;
     });
-    const avatarUrls = Array.from(new Set(players.map((player) => player.user?.avatar).filter((url): url is string => Boolean(url))));
+    const avatarUrls: string[] = Array.from(new Set<string>(players.flatMap((player): string[] => {
+      const avatar = player.user?.avatar;
+      return typeof avatar === 'string' && avatar.length > 0 ? [avatar] : [];
+    })));
     const loadedImages = await Promise.all([loadImage('/logo.jpg'), ...avatarUrls.map((url) => loadImage(url))]);
     const logoImage = loadedImages[0];
     const avatarMap = new Map<string, HTMLImageElement>();
