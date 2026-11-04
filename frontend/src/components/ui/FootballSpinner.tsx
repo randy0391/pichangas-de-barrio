@@ -7,6 +7,7 @@ interface FootballSpinnerProps {
 
 const Football = ({ compact = false }: { compact?: boolean }) => (
   <div className={`pdb-loader-ball-wrap ${compact ? 'pdb-loader-ball-wrap--compact' : ''}`} aria-hidden="true">
+    <span className="pdb-loader-ball-aura" />
     <span className="pdb-loader-ball-shadow" />
     <span className="pdb-loader-ball-orbit pdb-loader-ball-orbit--one" />
     <span className="pdb-loader-ball-orbit pdb-loader-ball-orbit--two" />
@@ -53,6 +54,11 @@ export const FootballSpinner = ({
         <div className="pdb-loader-stadium" aria-hidden="true">
           <span className="pdb-loader-light pdb-loader-light--left" />
           <span className="pdb-loader-light pdb-loader-light--right" />
+          <span className="pdb-loader-beam pdb-loader-beam--left" />
+          <span className="pdb-loader-beam pdb-loader-beam--right" />
+          <div className="pdb-loader-particles" aria-hidden="true">
+            <i /><i /><i /><i /><i /><i /><i /><i />
+          </div>
           <span className="pdb-loader-pitch-line pdb-loader-pitch-line--horizontal" />
           <span className="pdb-loader-pitch-line pdb-loader-pitch-line--circle" />
         </div>
