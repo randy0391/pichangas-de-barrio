@@ -35,7 +35,6 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import { TacticalPitch } from './TacticalPitch';
-import { ConvocatoriaFlyerModal } from './ConvocatoriaFlyerModal';
 import { TeamShuffleModal } from './TeamShuffleModal';
 import { PlayerCardModal } from '@/components/player/PlayerCardModal';
 
@@ -54,7 +53,6 @@ export const ConvocatoriaDetailPage = () => {
     const { data: allMembers = [], isLoading: loadingMembers } = useAllMembers();
     
     const [viewMode, setViewMode] = useState<'pitch' | 'cards'>('pitch');
-    const [showFlyerModal, setShowFlyerModal] = useState(false);
     const [showShuffleModal, setShowShuffleModal] = useState(false);
     const [selectedPlayerCard, setSelectedPlayerCard] = useState<Confirmacion | null>(null);
 
@@ -385,14 +383,6 @@ export const ConvocatoriaDetailPage = () => {
 
                     {/* Quick Action Toolbar */}
                     <div className="flex flex-wrap items-center gap-3 pt-2">
-                        {isAdmin && (
-                            <Button 
-                                onClick={() => setShowFlyerModal(true)}
-                                className="bg-gradient-to-r from-[#A5E900] to-[#00C9E8] hover:from-lime-300 hover:to-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-11 px-5 shadow-lg shadow-lime-400/20 flex items-center gap-2 transition-transform hover:scale-105"
-                            >
-                                <Sparkles className="w-4 h-4" /> 📲 Generar Flyer WhatsApp
-                            </Button>
-                        )}
                         <Button 
                             onClick={handleCopy} 
                             variant="outline" 
@@ -969,12 +959,6 @@ export const ConvocatoriaDetailPage = () => {
                                 {isAdmin && (
                                     <>
                                         <Button
-                                            onClick={() => setShowFlyerModal(true)}
-                                            className="bg-gradient-to-r from-[#A5E900] to-[#00C9E8] hover:from-lime-300 hover:to-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl h-10 px-4 flex items-center gap-1.5 shadow-md shadow-lime-400/20"
-                                        >
-                                            <Sparkles className="w-3.5 h-3.5" /> 📲 Flyer WhatsApp
-                                        </Button>
-                                        <Button
                                             onClick={() => setShowShuffleModal(true)}
                                             className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl h-10 px-3.5 flex items-center gap-1.5"
                                         >
@@ -1354,19 +1338,11 @@ export const ConvocatoriaDetailPage = () => {
                 )}
             </motion.div>
 
-            {/* Modal Flyer para WhatsApp */}
-            <ConvocatoriaFlyerModal 
-                isOpen={showFlyerModal} 
-                onClose={() => setShowFlyerModal(false)} 
-                convocatoria={c} 
-            />
-
             {/* Modal Sorteo Inteligente */}
             <TeamShuffleModal 
                 isOpen={showShuffleModal} 
                 onClose={() => setShowShuffleModal(false)} 
                 convocatoria={c} 
-                onOpenFlyer={() => setShowFlyerModal(true)}
             />
 
             {/* Modal Carta FUT 3D de Jugador */}
