@@ -760,3 +760,96 @@
 @media (prefers-reduced-motion: reduce) {
   .pdb-loader-three-host { animation: none !important; }
 }
+
+
+/* ===== Animated 3D footballer loading scene ===== */
+@layer components {
+  .pdb-loader-content--scene {
+    width: min(94vw, 560px);
+  }
+
+  .pdb-loader-scene-host {
+    position: relative;
+    width: min(92vw, 500px);
+    height: clamp(210px, 34vh, 310px);
+    overflow: hidden;
+    border: 1px solid rgb(0 201 232 / 17%);
+    border-radius: 22px;
+    background:
+      radial-gradient(ellipse at 50% 70%, rgb(0 201 232 / 10%), transparent 62%),
+      linear-gradient(180deg, rgb(9 20 33 / 25%), rgb(3 10 17 / 72%));
+    box-shadow:
+      0 22px 60px rgb(0 0 0 / 28%),
+      0 0 38px rgb(0 201 232 / 8%),
+      inset 0 1px rgb(255 255 255 / 8%);
+  }
+
+  .pdb-loader-scene-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    outline: none;
+  }
+
+  .pdb-loader-scene-fallback {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+    font-size: 72px;
+  }
+
+  .pdb-loader-inline--scene {
+    min-height: 220px;
+    gap: 12px;
+    padding: 18px;
+  }
+
+  .pdb-loader-scene-host--compact {
+    width: min(100%, 390px);
+    height: 180px;
+    border-radius: 16px;
+  }
+
+  .pdb-loader-scene-host--compact .pdb-loader-scene-canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  .pdb-loader-content--scene .pdb-loader-brand {
+    margin-bottom: clamp(14px, 2.5vh, 24px);
+  }
+
+  .pdb-loader-content--scene .pdb-loader-label {
+    margin-top: 17px;
+  }
+}
+
+@media (max-width: 640px) {
+  .pdb-loader-scene-host {
+    width: min(94vw, 440px);
+    height: clamp(190px, 30vh, 250px);
+    border-radius: 17px;
+  }
+
+  .pdb-loader-scene-host--compact {
+    width: 100%;
+    height: 155px;
+  }
+
+  .pdb-loader-content--scene {
+    width: 96vw;
+  }
+
+  .pdb-loader-content--scene .pdb-loader-brand {
+    margin-bottom: 15px;
+  }
+
+  .pdb-loader-content--scene .pdb-loader-caption {
+    letter-spacing: .16em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdb-loader-scene-host { animation: none !important; }
+}
