@@ -277,9 +277,9 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
 
       {/* ===== Mobile Slide-down Menu ===== */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 pt-16">
+        <div className="pdb-mobile-menu md:hidden fixed inset-0 z-40 pt-16">
           <div className="absolute inset-0 bg-black/75 backdrop-blur-md" onClick={() => setMobileMenuOpen(false)}></div>
-          <div className="absolute left-0 top-16 bottom-0 w-[min(88vw,360px)] bg-[#080d19] border-r border-cyan-400/20 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden shadow-2xl">
+          <div className="pdb-mobile-menu-panel absolute left-0 top-16 bottom-0 w-[min(88vw,360px)] bg-[#080d19] border-r border-cyan-400/20 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden shadow-2xl">
             <div className="p-4 space-y-4">
               {/* Mobile User Profile Card */}
               <Link
