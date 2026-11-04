@@ -40,7 +40,7 @@ const AdminWalletsPage = React.lazy(() => import('@/features/admin/AdminWalletsP
 // Smart redirect: authenticated users go to dashboard, guests see login
 const HomeRedirect = () => {
   const { isAuthenticated, user, isLoading } = useAuthStore();
-  if (isLoading) return <FootballSpinner />;
+  if (isLoading) return <FootballSpinner variant="inline" label="Verificando tu sesión" />;
   if (isAuthenticated) {
     return <Navigate to={user?.role === 'admin' ? '/admin' : '/dashboard'} replace />;
   }
@@ -49,7 +49,7 @@ const HomeRedirect = () => {
 
 export const AppRouter = () => {
   return (
-    <React.Suspense fallback={<FootballSpinner />}>
+    <React.Suspense fallback={<FootballSpinner variant="inline" label="Cargando módulo" />}>
       <Routes>
         {/* Public: standalone pages (no layout) */}
         <Route path="/" element={<HomeRedirect />} />
