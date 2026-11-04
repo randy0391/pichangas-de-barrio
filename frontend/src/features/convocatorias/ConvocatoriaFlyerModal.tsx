@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Convocatoria, Confirmacion } from '@/types';
-import { X, Download, Copy, Share2, Sparkles, Check, Key, RefreshCw, Tag, MapPin, Calendar, Phone, Palette } from 'lucide-react';
+import { X, Download, Copy, Share2, Sparkles, Check, RefreshCw, Tag, MapPin, Calendar, Phone } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useConvocatoria } from '@/hooks/useConvocatorias';
 import { toast } from 'sonner';
@@ -11,8 +11,6 @@ interface ConvocatoriaFlyerModalProps {
   convocatoria: Convocatoria;
 }
 
-type FlyerTheme = 'neon_arena' | 'fuego_barrio' | 'cyber_futsal' | 'champions_gold';
-
 export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
   isOpen,
   onClose,
@@ -21,15 +19,11 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
   const { user } = useAuthStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Fetch detailed fresh data with confirmaciones.user eager-loaded
   const { data: fullConvocatoria, isLoading: isLoadingFull, refetch } = useConvocatoria(convocatoria?.id);
   const activeConvocatoria = fullConvocatoria || convocatoria;
-
-  // Active Visual Theme
-  const [theme, setTheme] = useState<FlyerTheme>('neon_arena');
 
   // Format defaults
   const numTeams = activeConvocatoria?.num_teams || 2;
@@ -74,32 +68,10 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
     getShortDateTime(activeConvocatoria?.match_date, activeConvocatoria?.match_time)
   );
 
-  // Gemini API Key management
-  const FALLBACK_KEY = (() => {
-    try {
-      return atob('QVEuQWI4Uk42SWh1RHFoVllHSmg2bUJ3dGdGZXBYbEE3Sm9aWGpXa3VtbTcyMk5ubjIydGc=');
-    } catch {
-      return '';
-    }
-  })();
-  const DEFAULT_KEY = import.meta.env.VITE_GEMINI_API_KEY || FALLBACK_KEY;
-  const [geminiKey, setGeminiKey] = useState<string>(() => {
-    const saved = localStorage.getItem('pb_gemini_api_key');
-    if (saved && !saved.startsWith('AIzaSyDAR')) {
-      return saved;
-    }
-    return DEFAULT_KEY;
-  });
-  const [showKeyConfig, setShowKeyConfig] = useState(false);
-
-  // AI Generated Match Metadata
-  const [aiHeadline, setAiHeadline] = useState<string>('¡DUELO DE TITANES EN LA CANCHA!');
-  const [aiHypeNarrative, setAiHypeNarrative] = useState<string>('');
+  const [headlineText, setHeadlineText] = useState('EL BARRIO SE JUEGA EN LA CANCHA');
 
   // Strictly only accessible for Admin
   const isAdmin = user?.role === 'admin' || user?.role?.toLowerCase() === 'admin' || Boolean((user as any)?.is_admin);
-  if (!isOpen || !isAdmin) return null;
-
   useEffect(() => {
     if (activeConvocatoria?.location) {
       setVenueText(activeConvocatoria.location);
@@ -113,678 +85,263 @@ export const ConvocatoriaFlyerModal: React.FC<ConvocatoriaFlyerModalProps> = ({
     if (isOpen && activeConvocatoria) {
       renderPoster();
     }
-  }, [isOpen, activeConvocatoria, categoryText, venueText, dateTimeText, contactPhone, theme, aiHeadline]);
-
-  // Request Custom AI Match Creative from Gemini 3.5 Flash Lite
-  const fetchGeminiData = async (keyToUse: string) => {
-    try {
-      setIsGenerating(true);
-      const prompt = `Actua como director creativo y narrador deportivo oficial de "Pichangas de Barrio FC".
-Partido: "${activeConvocatoria.title}"
-Sede: "${venueText}"
-Fecha: "${dateTimeText}"
-Modalidad: ${numTeams} equipos
-Genera un JSON con este formato exacto:
-{
-  "headline": "Eslogan epico y motivador de maximo 6 palabras en MAYUSCULAS (sin comillas)",
-  "theme": "Uno de estos 4 valores exactos: neon_arena, fuego_barrio, cyber_futsal, champions_gold",
-  "hype": "Narrativa emocionante de 2 lineas para compartir en WhatsApp anunciando el partidazo y la sede."
-}`;
-
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${keyToUse}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: 'application/json' }
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || 'Error en Gemini API');
-
-      const rawJson = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-      if (rawJson) {
-        const parsed = JSON.parse(rawJson);
-        if (parsed.headline) setAiHeadline(parsed.headline.toUpperCase());
-        if (parsed.theme && ['neon_arena', 'fuego_barrio', 'cyber_futsal', 'champions_gold'].includes(parsed.theme)) {
-          setTheme(parsed.theme as FlyerTheme);
-        }
-        if (parsed.hype) setAiHypeNarrative(parsed.hype);
-        toast.success('¡Diseño y eslogan personalizados con Gemini IA!');
-      }
-    } catch {
-      toast.info('Se aplicó diseño de alta definición oficial.');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  // 3D Realistic Soccer Ball Generator
-  const draw3DSoccerBall = (ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) => {
-    ctx.save();
-    // Drop shadow
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    ctx.beginPath();
-    ctx.ellipse(cx + 8, cy + r - 5, r * 0.9, r * 0.28, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Base Sphere gradient
-    const ballGrad = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, r * 0.1, cx, cy, r);
-    ballGrad.addColorStop(0, '#ffffff');
-    ballGrad.addColorStop(0.55, '#f8fafc');
-    ballGrad.addColorStop(0.85, '#cbd5e1');
-    ballGrad.addColorStop(1, '#475569');
-    ctx.fillStyle = ballGrad;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = '#0f172a';
-    ctx.lineWidth = 3.5;
-    ctx.stroke();
-
-    // Central pentagon
-    ctx.fillStyle = '#0f172a';
-    ctx.beginPath();
-    for (let i = 0; i < 5; i++) {
-      const ang = (i * 72 - 18) * (Math.PI / 180);
-      const px = cx + Math.cos(ang) * (r * 0.36);
-      const py = cy + Math.sin(ang) * (r * 0.36);
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.closePath();
-    ctx.fill();
-
-    // Seam lines to outer points
-    for (let i = 0; i < 5; i++) {
-      const ang = (i * 72 - 18) * (Math.PI / 180);
-      const px1 = cx + Math.cos(ang) * (r * 0.36);
-      const py1 = cy + Math.sin(ang) * (r * 0.36);
-      const px2 = cx + Math.cos(ang) * (r * 0.82);
-      const py2 = cy + Math.sin(ang) * (r * 0.82);
-      ctx.beginPath();
-      ctx.moveTo(px1, py1);
-      ctx.lineTo(px2, py2);
-      ctx.stroke();
-    }
-
-    // Outer patch hints
-    for (let i = 0; i < 5; i++) {
-      const ang = (i * 72 - 18) * (Math.PI / 180);
-      const px2 = cx + Math.cos(ang) * (r * 0.82);
-      const py2 = cy + Math.sin(ang) * (r * 0.82);
-      ctx.fillStyle = '#0f172a';
-      ctx.beginPath();
-      ctx.arc(px2, py2, r * 0.18, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Specular glossy reflection
-    const shine = ctx.createRadialGradient(cx - r * 0.4, cy - r * 0.4, 2, cx - r * 0.4, cy - r * 0.4, r * 0.45);
-    shine.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
-    shine.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
-    shine.addColorStop(1, 'rgba(255, 255, 255, 0)');
-    ctx.fillStyle = shine;
-    ctx.beginPath();
-    ctx.arc(cx - r * 0.4, cy - r * 0.4, r * 0.45, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  };
+  }, [isOpen, activeConvocatoria, categoryText, venueText, dateTimeText, contactPhone, headlineText]);
 
   const renderPoster = async () => {
     const canvas = canvasRef.current || document.createElement('canvas');
     const width = 1080;
-    const height = 1620; // 2:3 high definition resolution
+    const rawPlayers = activeConvocatoria.confirmaciones || [];
+    const players = rawPlayers.filter((item) => ['confirmado', 'asistio', 'confirmed'].includes((item.status || '').toLowerCase()));
+    const teamCount = Math.max(2, Math.min(6, Number(activeConvocatoria.num_teams) || 2));
+    const hasTeams = players.some((player) => Number(player.team_number) > 0);
+    const teams = Array.from({ length: teamCount }, (_, index) => ({
+      number: index + 1,
+      players: players.filter((player) => Number(player.team_number) === index + 1)
+        .sort((a, b) => Number(b.match_role === 'portero') - Number(a.match_role === 'portero'))
+    }));
+    const columns = teamCount === 3 || teamCount > 4 ? 3 : 2;
+    const gap = 20;
+    const margin = 46;
+    const cardWidth = (width - margin * 2 - gap * (columns - 1)) / columns;
+    const maxRoster = Math.max(1, ...teams.map((team) => team.players.length));
+    const rowHeight = Math.max(42, Math.min(60, Math.floor(680 / maxRoster)));
+    const cardHeight = 76 + maxRoster * rowHeight + 18;
+    const gridRows = Math.ceil(teamCount / columns);
+    const teamsTop = 545;
+    const footerTop = teamsTop + gridRows * cardHeight + (gridRows - 1) * gap + 28;
+    const height = Math.max(1500, footerTop + 145);
+
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Theme Color Palettes
-    const palettes = {
-      neon_arena: {
-        bgTop: '#020612',
-        bgMid: '#041f17',
-        bgBot: '#020e18',
-        accent1: '#c8ff00', // Neon Lime
-        accent2: '#06b6d4', // Cyan
-        accent3: '#e11d48', // Red
-        cardBg: 'rgba(8, 18, 30, 0.88)',
-        borderColor: '#84cc16'
-      },
-      fuego_barrio: {
-        bgTop: '#080205',
-        bgMid: '#240808',
-        bgBot: '#0a0202',
-        accent1: '#f59e0b', // Gold Flame
-        accent2: '#ef4444', // Red
-        accent3: '#fbbf24', // Amber
-        cardBg: 'rgba(28, 10, 10, 0.90)',
-        borderColor: '#ef4444'
-      },
-      cyber_futsal: {
-        bgTop: '#020412',
-        bgMid: '#120732',
-        bgBot: '#050a22',
-        accent1: '#22d3ee', // Cyan
-        accent2: '#a855f7', // Purple
-        accent3: '#f43f5e', // Rose
-        cardBg: 'rgba(15, 12, 38, 0.90)',
-        borderColor: '#06b6d4'
-      },
-      champions_gold: {
-        bgTop: '#080702',
-        bgMid: '#1c1505',
-        bgBot: '#060501',
-        accent1: '#facc15', // Gold
-        accent2: '#e2e8f0', // Silver
-        accent3: '#ea580c', // Bronze
-        cardBg: 'rgba(24, 20, 8, 0.92)',
-        borderColor: '#eab308'
-      }
-    };
-
-    const currentPalette = palettes[theme] || palettes.neon_arena;
-
-    // 1. Deep Atmospheric Sports Arena Background
-    const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
-    bgGrad.addColorStop(0, currentPalette.bgTop);
-    bgGrad.addColorStop(0.3, currentPalette.bgMid);
-    bgGrad.addColorStop(0.75, currentPalette.bgBot);
-    bgGrad.addColorStop(1, '#000000');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, width, height);
-
-    // Diagonal Stadium Mesh Lines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-    ctx.lineWidth = 1.5;
-    for (let i = -width; i < width * 2; i += 50) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i + height, height);
-      ctx.stroke();
-    }
-    for (let i = width * 2; i > -width; i -= 50) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i - height, height);
-      ctx.stroke();
-    }
-
-    // Top Volumetric Stadium Floodlights
-    const drawFloodlight = (x: number, y: number, color: string) => {
-      const rad = ctx.createRadialGradient(x, y, 10, x, y, 380);
-      rad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
-      rad.addColorStop(0.25, color);
-      rad.addColorStop(0.7, 'rgba(255, 255, 255, 0.04)');
-      rad.addColorStop(1, 'transparent');
-      ctx.fillStyle = rad;
-      ctx.beginPath();
-      ctx.arc(x, y, 380, 0, Math.PI * 2);
-      ctx.fill();
-    };
-
-    drawFloodlight(90, 60, currentPalette.accent1);
-    drawFloodlight(width - 90, 60, currentPalette.accent2);
-
-    // Top Neon Athletic Accent Bar
-    const topBar = ctx.createLinearGradient(0, 0, width, 0);
-    topBar.addColorStop(0, currentPalette.accent1);
-    topBar.addColorStop(0.5, currentPalette.accent2);
-    topBar.addColorStop(1, currentPalette.accent3);
-    ctx.fillStyle = topBar;
-    ctx.fillRect(0, 0, width, 12);
-
-    // 2. Official Club Badge and 3D Urban Typography
-    try {
-      const logoImg = new Image();
-      logoImg.crossOrigin = 'anonymous';
-      logoImg.src = '/logo.jpg';
-      await new Promise((res) => {
-        logoImg.onload = res;
-        logoImg.onerror = res;
-      });
-
-      if (logoImg.width > 0) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(105, 120, 48, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(logoImg, 57, 72, 96, 96);
-        ctx.restore();
-
-        ctx.strokeStyle = currentPalette.accent1;
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(105, 120, 48, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-    } catch {
-      // Fallback
-    }
-
-    // 3D Title: PICHANGAS DE BARRIO FC
-    ctx.save();
-    ctx.translate(width / 2 + 30, 125);
-    ctx.rotate(-0.025);
-
-    // Top Line: PICHANGAS
-    ctx.font = '900 84px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    // 3D extruded shadow layers
-    ctx.fillStyle = '#000000';
-    ctx.fillText('PICHANGAS', 4, -36);
-    ctx.fillText('PICHANGAS', 3, -37);
-    ctx.fillText('PICHANGAS', 2, -38);
-
-    // Title face gradient
-    const titleGrad = ctx.createLinearGradient(0, -70, 0, -10);
-    titleGrad.addColorStop(0, '#ffffff');
-    titleGrad.addColorStop(0.4, currentPalette.accent1);
-    titleGrad.addColorStop(1, currentPalette.accent1);
-    ctx.fillStyle = titleGrad;
-    ctx.fillText('PICHANGAS', 0, -40);
-
-    // Bottom Line: DE BARRIO FC
-    ctx.font = '900 68px sans-serif';
-    ctx.fillStyle = '#000000';
-    ctx.fillText('DE BARRIO FC', 4, 38);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText('DE BARRIO FC', 0, 34);
-    ctx.restore();
-
-    // 3D Soccer Ball at Top-Right
-    draw3DSoccerBall(ctx, width - 95, 115, 52);
-
-    // 3. Category Ribbon & AI Motto (y = 225 to 305)
-    ctx.save();
-    ctx.translate(width / 2, 245);
-    ctx.rotate(-0.02);
-
-    // Angled Category Ribbon
-    const ribbonGrad = ctx.createLinearGradient(-220, 0, 220, 0);
-    ribbonGrad.addColorStop(0, '#facc15');
-    ribbonGrad.addColorStop(1, '#eab308');
-    ctx.fillStyle = ribbonGrad;
-    ctx.strokeStyle = '#05070a';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.roundRect(-220, -32, 440, 64, 12);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = '#0a0a0a';
-    ctx.font = '900 42px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(categoryText.toUpperCase(), 0, 0);
-    ctx.restore();
-
-    // AI Headline / Motto
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#fde047';
-    ctx.font = '900 24px sans-serif';
-    ctx.fillText(`⚡ ${aiHeadline} ⚡`, width / 2, 305);
-
-    // 4. Match Details HUD Glassmorphic Card (y = 330 to 465)
-    ctx.fillStyle = currentPalette.cardBg;
-    ctx.strokeStyle = currentPalette.borderColor;
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.roundRect(55, 330, width - 110, 132, 24);
-    ctx.fill();
-    ctx.stroke();
-
-    // Date & Time
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 38px sans-serif';
-    ctx.fillText(`📅 ${dateTimeText.toUpperCase()}`, width / 2, 372);
-
-    // Sede / Venue
-    ctx.fillStyle = currentPalette.accent1;
-    ctx.font = '900 40px sans-serif';
-    ctx.fillText(`📍 SEDE: ${venueText.toUpperCase()}`, width / 2, 422);
-
-    // Filter confirmed players
-    const rawConfirmados = (activeConvocatoria.confirmaciones || []);
-    let confirmados = rawConfirmados.filter(c => {
-      const st = (c.status || '').toLowerCase();
-      return st === 'confirmado' || st === 'asistio' || st === 'confirmed';
+    const loadImage = (src: string): Promise<HTMLImageElement | null> => new Promise((resolve) => {
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.onload = () => resolve(image);
+      image.onerror = () => resolve(null);
+      image.src = src;
     });
-    if (confirmados.length === 0 && rawConfirmados.length > 0) {
-      confirmados = rawConfirmados;
-    }
+    const avatarUrls: string[] = Array.from(new Set<string>(players.flatMap((player): string[] => {
+      const avatar = player.user?.avatar;
+      return typeof avatar === 'string' && avatar.length > 0 ? [avatar] : [];
+    })));
+    const loadedImages = await Promise.all([loadImage('/logo.jpg'), ...avatarUrls.map((url) => loadImage(url))]);
+    const logoImage = loadedImages[0];
+    const avatarMap = new Map<string, HTMLImageElement>();
+    avatarUrls.forEach((url, index) => {
+      const image = loadedImages[index + 1];
+      if (image) avatarMap.set(url, image);
+    });
 
-    const team1 = confirmados.filter(c => Number(c.team_number) === 1);
-    const team2 = confirmados.filter(c => Number(c.team_number) === 2);
-    const team3 = confirmados.filter(c => Number(c.team_number) === 3);
-
-    const sortWithGkFirst = (list: Confirmacion[]) => {
-      return [...list].sort((a, b) => {
-        const aGk = a.match_role === 'portero' ? 1 : 0;
-        const bGk = b.match_role === 'portero' ? 1 : 0;
-        return bGk - aGk;
-      });
+    const roundRect = (x: number, y: number, w: number, h: number, radius: number) => {
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, radius);
+    };
+    const fitText = (value: string, maxWidth: number, font: string) => {
+      ctx.font = font;
+      let result = value;
+      while (result.length > 3 && ctx.measureText(result).width > maxWidth) result = result.slice(0, -2) + '…';
+      return result;
+    };
+    const drawAvatar = (player: Confirmacion, x: number, y: number, radius: number, accent: string) => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.clip();
+      const avatar = player.user?.avatar ? avatarMap.get(player.user.avatar) : null;
+      if (avatar) {
+        const scale = Math.max((radius * 2) / avatar.width, (radius * 2) / avatar.height);
+        ctx.drawImage(avatar, x - avatar.width * scale / 2, y - avatar.height * scale / 2, avatar.width * scale, avatar.height * scale);
+      } else {
+        ctx.fillStyle = '#17263a';
+        ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+        ctx.fillStyle = accent;
+        ctx.beginPath();
+        ctx.arc(x, y - radius * 0.18, radius * 0.29, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(x, y + radius * 0.62, radius * 0.58, radius * 0.43, 0, Math.PI, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.stroke();
     };
 
-    const hasTeams = team1.length > 0 && team2.length > 0;
-    const detectedNumTeams = activeConvocatoria.num_teams || (team3.length > 0 ? 3 : 2);
+    // Identidad visual oficial: magenta, cian y verde lima.
+    const bg = ctx.createLinearGradient(0, 0, width, height);
+    bg.addColorStop(0, '#080d1b');
+    bg.addColorStop(0.55, '#111c30');
+    bg.addColorStop(1, '#050914');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, width, height);
+    const drawGlow = (x: number, y: number, radius: number, color: string) => {
+      const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(1, 'rgba(5,9,20,0)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    };
+    drawGlow(60, 100, 390, 'rgba(240,0,145,.20)');
+    drawGlow(width - 60, 390, 430, 'rgba(0,201,232,.16)');
+    const brandBar = ctx.createLinearGradient(0, 0, width, 0);
+    brandBar.addColorStop(0, '#F00091');
+    brandBar.addColorStop(0.52, '#00C9E8');
+    brandBar.addColorStop(1, '#A5E900');
+    ctx.fillStyle = brandBar;
+    ctx.fillRect(0, 0, width, 14);
 
-    // 5. Teams & Roster Section (y = 485 to 1420)
+    // Logo original, sin alteraciones.
+    if (logoImage) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(125, 130, 73, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.restore();
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(125, 130, 67, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(logoImage, 58, 63, 134, 134);
+      ctx.restore();
+    }
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 56px sans-serif';
+    ctx.fillText('PICHANGAS', 225, 112);
+    ctx.fillStyle = '#00C9E8';
+    ctx.font = '900 42px sans-serif';
+    ctx.fillText('DE BARRIO FC', 228, 162);
+    ctx.fillStyle = '#aab7ca';
+    ctx.font = '700 18px sans-serif';
+    ctx.fillText('FÚTBOL • AMISTAD • BARRIO', 230, 198);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#F00091';
+    roundRect(80, 245, width - 160, 54, 18);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 24px sans-serif';
+    ctx.fillText(fitText('CONVOCATORIA OFICIAL • ' + categoryText.toUpperCase() + ' • ' + teamCount + ' EQUIPOS', width - 180, '900 24px sans-serif'), width / 2, 280);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 50px sans-serif';
+    ctx.fillText(fitText((activeConvocatoria.title || 'PICHANGA DE BARRIO').toUpperCase(), width - 130, '900 50px sans-serif'), width / 2, 365);
+    ctx.fillStyle = '#A5E900';
+    ctx.font = '900 26px sans-serif';
+    ctx.fillText(fitText(headlineText.toUpperCase(), width - 160, '900 26px sans-serif'), width / 2, 414);
+
+    const infoY = 450;
+    const infoGap = 18;
+    const infoWidth = (width - 112 - infoGap) / 2;
+    [
+      { x: 56, label: 'FECHA Y HORA', value: dateTimeText, color: '#00C9E8' },
+      { x: 56 + infoWidth + infoGap, label: 'LUGAR DEL ENCUENTRO', value: venueText, color: '#F00091' }
+    ].forEach((item) => {
+      ctx.fillStyle = 'rgba(255,255,255,.07)';
+      ctx.strokeStyle = 'rgba(255,255,255,.16)';
+      ctx.lineWidth = 2;
+      roundRect(item.x, infoY, infoWidth, 70, 16);
+      ctx.fill();
+      ctx.stroke();
+      ctx.textAlign = 'left';
+      ctx.fillStyle = item.color;
+      ctx.font = '800 15px sans-serif';
+      ctx.fillText(item.label, item.x + 18, infoY + 25);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 21px sans-serif';
+      ctx.fillText(fitText(item.value.toUpperCase(), infoWidth - 36, '800 21px sans-serif'), item.x + 18, infoY + 53);
+    });
+
     if (hasTeams) {
-      if (detectedNumTeams === 2) {
-        // =========================================================
-        // 2 TEAMS: DUELO VERSUS BATTLE ARENA (High-impact visual duel)
-        // =========================================================
-        const colWidth = 460;
-        const col1X = 60;
-        const col2X = 560;
-        const startY = 495;
-        const pillH = 58;
-
-        // Team 1 Left Pill: Furia Roja
-        const t1Grad = ctx.createLinearGradient(col1X, startY, col1X + colWidth, startY);
-        t1Grad.addColorStop(0, '#dc2626');
-        t1Grad.addColorStop(1, '#991b1b');
-        ctx.fillStyle = t1Grad;
-        ctx.beginPath();
-        ctx.roundRect(col1X, startY, colWidth, pillH, 29);
+      const accents = ['#F00091', '#00C9E8', '#A5E900', '#f59e0b', '#a78bfa', '#fb7185'];
+      teams.forEach((team, index) => {
+        const col = index % columns;
+        const row = Math.floor(index / columns);
+        const x = margin + col * (cardWidth + gap);
+        const y = teamsTop + row * (cardHeight + gap);
+        const accent = accents[index % accents.length];
+        ctx.fillStyle = 'rgba(10,18,33,.95)';
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 2.5;
+        roundRect(x, y, cardWidth, cardHeight, 22);
         ctx.fill();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 30px sans-serif';
+        ctx.stroke();
+        ctx.fillStyle = accent;
+        roundRect(x + 12, y + 12, cardWidth - 24, 54, 14);
+        ctx.fill();
         ctx.textAlign = 'center';
-        ctx.fillText('🔴 EQUIPO 1', col1X + colWidth / 2, startY + 30);
-
-        // Team 2 Right Pill: Rayo Verde
-        const t2Grad = ctx.createLinearGradient(col2X, startY, col2X + colWidth, startY);
-        t2Grad.addColorStop(0, '#84cc16');
-        t2Grad.addColorStop(1, '#4d7c0f');
-        ctx.fillStyle = t2Grad;
-        ctx.beginPath();
-        ctx.roundRect(col2X, startY, colWidth, pillH, 29);
-        ctx.fill();
-
-        ctx.fillStyle = '#0a0a0a';
-        ctx.font = '900 30px sans-serif';
-        ctx.fillText('🟢 EQUIPO 2', col2X + colWidth / 2, startY + 30);
-
-        // Center VS Badge
-        ctx.fillStyle = '#070b14';
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 3.5;
-        ctx.beginPath();
-        ctx.arc(width / 2, startY + pillH / 2, 42, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#facc15';
-        ctx.font = '900 32px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('VS', width / 2, startY + pillH / 2 + 4);
-
-        // Vertical divider
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(width / 2, startY + 70);
-        ctx.lineTo(width / 2, 1400);
-        ctx.stroke();
-
-        // Render 2-Column Player Cards
-        const render2ColRoster = (players: Confirmacion[], colX: number, accentColor: string) => {
-          const sorted = sortWithGkFirst(players);
-          const rowStartY = startY + 80;
-          const maxR = Math.max(7, sorted.length);
-          const rowH = Math.min(85, 820 / maxR);
-
-          sorted.forEach((p, idx) => {
-            const py = rowStartY + idx * rowH;
-            const isGk = p.match_role === 'portero';
-            const rawName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
-            let nameToShow = p.user?.nickname ? `${rawName.split(' ')[0]} "${p.user.nickname}"` : rawName.split(' ').slice(0, 2).join(' ');
-            if (nameToShow.length > 20) nameToShow = nameToShow.slice(0, 19) + '.';
-
-            // Glassmorphic Player Card
-            ctx.fillStyle = isGk ? 'rgba(245, 158, 11, 0.22)' : 'rgba(15, 23, 42, 0.75)';
-            ctx.strokeStyle = isGk ? '#f59e0b' : 'rgba(255, 255, 255, 0.12)';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.roundRect(colX, py - 24, colWidth, rowH - 12, 14);
-            ctx.fill();
-            ctx.stroke();
-
-            // Number Badge
-            ctx.fillStyle = isGk ? '#f59e0b' : accentColor;
-            ctx.beginPath();
-            ctx.roundRect(colX + 12, py - 16, 40, rowH - 28, 8);
-            ctx.fill();
-
-            ctx.fillStyle = '#0a0a0a';
-            ctx.font = '900 22px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(`${idx + 1}`, colX + 32, py + 2);
-
-            // Player Name
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '900 24px sans-serif';
-            ctx.textAlign = 'left';
-            ctx.fillText(nameToShow, colX + 66, py + 2);
-
-            // Goalkeeper Badge
-            if (isGk) {
-              const textW = ctx.measureText(nameToShow).width;
-              ctx.fillText('🧤', colX + 74 + textW, py + 2);
-
-              ctx.fillStyle = '#f59e0b';
-              ctx.font = '900 15px sans-serif';
-              ctx.textAlign = 'right';
-              ctx.fillText('ARQUERO', colX + colWidth - 16, py + 2);
-            }
-          });
-        };
-
-        render2ColRoster(team1, col1X, '#ef4444');
-        render2ColRoster(team2, col2X, '#84cc16');
-
-      } else {
-        // =========================================================
-        // 3 TEAMS: TRIANGULAR CHAMPIONSHIP ROSTER (3 Balanced Columns)
-        // =========================================================
-        const colWidth = 310;
-        const col1X = 45;
-        const col2X = 385;
-        const col3X = 725;
-        const startY = 495;
-        const pillH = 54;
-
-        // Team 1 Pill: Red
-        ctx.fillStyle = '#dc2626';
-        ctx.beginPath();
-        ctx.roundRect(col1X, startY, colWidth, pillH, 27);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 26px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('🔴 EQUIPO 1', col1X + colWidth / 2, startY + 28);
-
-        // Team 2 Pill: Lime
-        ctx.fillStyle = '#84cc16';
-        ctx.beginPath();
-        ctx.roundRect(col2X, startY, colWidth, pillH, 27);
-        ctx.fill();
-        ctx.fillStyle = '#0a0a0a';
-        ctx.font = '900 26px sans-serif';
-        ctx.fillText('🟢 EQUIPO 2', col2X + colWidth / 2, startY + 28);
-
-        // Team 3 Pill: Purple / White
-        ctx.fillStyle = '#9333ea';
-        ctx.beginPath();
-        ctx.roundRect(col3X, startY, colWidth, pillH, 27);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 26px sans-serif';
-        ctx.fillText('🟣 EQUIPO 3', col3X + colWidth / 2, startY + 28);
-
-        // Vertical dividers
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(365, startY + 65);
-        ctx.lineTo(365, 1400);
-        ctx.moveTo(705, startY + 65);
-        ctx.lineTo(705, 1400);
-        ctx.stroke();
-
-        const render3ColRoster = (players: Confirmacion[], colX: number, accentColor: string) => {
-          const sorted = sortWithGkFirst(players);
-          const rowStartY = startY + 75;
-          const maxR = Math.max(7, sorted.length);
-          const rowH = Math.min(85, 820 / maxR);
-
-          sorted.forEach((p, idx) => {
-            const py = rowStartY + idx * rowH;
-            const isGk = p.match_role === 'portero';
-            const rawName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
-            let nameToShow = p.user?.nickname ? p.user.nickname : rawName.split(' ').slice(0, 2).join(' ');
-            if (nameToShow.length > 13) nameToShow = nameToShow.slice(0, 12) + '.';
-
-            // Glassmorphic Player Card
-            ctx.fillStyle = isGk ? 'rgba(245, 158, 11, 0.22)' : 'rgba(15, 23, 42, 0.75)';
-            ctx.strokeStyle = isGk ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.roundRect(colX, py - 22, colWidth, rowH - 10, 12);
-            ctx.fill();
-            ctx.stroke();
-
-            // Number Pill
-            ctx.fillStyle = isGk ? '#f59e0b' : accentColor;
-            ctx.font = '900 22px sans-serif';
-            ctx.textAlign = 'left';
-            ctx.fillText(`${idx + 1}.`, colX + 12, py + 2);
-
-            // Player Name
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '900 22px sans-serif';
-            ctx.fillText(nameToShow, colX + 46, py + 2);
-
-            if (isGk) {
-              const textW = ctx.measureText(nameToShow).width;
-              ctx.fillText('🧤', colX + 50 + textW, py + 2);
-            }
-          });
-        };
-
-        render3ColRoster(team1, col1X, '#ef4444');
-        render3ColRoster(team2, col2X, '#84cc16');
-        render3ColRoster(team3, col3X, '#c084fc');
-
-        // Resting Team Note under Column 3
-        const resting = activeConvocatoria.draw_metadata?.first_match?.resting_teams;
-        if (resting && resting.includes(3)) {
-          ctx.fillStyle = 'rgba(245, 158, 11, 0.95)';
-          ctx.font = 'bold 16px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('(Descansa 1er partido)', col3X + colWidth / 2, 1410);
-        }
-      }
-    } else if (confirmados.length > 0) {
-      // General Roster when not sorted into teams yet
-      ctx.textAlign = 'center';
-      ctx.fillStyle = currentPalette.accent1;
-      ctx.font = '900 32px sans-serif';
-      ctx.fillText(`📋 CONVOCADOS CONFIRMADOS (${confirmados.length} / ${activeConvocatoria.max_players})`, width / 2, 530);
-
-      const colWidth = 310;
-      const colXCoords = [45, 385, 725];
-      const startY = 590;
-      const sorted = sortWithGkFirst(confirmados);
-
-      sorted.slice(0, 21).forEach((p, idx) => {
-        const colIdx = Math.floor(idx / 7);
-        const rowIdx = idx % 7;
-        const colX = colXCoords[colIdx] || 45;
-        const py = startY + rowIdx * 82;
-        const isGk = p.match_role === 'portero';
-        const rawName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
-        let nameToShow = p.user?.nickname ? p.user.nickname : rawName.split(' ').slice(0, 2).join(' ');
-        if (nameToShow.length > 13) nameToShow = nameToShow.slice(0, 12) + '.';
-
-        ctx.fillStyle = isGk ? 'rgba(245, 158, 11, 0.22)' : 'rgba(15, 23, 42, 0.75)';
-        ctx.strokeStyle = isGk ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(colX, py - 24, colWidth, 70, 12);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = isGk ? '#f59e0b' : currentPalette.accent1;
+        ctx.fillStyle = index === 2 || index === 4 ? '#07111e' : '#ffffff';
         ctx.font = '900 24px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText(`${idx + 1}.`, colX + 16, py + 2);
+        ctx.fillText('EQUIPO ' + team.number, x + cardWidth / 2, y + 47);
 
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 22px sans-serif';
-        ctx.fillText(nameToShow, colX + 54, py + 2);
-
-        if (isGk) {
-          const textW = ctx.measureText(nameToShow).width;
-          ctx.fillText('🧤', colX + 60 + textW, py + 2);
+        if (team.players.length === 0) {
+          ctx.fillStyle = '#9aa8bc';
+          ctx.font = '700 18px sans-serif';
+          ctx.fillText('Sin jugadores asignados', x + cardWidth / 2, y + 112);
         }
+        team.players.forEach((player, playerIndex) => {
+          const rowY = y + 66 + playerIndex * rowHeight;
+          const radius = Math.min(22, Math.max(16, rowHeight * 0.34));
+          const centerY = rowY + rowHeight / 2;
+          const isGoalkeeper = player.match_role === 'portero';
+          ctx.fillStyle = isGoalkeeper ? 'rgba(245,158,11,.14)' : 'rgba(255,255,255,.035)';
+          roundRect(x + 12, rowY + 3, cardWidth - 24, rowHeight - 6, 10);
+          ctx.fill();
+          drawAvatar(player, x + 38, centerY, radius, isGoalkeeper ? '#f59e0b' : accent);
+          const fullName = player.user?.full_name || player.user?.name ||
+            ((player.user?.nombres || '') + ' ' + (player.user?.apellido_paterno || '')).trim() || 'Jugador';
+          const displayName = player.user?.nickname ? fullName.split(' ')[0] + ' "' + player.user.nickname + '"' : fullName;
+          const maxWidth = cardWidth - 105 - (isGoalkeeper ? 48 : 0);
+          ctx.textAlign = 'left';
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '800 18px sans-serif';
+          ctx.fillText(fitText(displayName, maxWidth, '800 18px sans-serif'), x + 72, centerY + 6);
+          if (isGoalkeeper) {
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '900 11px sans-serif';
+            ctx.fillText('ARQUERO', x + cardWidth - 20, centerY + 5);
+          }
+        });
       });
     } else {
-      // 0 Players registered
+      ctx.fillStyle = 'rgba(255,255,255,.06)';
+      ctx.strokeStyle = 'rgba(0,201,232,.55)';
+      ctx.lineWidth = 2;
+      roundRect(90, teamsTop + 25, width - 180, 190, 24);
+      ctx.fill();
+      ctx.stroke();
       ctx.textAlign = 'center';
-      ctx.fillStyle = currentPalette.accent1;
+      ctx.fillStyle = '#00C9E8';
       ctx.font = '900 34px sans-serif';
-      ctx.fillText(`📋 INSCRIPCIONES ABIERTAS (0 / ${activeConvocatoria.max_players || 21} CUPOS)`, width / 2, 700);
-
+      ctx.fillText('EQUIPOS POR SORTEAR', width / 2, teamsTop + 95);
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 28px sans-serif';
-      ctx.fillText('¡Aún no hay jugadores registrados para este partido!', width / 2, 780);
-
-      ctx.fillStyle = '#facc15';
-      ctx.font = '900 24px sans-serif';
-      ctx.fillText('⚡ Los equipos y alineaciones aparecerán aquí automáticamente ⚡', width / 2, 850);
+      ctx.font = '600 23px sans-serif';
+      ctx.fillText(players.length + ' jugadores confirmados', width / 2, teamsTop + 145);
+      ctx.fillStyle = '#aab7ca';
+      ctx.font = '500 19px sans-serif';
+      ctx.fillText('Las alineaciones aparecerán aquí después del sorteo.', width / 2, teamsTop + 180);
     }
 
-    // 6. Modern Footer Section (y = 1440 to 1620)
-    // 3D Soccer Ball at bottom-left
-    draw3DSoccerBall(ctx, 115, 1525, 75);
-
-    // Official Community WhatsApp & Web Pill
-    ctx.fillStyle = 'rgba(6, 12, 22, 0.95)';
-    ctx.strokeStyle = currentPalette.borderColor;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(220, 1485, width - 250, 80, 20);
+    const footerY = height - 105;
+    ctx.fillStyle = brandBar;
+    roundRect(56, footerY, width - 112, 3, 2);
     ctx.fill();
-    ctx.stroke();
-
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
     ctx.fillStyle = '#ffffff';
-    ctx.font = '900 26px sans-serif';
-    ctx.fillText('📲 ÚNETE AL GRUPO DE WHATSAPP:', 250, 1512);
+    ctx.font = '900 24px sans-serif';
+    ctx.fillText('PICHANGAS DE BARRIO FC', width / 2, footerY + 42);
+    ctx.fillStyle = '#aab7ca';
+    ctx.font = '600 16px sans-serif';
+    ctx.fillText('JUEGA CON RESPETO • DISFRUTA EL FÚTBOL', width / 2, footerY + 70);
 
-    ctx.fillStyle = '#22c55e'; // WhatsApp green
-    ctx.font = '900 30px sans-serif';
-    ctx.fillText(`INFO 💬 ${contactPhone}`, 250, 1546);
-
-    ctx.textAlign = 'right';
-    ctx.fillStyle = currentPalette.accent1;
-    ctx.font = '900 24px monospace';
-    ctx.fillText('pichangasdebarrio.com', width - 50, 1528);
-
-    const url = canvas.toDataURL('image/png');
-    setPreviewUrl(url);
+    setPreviewUrl(canvas.toDataURL('image/png'));
   };
 
   const handleDownload = () => {
@@ -818,9 +375,6 @@ Genera un JSON con este formato exacto:
     const remaining = Math.max(0, activeConvocatoria.max_players - confirmados.length);
 
     let text = `⚽ *CONVOCATORIA OFICIAL - PICHANGAS DE BARRIO FC* ⚽\n\n`;
-    if (aiHypeNarrative) {
-      text += `🔥 *${aiHypeNarrative}*\n\n`;
-    }
     text += `🏆 *${activeConvocatoria.title.toUpperCase()}*\n` +
       `⚡ *Categoría:* ${categoryText} (${numTeams} Equipos)\n` +
       `📅 *Fecha:* ${dateTimeText}\n` +
@@ -832,38 +386,31 @@ Genera un JSON con este formato exacto:
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   };
 
-  const handleSaveKey = () => {
-    localStorage.setItem('pb_gemini_api_key', geminiKey.trim());
-    toast.success('Clave de Gemini guardada.');
-    setShowKeyConfig(false);
-    fetchGeminiData(geminiKey.trim());
-  };
-
   const currentConfirmadosCount = (activeConvocatoria.confirmaciones || []).filter(c => (c.status || '').toLowerCase() === 'confirmado').length;
 
+  if (!isOpen || !isAdmin) return null;
+
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[70] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-1 sm:p-2 overflow-hidden overscroll-contain animate-in fade-in duration-200">
       <canvas ref={canvasRef} className="hidden" />
 
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-5 sm:p-6 space-y-4 my-auto">
+      <div className="relative w-full h-[calc(100dvh-0.5rem)] sm:h-[calc(100dvh-1rem)] max-h-[calc(100dvh-0.5rem)] sm:max-h-[calc(100dvh-1rem)] max-w-7xl bg-slate-900 border border-slate-700/80 rounded-xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden min-h-0">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="shrink-0 flex items-center justify-between gap-3 border-b border-slate-800 px-3 py-2 sm:px-4 sm:py-2.5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-lime-500 to-yellow-400 text-slate-950 flex items-center justify-center font-black shadow-md shadow-lime-400/20">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#F00091] to-[#00C9E8] text-white flex items-center justify-center font-black shadow-md">
               <Sparkles size={20} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-black text-lg text-white uppercase tracking-tight">
-                  Diseño de Flyer con Inteligencia Artificial
+                <h3 className="font-black text-base sm:text-lg text-white uppercase tracking-tight">
+                  Diseñador de flyer oficial
                 </h3>
-                <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-black uppercase">
-                  Gemini 3.5 Flash
-                </span>
+                <span className="px-2 py-0.5 rounded-full bg-cyan-400/10 text-cyan-300 border border-cyan-400/20 text-[10px] font-black uppercase">PDB FC</span>
               </div>
-              <p className="text-xs text-slate-400 flex items-center gap-2">
-                <span>Diseño bespoke adaptado a {numTeams} equipos con logo oficial y arqueros 🧤</span>
+              <p className="text-[11px] sm:text-xs text-slate-400 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span>Plantilla propia • {numTeams} equipos • fotos de jugadores</span>
                 <span className="text-lime-400 font-bold">
                   ({currentConfirmadosCount}/{activeConvocatoria.max_players || 21} Convocados)
                 </span>
@@ -879,194 +426,58 @@ Genera un JSON con este formato exacto:
           </button>
         </div>
 
-        {/* Theme Selector Toolbar */}
-        <div className="flex items-center justify-between gap-2 bg-slate-950 p-2 rounded-2xl border border-slate-800 text-xs">
-          <div className="flex items-center gap-1.5 text-slate-400 font-bold">
-            <Palette size={14} className="text-lime-400" />
-            <span className="hidden sm:inline">Tema Visual:</span>
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setTheme('neon_arena')}
-              className={`px-2.5 py-1 rounded-lg font-black transition-all cursor-pointer ${
-                theme === 'neon_arena' ? 'bg-lime-400 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white bg-slate-900'
-              }`}
-            >
-              🟢 Neón Arena
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme('fuego_barrio')}
-              className={`px-2.5 py-1 rounded-lg font-black transition-all cursor-pointer ${
-                theme === 'fuego_barrio' ? 'bg-red-500 text-white shadow-md' : 'text-slate-400 hover:text-white bg-slate-900'
-              }`}
-            >
-              🔴 Fuego Barrio
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme('cyber_futsal')}
-              className={`px-2.5 py-1 rounded-lg font-black transition-all cursor-pointer ${
-                theme === 'cyber_futsal' ? 'bg-cyan-400 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white bg-slate-900'
-              }`}
-            >
-              🔵 Cyber Futsal
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme('champions_gold')}
-              className={`px-2.5 py-1 rounded-lg font-black transition-all cursor-pointer ${
-                theme === 'champions_gold' ? 'bg-yellow-400 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white bg-slate-900'
-              }`}
-            >
-              🏆 Oro Real
-            </button>
-          </div>
-        </div>
-
+        <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-y-auto overscroll-contain p-2 sm:p-3">
         {/* Quick Customization Toolbar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-          {/* Sede Input */}
-          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
-            <MapPin size={14} className="text-lime-400 shrink-0" />
-            <span className="text-slate-400 font-bold shrink-0">Sede:</span>
-            <input 
-              type="text" 
-              value={venueText} 
-              onChange={(e) => setVenueText(e.target.value)}
-              placeholder="Grass el Bosque..."
-              className="w-full bg-transparent text-white font-bold outline-none"
-            />
+        <div className="shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
+          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 min-w-0">
+            <MapPin size={14} className="text-[#F00091] shrink-0" /><span className="text-slate-400 font-bold shrink-0">Lugar:</span>
+            <input type="text" value={venueText} onChange={(e) => setVenueText(e.target.value)} placeholder="Lugar del encuentro" className="w-full min-w-0 bg-transparent text-white font-bold outline-none" />
           </div>
-
-          {/* Fecha / Hora Input */}
-          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
-            <Calendar size={14} className="text-sky-400 shrink-0" />
-            <span className="text-slate-400 font-bold shrink-0">Día/Hora:</span>
-            <input 
-              type="text" 
-              value={dateTimeText} 
-              onChange={(e) => setDateTimeText(e.target.value)}
-              placeholder="JUEVES 9 PM..."
-              className="w-full bg-transparent text-white font-bold outline-none"
-            />
+          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 min-w-0">
+            <Calendar size={14} className="text-cyan-400 shrink-0" /><span className="text-slate-400 font-bold shrink-0">Fecha:</span>
+            <input type="text" value={dateTimeText} onChange={(e) => setDateTimeText(e.target.value)} placeholder="Día y hora" className="w-full min-w-0 bg-transparent text-white font-bold outline-none" />
           </div>
+          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 min-w-0">
+            <Tag size={14} className="text-lime-400 shrink-0" /><span className="text-slate-400 font-bold shrink-0">Modalidad:</span>
+            <input type="text" value={categoryText} onChange={(e) => setCategoryText(e.target.value.toUpperCase())} placeholder="FÚTBOL 7" className="w-full min-w-0 bg-transparent text-white font-black uppercase outline-none" />
+          </div>
+          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 min-w-0">
+            <Sparkles size={14} className="text-[#F00091] shrink-0" /><span className="text-slate-400 font-bold shrink-0">Frase:</span>
+            <input type="text" value={headlineText} onChange={(e) => setHeadlineText(e.target.value.toUpperCase())} placeholder="Frase principal" className="w-full min-w-0 bg-transparent text-white font-bold outline-none" />
+          </div>
+          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800 min-w-0">
+            <Phone size={14} className="text-emerald-400 shrink-0" /><span className="text-slate-400 font-bold shrink-0">Info:</span>
+            <input type="text" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="Teléfono de contacto" className="w-full min-w-0 bg-transparent text-white font-bold outline-none" />
+          </div>
+          <button type="button" onClick={() => { refetch(); }} className="flex items-center justify-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-400/10 px-3 py-2 text-cyan-300 font-bold hover:bg-cyan-400/15 transition-colors">
+            <RefreshCw size={14} className={isLoadingFull ? 'animate-spin' : ''} /> Actualizar jugadores
+          </button>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-          {/* Categoría Input */}
-          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
-            <Tag size={14} className="text-yellow-400 shrink-0" />
-            <span className="text-slate-400 font-bold shrink-0">Cinta:</span>
-            <input 
-              type="text" 
-              value={categoryText} 
-              onChange={(e) => setCategoryText(e.target.value.toUpperCase())}
-              placeholder="FUTBOL 7..."
-              className="w-full bg-transparent text-white font-black uppercase outline-none"
-            />
-          </div>
-
-          {/* Teléfono Input */}
-          <div className="flex items-center gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
-            <Phone size={14} className="text-emerald-400 shrink-0" />
-            <span className="text-slate-400 font-bold shrink-0">Info:</span>
-            <input 
-              type="text" 
-              value={contactPhone} 
-              onChange={(e) => setContactPhone(e.target.value)}
-              placeholder="960735653"
-              className="w-full bg-transparent text-white font-bold outline-none"
-            />
-          </div>
-
-          {/* AI Generate Button */}
-          <div className="flex items-center justify-end gap-2 bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
-            <button
-              type="button"
-              onClick={() => fetchGeminiData(geminiKey)}
-              disabled={isGenerating}
-              className="text-lime-400 hover:text-lime-300 font-black flex items-center gap-1.5 cursor-pointer transition-colors"
-              title="Personalizar afiche con IA"
-            >
-              <Sparkles size={14} className={isGenerating ? 'animate-spin' : ''} />
-              <span>{isGenerating ? 'Pensando...' : 'Magia IA'}</span>
-            </button>
-            <span className="text-slate-700">|</span>
-            <button
-              type="button"
-              onClick={() => {
-                refetch();
-                renderPoster();
-              }}
-              className="text-slate-400 hover:text-slate-200 font-bold flex items-center gap-1 cursor-pointer transition-colors"
-              title="Recargar datos de jugadores"
-            >
-              <RefreshCw size={12} className={isLoadingFull ? 'animate-spin' : ''} /> Recargar
-            </button>
-            <span className="text-slate-700">|</span>
-            <button
-              type="button"
-              onClick={() => setShowKeyConfig(!showKeyConfig)}
-              className="text-slate-400 hover:text-slate-200 font-bold flex items-center gap-1 cursor-pointer transition-colors"
-            >
-              <Key size={12} /> Key
-            </button>
-          </div>
-        </div>
-
-        {/* Optional Gemini Key Input */}
-        {showKeyConfig && (
-          <div className="p-3 bg-slate-950/90 rounded-2xl border border-indigo-500/30 space-y-2 animate-in fade-in duration-150">
-            <label className="text-xs font-bold text-slate-300 block">
-              Clave de API de Google Gemini (Google AI Studio):
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={geminiKey}
-                onChange={(e) => setGeminiKey(e.target.value)}
-                placeholder="AIzaSy... o AQ.Ab..."
-                className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white font-mono"
-              />
-              <button
-                type="button"
-                onClick={handleSaveKey}
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold cursor-pointer"
-              >
-                Guardar
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-400">
-              💡 Clave verificada y activa: <span className="text-lime-400 font-mono">AQ.Ab8RN6...</span>
-            </p>
-          </div>
-        )}
 
         {/* Flyer Preview Box */}
-        <div className="relative w-full max-h-[48vh] flex justify-center items-center bg-slate-950 rounded-2xl p-2.5 border border-slate-800 overflow-hidden">
+        <div className="relative flex-1 min-h-[220px] w-full flex justify-center items-center bg-[#070d19] rounded-xl p-2 border border-slate-800 overflow-auto">
           {previewUrl ? (
             <img
               src={previewUrl}
               alt="Flyer Oficial Preview"
-              className="max-h-[44vh] w-auto rounded-xl shadow-2xl object-contain border border-slate-700/50"
+              className="h-full max-h-full w-auto max-w-full rounded-lg shadow-2xl object-contain border border-slate-700/50"
             />
           ) : (
             <div className="py-20 text-center text-slate-400 text-sm flex items-center gap-2">
               <RefreshCw size={16} className="animate-spin text-lime-400" />
-              <span>Generando afiche personalizado en alta definición con IA...</span>
+              <span>Preparando el diseño oficial y las fotos de los jugadores...</span>
             </div>
           )}
         </div>
 
+        </div>
         {/* Action Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+        <div className="shrink-0 grid grid-cols-1 sm:grid-cols-3 gap-2 p-2 sm:px-3 sm:py-2 border-t border-slate-800 bg-slate-950/70">
           <button
             type="button"
             onClick={handleDownload}
             disabled={!previewUrl}
-            className="h-11 bg-lime-400 hover:bg-lime-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-lime-400/20 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="h-11 bg-[#A5E900] hover:bg-[#b7ff1a] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-lime-400/20 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             <Download size={15} /> Descargar Flyer (HD)
           </button>

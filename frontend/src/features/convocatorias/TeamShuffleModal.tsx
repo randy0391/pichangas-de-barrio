@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Convocatoria, Confirmacion } from '@/types';
-import { X, Shuffle, RotateCcw, Check, Sparkles, Trophy } from 'lucide-react';
+import { X, Shuffle, RotateCcw, Check, Trophy } from 'lucide-react';
 import { useSortearEquipos, useResetEquipos } from '@/hooks/useConvocatorias';
 import { toast } from 'sonner';
 
@@ -8,14 +8,12 @@ interface TeamShuffleModalProps {
   isOpen: boolean;
   onClose: () => void;
   convocatoria: Convocatoria;
-  onOpenFlyer?: () => void;
 }
 
 export const TeamShuffleModal: React.FC<TeamShuffleModalProps> = ({
   isOpen,
   onClose,
-  convocatoria,
-  onOpenFlyer
+  convocatoria
 }) => {
   const { mutate: sortear, isPending: isSorting } = useSortearEquipos();
   const { mutate: resetTeams, isPending: isResetting } = useResetEquipos();
@@ -162,18 +160,6 @@ export const TeamShuffleModal: React.FC<TeamShuffleModalProps> = ({
               : convocatoria.has_teams ? 'Volver a Sortear Equipos 🎲' : 'Iniciar Sorteo Oficial 🎲'}
           </button>
 
-          {convocatoria.has_teams && onOpenFlyer && (
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                onOpenFlyer();
-              }}
-              className="w-full h-11 bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
-            >
-              <Sparkles size={16} /> 📲 Generar Flyer WhatsApp (Gemini AI)
-            </button>
-          )}
 
           {convocatoria.has_teams && (
             <button

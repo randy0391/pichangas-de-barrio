@@ -34,7 +34,6 @@ import {
     CheckCircle2, 
     DollarSign, 
     Swords, 
-    Sparkles, 
     ExternalLink, 
     Edit3, 
     Trophy, 
@@ -47,7 +46,6 @@ import { Pagination } from '@/components/ui/Pagination';
 import { Link } from 'react-router-dom';
 import { AdminAttendanceDialog } from './AdminAttendanceDialog';
 import { AdminRecurringScheduleDialog } from './AdminRecurringScheduleDialog';
-import { ConvocatoriaFlyerModal } from '@/features/convocatorias/ConvocatoriaFlyerModal';
 import { TacticalPitch } from '@/features/convocatorias/TacticalPitch';
 import { PlayerCardModal } from '@/components/player/PlayerCardModal';
 
@@ -425,7 +423,6 @@ export const AdminConvocatoriasPage = () => {
     const [statusFilter, setStatusFilter] = useState<'todas' | 'abierta' | 'cerrada' | 'completada' | 'cancelada' | 'martes' | 'jueves' | 'sabado'>('todas');
     const [filterDate, setFilterDate] = useState<string>('');
     const [showRecurringDialog, setShowRecurringDialog] = useState(false);
-    const [flyerConvocatoria, setFlyerConvocatoria] = useState<Convocatoria | null>(null);
 
     const initialForm = { 
         title: '', 
@@ -1243,20 +1240,12 @@ export const AdminConvocatoriasPage = () => {
                                                 <Shuffle size={16} /> {c.has_teams ? 'Volver a Sortear' : 'Sortear'}
                                             </Button>
 
-                                            {/* Botón Generar Flyer WhatsApp con Gemini AI */}
-                                            <Button 
-                                                onClick={() => setFlyerConvocatoria(c)} 
-                                                className="bg-gradient-to-r from-lime-400 via-emerald-400 to-teal-400 hover:from-lime-500 hover:to-emerald-500 text-slate-950 font-black h-11 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-lime-400/20 transition-all hover:scale-105"
-                                                title="Generar afiche oficial de partido para WhatsApp con Gemini AI"
-                                            >
-                                                <Sparkles size={16} className="text-slate-950" /> 📲 Flyer WhatsApp
-                                            </Button>
                                         </div>
 
                                         {/* Acciones Secundarias (Ver Página, Editar, Eliminar) */}
                                         <div className="flex items-center gap-2">
                                             {/* Ver Página Pública */}
-                                            <Link to={`/convocatorias/${c.id}`} target="_blank">
+                                            <Link to={`/convocatorias/${c.id}`}>
                                                 <Button 
                                                     variant="outline" 
                                                     className="h-11 px-3.5 rounded-xl border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-emerald-500 hover:border-emerald-500/40 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5"
@@ -1329,14 +1318,6 @@ export const AdminConvocatoriasPage = () => {
                 onClose={() => setShowRecurringDialog(false)} 
             />
 
-            {/* Modal de Generación de Flyer con Gemini AI */}
-            {flyerConvocatoria && (
-                <ConvocatoriaFlyerModal 
-                    isOpen={!!flyerConvocatoria} 
-                    onClose={() => setFlyerConvocatoria(null)} 
-                    convocatoria={flyerConvocatoria} 
-                />
-            )}
         </div>
     );
 };
