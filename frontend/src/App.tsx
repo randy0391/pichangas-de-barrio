@@ -13,11 +13,7 @@ function App() {
   }, [fetchUser]);
 
   if (!init) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <FootballSpinner />
-      </div>
-    );
+    return <FootballSpinner variant="fullscreen" label="Iniciando Pichangas de Barrio" />;
   }
 
   return (
