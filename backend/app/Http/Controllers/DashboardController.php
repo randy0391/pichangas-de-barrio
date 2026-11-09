@@ -22,7 +22,14 @@ class DashboardController extends Controller
         $upcomingConvocatorias = Convocatoria::where('status', 'abierta')
             ->where('match_date', '>=', now()->toDateString())
             ->with('creator')
-            ->withCount(['confirmaciones as confirmed_count' => function($q) { $q->where('status', 'confirmado'); }])
+->withCount([
+                'confirmaciones as confirmed_count' => fn ($q) => $q->where('status', 'confirmado'),
+                'confirmaciones as porteros_count_agg' => fn ($q) => $q->where('status', 'confirmado')->where('match_role', 'portero'),
+                'confirmaciones as jugadores_count_agg' => fn ($q) => $q->where('status', 'confirmado')->where('match_role', '!=', 'portero'),
+                'confirmaciones as rejected_count_agg' => fn ($q) => $q->where('status', 'rechazado'),
+                'confirmaciones as pending_count_agg' => fn ($q) => $q->where('status', 'pendiente'),
+                'confirmaciones as has_teams_agg' => fn ($q) => $q->whereNotNull('team_number'),
+            ])
             ->orderBy('match_date', 'asc')
             ->orderBy('match_time', 'asc')
             ->take(30)
@@ -74,7 +81,14 @@ class DashboardController extends Controller
 
         // Últimas convocatorias con stats de confirmación
         $recentConvocatorias = Convocatoria::with('creator')
-            ->withCount(['confirmaciones as confirmed_count' => function($q) { $q->where('status', 'confirmado'); }])
+->withCount([
+                'confirmaciones as confirmed_count' => fn ($q) => $q->where('status', 'confirmado'),
+                'confirmaciones as porteros_count_agg' => fn ($q) => $q->where('status', 'confirmado')->where('match_role', 'portero'),
+                'confirmaciones as jugadores_count_agg' => fn ($q) => $q->where('status', 'confirmado')->where('match_role', '!=', 'portero'),
+                'confirmaciones as rejected_count_agg' => fn ($q) => $q->where('status', 'rechazado'),
+                'confirmaciones as pending_count_agg' => fn ($q) => $q->where('status', 'pendiente'),
+                'confirmaciones as has_teams_agg' => fn ($q) => $q->whereNotNull('team_number'),
+            ])
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
