@@ -1,4 +1,5 @@
 import { Wrench, Clock3, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const MaintenancePage = () => (
   <main className="min-h-screen bg-[#070b14] text-white flex items-center justify-center px-5 py-12">
@@ -28,7 +29,7 @@ export const MaintenancePage = () => (
           </div>
         </div>
       </div>
-      <p className="mt-7 text-xs text-slate-500">Gracias por tu comprensión. Volveremos pronto.</p>
+      <p className="mt-7 text-xs text-slate-500">Gracias por tu comprensión. Volveremos pronto.</p>\n      <Link to="/login" className="mt-6 inline-flex text-sm font-semibold text-slate-400 underline decoration-slate-600 underline-offset-4 hover:text-white">Acceso del propietario</Link>
     </section>
   </main>
 );
