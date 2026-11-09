@@ -17,7 +17,7 @@ Route::get('/maintenance-status', function () {
     $endsAt = \\Illuminate\\Support\\Carbon::create(2026, 11, 9, 10, 0, 0, 'America/Lima');
 
     return response()->json([
-        'maintenance' => $now->betweenIncluded($startsAt, $endsAt),
+        'maintenance' => $now->greaterThanOrEqualTo($startsAt) && $now->lessThan($endsAt),
         'starts_at' => '2026-11-08T22:00:00-05:00',
         'ends_at' => '2026-11-09T10:00:00-05:00',
     ]);
