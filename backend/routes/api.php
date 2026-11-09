@@ -10,6 +10,19 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\DashboardController;
 
+// Maintenance status is intentionally public so the frontend can show the notice.
+Route::get('/maintenance-status', function () {
+    $now = \Illuminate\Support\Carbon::now('America/Lima');
+    $startsAt = \Illuminate\Support\Carbon::create(2026, 11, 8, 22, 0, 0, 'America/Lima');
+    $endsAt = \Illuminate\Support\Carbon::create(2026, 11, 9, 10, 0, 0, 'America/Lima');
+
+    return response()->json([
+        'maintenance' => $now->greaterThanOrEqualTo($startsAt) && $now->lessThan($endsAt),
+        'starts_at' => '2026-11-08T22:00:00-05:00',
+        'ends_at' => '2026-11-09T10:00:00-05:00',
+    ]);
+});
+
 // Public routes
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{slug}', [PostController::class, 'show']);
