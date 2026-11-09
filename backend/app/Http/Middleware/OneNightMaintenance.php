@@ -19,7 +19,7 @@ class OneNightMaintenance
         $startsAt = Carbon::create(2026, 11, 8, 22, 0, 0, self::TIMEZONE);
         $endsAt = Carbon::create(2026, 11, 9, 10, 0, 0, self::TIMEZONE);
 
-        if (!$now->betweenIncluded($startsAt, $endsAt) || $request->is('api/maintenance-status')) {
+        if (!$now->greaterThanOrEqualTo($startsAt) || !$now->lessThan($endsAt) || $request->is('api/maintenance-status')) {
             return $next($request);
         }
 
