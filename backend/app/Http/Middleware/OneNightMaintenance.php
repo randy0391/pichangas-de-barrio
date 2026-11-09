@@ -1,12 +1,12 @@
 <?php
 
-namespace App\\Http\\Middleware;
+namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\\Http\\Request;
-use Illuminate\\Support\\Carbon;
-use Laravel\\Sanctum\\PersonalAccessToken;
-use Symfony\\Component\\HttpFoundation\\Response;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Laravel\Sanctum\PersonalAccessToken;
+use Symfony\Component\HttpFoundation\Response;
 
 class OneNightMaintenance
 {
@@ -47,7 +47,7 @@ class OneNightMaintenance
 
     private function normalizePhone(string $phone): string
     {
-        return preg_replace('/\\D+/', '', $phone) ?? '';
+        return preg_replace('/\D+/', '', $phone) ?? '';
     }
 
     private function maintenanceResponse(): Response
