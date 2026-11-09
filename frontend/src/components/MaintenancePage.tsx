@@ -29,7 +29,8 @@ export const MaintenancePage = () => (
           </div>
         </div>
       </div>
-      <p className="mt-7 text-xs text-slate-500">Gracias por tu comprensión. Volveremos pronto.</p>\n      <Link to="/login" className="mt-6 inline-flex text-sm font-semibold text-slate-400 underline decoration-slate-600 underline-offset-4 hover:text-white">Acceso del propietario</Link>
+      <p className="mt-7 text-xs text-slate-500">Gracias por tu comprensión. Volveremos pronto.</p>
+      <Link to="/login" className="mt-6 inline-flex text-sm font-semibold text-slate-400 underline decoration-slate-600 underline-offset-4 hover:text-white">Acceso del propietario</Link>
     </section>
   </main>
 );
