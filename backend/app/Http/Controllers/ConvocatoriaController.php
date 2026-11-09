@@ -12,7 +12,14 @@ class ConvocatoriaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Convocatoria::with(['creator', 'confirmaciones.user']);
+        $query = Convocatoria::with(['creator', 'confirmaciones.user'])->withCount([
+                'confirmaciones as confirmed_count' => fn ($q) => $q->where('status', 'confirmado'),
+                'confirmaciones as porteros_count_agg' => fn ($q) => $q->where('status', 'confirmado')->where('match_role', 'portero'),
+                'confirmaciones as jugadores_count_agg' => fn ($q) => $q->where('status', 'confirmado')->where('match_role', '!=', 'portero'),
+                'confirmaciones as rejected_count_agg' => fn ($q) => $q->where('status', 'rechazado'),
+                'confirmaciones as pending_count_agg' => fn ($q) => $q->where('status', 'pendiente'),
+                'confirmaciones as has_teams_agg' => fn ($q) => $q->whereNotNull('team_number'),
+            ]);
         if ($request->query('upcoming') === 'true') {
             $query->where('match_date', '>=', now()->toDateString());
         }
@@ -23,7 +30,15 @@ class ConvocatoriaController extends Controller
 
     public function show($id)
     {
-        return new ConvocatoriaResource(Convocatoria::with(['creator', 'confirmaciones.user'])->findOrFail($id));
+        $convocatoria = Convocatoria::with(['creator', 'confirmaciones.user'])->withCount([
+                'confirmaciones as confirmed_count' => fn ($q) => $q->where('status', 'confirmado'),
+                'confirmaciones as porteros_count_agg' => fn ($q) => $q->where('status', 'confirmado')->where('match_role', 'portero'),
+                'confirmaciones as jugadores_count_agg' => fn ($q) => $q->where('status', 'confirmado')->where('match_role', '!=', 'portero'),
+                'confirmaciones as rejected_count_agg' => fn ($q) => $q->where('status', 'rechazado'),
+                'confirmaciones as pending_count_agg' => fn ($q) => $q->where('status', 'pendiente'),
+                'confirmaciones as has_teams_agg' => fn ($q) => $q->whereNotNull('team_number'),
+            ])->findOrFail($id);
+        return new ConvocatoriaResource($convocatoria);
     }
 
     public function store(StoreConvocatoriaRequest $request)
@@ -255,7 +270,14 @@ class ConvocatoriaController extends Controller
             $q->where('user_id', $userId);
         })->with(['confirmaciones' => function($q) use ($userId) {
             $q->where('user_id', $userId);
-        }])->get();
+        }])->withCount([
+                'confirmaciones as confirmed_count' => fn ($q) => $q->where('status', 'confirmado'),
+                'confirmaciones as porteros_count_agg' => fn ($q) => $q->where('status', 'confirmado')->where('match_role', 'portero'),
+                'confirmaciones as jugadores_count_agg' => fn ($q) => $q->where('status', 'confirmado')->where('match_role', '!=', 'portero'),
+                'confirmaciones as rejected_count_agg' => fn ($q) => $q->where('status', 'rechazado'),
+                'confirmaciones as pending_count_agg' => fn ($q) => $q->where('status', 'pendiente'),
+                'confirmaciones as has_teams_agg' => fn ($q) => $q->whereNotNull('team_number'),
+            ])->get();
         return ConvocatoriaResource::collection($convocatorias);
     }
 
