@@ -13,8 +13,8 @@ use App\Http\Controllers\DashboardController;
 // Maintenance status is intentionally public so the frontend can show the notice.
 Route::get('/maintenance-status', function () {
     $now = \Illuminate\Support\Carbon::now('America/Lima');
-    $startsAt = \\Illuminate\\Support\\Carbon::create(2026, 11, 8, 22, 0, 0, 'America/Lima');
-    $endsAt = \\Illuminate\\Support\\Carbon::create(2026, 11, 9, 10, 0, 0, 'America/Lima');
+    $startsAt = \Illuminate\Support\Carbon::create(2026, 11, 8, 22, 0, 0, 'America/Lima');
+    $endsAt = \Illuminate\Support\Carbon::create(2026, 11, 9, 10, 0, 0, 'America/Lima');
 
     return response()->json([
         'maintenance' => $now->greaterThanOrEqualTo($startsAt) && $now->lessThan($endsAt),
