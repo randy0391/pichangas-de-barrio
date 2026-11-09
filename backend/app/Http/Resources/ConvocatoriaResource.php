@@ -38,7 +38,7 @@ class ConvocatoriaResource extends JsonResource
                 if ($role === 'portero') {
                     $items = $items->where('match_role', 'portero');
                 } elseif ($role === 'jugador') {
-                    $items = $items->where('match_role', '!=', 'portero');
+                    $items = $items->filter(fn ($item) => $item->match_role !== null && $item->match_role !== 'portero');
                 }
                 return $items->count();
             }
