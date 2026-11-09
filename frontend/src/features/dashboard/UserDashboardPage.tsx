@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { useUserDashboard } from '@/hooks/useDashboard';
-import { useConvocatorias } from '@/hooks/useConvocatorias';
 import { useAuthStore } from '@/stores/authStore';
 import { DashboardStats, Convocatoria } from '@/types';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
@@ -25,12 +24,14 @@ const parseLocalDate = (dateStr?: string, timeStr?: string) => {
 
 export const UserDashboardPage = () => {
     const { data: dashboard, isLoading: isDashboardLoading } = useUserDashboard();
-    const { data: convsResponse, isLoading: isConvsLoading } = useConvocatorias(1);
     const { user } = useAuthStore();
     const [showFutModal, setShowFutModal] = useState(false);
     const dashData = dashboard as DashboardStats | undefined;
 
-    const allConvs = (convsResponse?.data || []) as Convocatoria[];
+    // The dashboard endpoint already supplies the next 30 open convocatorias.
+    // Reuse that response instead of downloading every page of the full listing.
+    const allConvs = dashData?.upcoming_convocatorias || [];
+    const totalUpcomingMatches = dashData?.stats?.upcoming_convocatorias_count ?? allConvs.length;
 
     // Filter only upcoming matches
     const upcomingMatches = useMemo(() => {
@@ -47,7 +48,7 @@ export const UserDashboardPage = () => {
         });
     }, [allConvs]);
 
-    const isLoading = isDashboardLoading && isConvsLoading;
+    const isLoading = isDashboardLoading;
 
     if (isLoading) return <div className="py-20 flex justify-center"><FootballSpinner /></div>;
 
@@ -121,7 +122,7 @@ export const UserDashboardPage = () => {
             {/* Scoreboard Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                    { title: "Próximas Convocatorias", value: upcomingMatches.length || dashData?.stats?.upcoming_convocatorias_count || 0, icon: Activity, color: "text-primary" },
+                    { title: "Próximas Convocatorias", value: totalUpcomingMatches, icon: Activity, color: "text-primary" },
                     { title: "Eventos Registrados", value: dashData?.stats?.registered_events || 0, icon: CalendarDays, color: "text-[#A5E900]" },
                     { title: "Total Participaciones", value: dashData?.stats?.total_participations || 0, icon: Trophy, color: "text-accent" }
                 ].map((stat, i) => (
@@ -154,7 +155,7 @@ export const UserDashboardPage = () => {
                             to="/convocatorias" 
                             className="px-3 py-1 bg-[#A5E900]/10 hover:bg-[#A5E900]/20 text-[#A5E900] text-xs font-black uppercase tracking-wider rounded-xl transition-all border border-[#A5E900]/30 flex items-center gap-1"
                         >
-                            Ver Todas ({upcomingMatches.length}) <ChevronRight className="w-3.5 h-3.5" />
+                            Ver Todas ({totalUpcomingMatches}) <ChevronRight className="w-3.5 h-3.5" />
                         </Link>
                     </div>
                     
@@ -218,13 +219,13 @@ export const UserDashboardPage = () => {
                             </div>
                         )}
 
-                        {upcomingMatches.length > 8 && (
+                        {totalUpcomingMatches > 8 && (
                             <div className="pt-2 text-center">
                                 <Link 
                                     to="/convocatorias"
                                     className="text-xs font-black uppercase tracking-wider text-[#A5E900] hover:text-[#C8F34A] underline underline-offset-4"
                                 >
-                                    Ver las {upcomingMatches.length - 8} convocatorias restantes →
+                                    Ver las {totalUpcomingMatches - 8} convocatorias restantes →
                                 </Link>
                             </div>
                         )}

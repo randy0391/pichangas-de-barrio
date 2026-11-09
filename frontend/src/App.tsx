@@ -16,20 +16,40 @@ function App() {
   useEffect(() => {
     let active = true;
 
-    const refreshMaintenance = async () => {
+    const getMaintenanceStatus = async (): Promise<boolean | null> => {
       try {
         const response = await api.get('/maintenance-status');
-        if (!active) return;
-        const phone = (useAuthStore.getState().user?.phone || '').replace(/\D/g, '');
-        setMaintenance(Boolean(response.data.maintenance) && phone !== OWNER_PHONE);
+        return Boolean(response.data.maintenance);
       } catch {
-        // If status cannot be checked, do not lock users out based on a network error.
+        // Keep the last known maintenance state when the status cannot be checked.
+        return null;
+      }
+    };
+
+    const applyMaintenanceStatus = (isMaintenanceActive: boolean) => {
+      if (!active) return;
+      const phone = (useAuthStore.getState().user?.phone || '').replace(/\D/g, '');
+      setMaintenance(isMaintenanceActive && phone !== OWNER_PHONE);
+    };
+
+    const refreshMaintenance = async () => {
+      const isMaintenanceActive = await getMaintenanceStatus();
+      if (isMaintenanceActive !== null) {
+        applyMaintenanceStatus(isMaintenanceActive);
       }
     };
 
     const initialize = async () => {
-      await fetchUser();
-      await refreshMaintenance();
+      // Session validation and public maintenance status are independent requests.
+      // Run them together so a slow response from either service does not delay the other.
+      const [, isMaintenanceActive] = await Promise.all([
+        fetchUser(),
+        getMaintenanceStatus(),
+      ]);
+
+      if (isMaintenanceActive !== null) {
+        applyMaintenanceStatus(isMaintenanceActive);
+      }
       if (active) setInit(true);
     };
 
