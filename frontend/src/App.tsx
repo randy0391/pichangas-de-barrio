@@ -16,13 +16,13 @@ function App() {
   useEffect(() => {
     let active = true;
 
-    const getMaintenanceStatus = async () => {
+    const getMaintenanceStatus = async (): Promise<boolean | null> => {
       try {
         const response = await api.get('/maintenance-status');
         return Boolean(response.data.maintenance);
       } catch {
-        // If status cannot be checked, do not lock users out based on a network error.
-        return false;
+        // Keep the last known maintenance state when the status cannot be checked.
+        return null;
       }
     };
 
@@ -34,7 +34,9 @@ function App() {
 
     const refreshMaintenance = async () => {
       const isMaintenanceActive = await getMaintenanceStatus();
-      applyMaintenanceStatus(isMaintenanceActive);
+      if (isMaintenanceActive !== null) {
+        applyMaintenanceStatus(isMaintenanceActive);
+      }
     };
 
     const initialize = async () => {
@@ -45,7 +47,9 @@ function App() {
         getMaintenanceStatus(),
       ]);
 
-      applyMaintenanceStatus(isMaintenanceActive);
+      if (isMaintenanceActive !== null) {
+        applyMaintenanceStatus(isMaintenanceActive);
+      }
       if (active) setInit(true);
     };
 
