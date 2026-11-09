@@ -19,15 +19,44 @@ class ConvocatoriaResource extends JsonResource
         }
 
         $authUser = $request->user();
-        $myConfirmacion = $authUser 
-            ? $this->confirmaciones()->where('user_id', $authUser->id)->first() 
-            : null;
+        $confirmacionesLoaded = $this->relationLoaded('confirmaciones');
+        $myConfirmacion = null;
+        if ($authUser) {
+            $myConfirmacion = $confirmacionesLoaded
+                ? $this->confirmaciones->firstWhere('user_id', $authUser->id)
+                : $this->confirmaciones()->where('user_id', $authUser->id)->first();
+        }
+
+        // Prefer precomputed aggregate columns to avoid one query per metric and convocatoria.
+        $countConfirmaciones = function (string $attribute, string $status, ?string $role = null) use ($confirmacionesLoaded): int {
+            if ($this->getAttribute($attribute) !== null) {
+                return (int) $this->getAttribute($attribute);
+            }
+
+            if ($confirmacionesLoaded) {
+                $items = $this->confirmaciones->where('status', $status);
+                if ($role === 'portero') {
+                    $items = $items->where('match_role', 'portero');
+                } elseif ($role === 'jugador') {
+                    $items = $items->where('match_role', '!=', 'portero');
+                }
+                return $items->count();
+            }
+
+            $query = $this->confirmaciones()->where('status', $status);
+            if ($role === 'portero') {
+                $query->where('match_role', 'portero');
+            } elseif ($role === 'jugador') {
+                $query->where('match_role', '!=', 'portero');
+            }
+            return $query->count();
+        };
 
         $numTeams = max(2, (int) ($this->num_teams ?: 2));
-        $confirmedCount = $this->confirmaciones()->where('status', 'confirmado')->count();
+        $confirmedCount = $countConfirmaciones('confirmed_count', 'confirmado');
         $spotsRemaining = max(0, $this->max_players - $confirmedCount);
-        $porterosCount = $this->confirmaciones()->where('status', 'confirmado')->where('match_role', 'portero')->count();
-        $jugadoresCount = $this->confirmaciones()->where('status', 'confirmado')->where('match_role', '!=', 'portero')->count();
+        $porterosCount = $countConfirmaciones('porteros_count_agg', 'confirmado', 'portero');
+        $jugadoresCount = $countConfirmaciones('jugadores_count_agg', 'confirmado', 'jugador');
         $maxPorteros = $numTeams;
         $maxJugadores = max(0, (int) $this->max_players - $maxPorteros);
         $porterosRemaining = max(0, $maxPorteros - $porterosCount);
@@ -35,7 +64,11 @@ class ConvocatoriaResource extends JsonResource
         $isPorterosFull = $porterosCount >= $maxPorteros;
         $isJugadoresFull = $jugadoresCount >= $maxJugadores;
 
-        $hasTeams = $this->confirmaciones()->whereNotNull('team_number')->exists();
+        $hasTeams = $this->getAttribute('has_teams_agg') !== null
+            ? (int) $this->getAttribute('has_teams_agg') > 0
+            : ($confirmacionesLoaded
+                ? $this->confirmaciones->contains(fn ($item) => $item->team_number !== null)
+                : $this->confirmaciones()->whereNotNull('team_number')->exists());
         $drawMetadata = $this->draw_metadata ?: \Illuminate\Support\Facades\Cache::get("convocatoria_{$this->id}_draw_meta");
         if (!$drawMetadata && $numTeams > 2 && $hasTeams) {
             $drawMetadata = [
@@ -88,8 +121,8 @@ class ConvocatoriaResource extends JsonResource
             'is_jugadores_full' => $isJugadoresFull,
             'is_user_confirmed' => $myConfirmacion ? ($myConfirmacion->status === 'confirmado') : false,
             'user_match_role' => $myConfirmacion ? $myConfirmacion->match_role : null,
-            'rejected_count' => $this->confirmaciones()->where('status', 'rechazado')->count(),
-            'pending_count' => $this->confirmaciones()->where('status', 'pendiente')->count(),
+            'rejected_count' => $countConfirmaciones('rejected_count_agg', 'rechazado'),
+            'pending_count' => $countConfirmaciones('pending_count_agg', 'pendiente'),
             'confirmaciones' => ConfirmacionResource::collection($this->whenLoaded('confirmaciones')),
             'has_teams' => $hasTeams,
             'draw_metadata' => $drawMetadata,
