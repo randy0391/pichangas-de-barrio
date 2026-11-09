@@ -42,21 +42,9 @@ export const useClubPhotos = () => {
         const { data: res } = await api.get<PaginatedResponse<Gallery>>('/galleries?per_page=20');
         const galleries: Gallery[] = (res as any)?.data || res || [];
 
-        // For galleries that have media_count > 0 but media array was not returned in list
-        const detailedGalleries = await Promise.all(
-          galleries.map(async (g) => {
-            if (g.media && g.media.length > 0) return g;
-            if (g.media_count && g.media_count > 0) {
-              try {
-                const { data: full } = await api.get<Gallery>(`/galleries/${g.id}`);
-                return (full as any)?.data || full || g;
-              } catch {
-                return g;
-              }
-            }
-            return g;
-          })
-        );
+        // The /galleries endpoint already eager-loads media and returns media_count.
+        // Use that response directly instead of issuing one detail request per gallery.
+        const detailedGalleries = galleries;
 
         const photos: ClubPhoto[] = [];
         const seenUrls = new Set<string>();
