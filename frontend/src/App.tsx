@@ -20,7 +20,7 @@ function App() {
       try {
         const response = await api.get('/maintenance-status');
         if (!active) return;
-        const phone = (useAuthStore.getState().user?.phone || '').replace(/\\D/g, '');
+        const phone = (useAuthStore.getState().user?.phone || '').replace(/\D/g, '');
         setMaintenance(Boolean(response.data.maintenance) && phone !== OWNER_PHONE);
       } catch {
         // If status cannot be checked, do not lock users out based on a network error.
