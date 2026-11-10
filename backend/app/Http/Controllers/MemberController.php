@@ -183,7 +183,9 @@ class MemberController extends Controller
         if (isset($validated['dni']) && $validated['dni'] !== $user->dni) {
             $validated['password'] = Hash::make($validated['dni']);
         }
-        if (isset($validated['status']) && $validated['status'] === 'active' && $user->status !== 'active') {\n            $validated['last_convocatoria_at'] = now();\n        }\n        if (isset($validated['is_approved'])) {
+        if (isset($validated['status']) && $validated['status'] === 'active' && $user->status !== 'active') {
+            $validated['last_convocatoria_at'] = now();
+        }\n        if (isset($validated['is_approved'])) {
             $validated['is_approved'] = $validated['is_approved'] ? 'true' : 'false';
         }
         if (isset($validated['position']) && empty($validated['position'])) $validated['position'] = null;
