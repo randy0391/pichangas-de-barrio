@@ -438,7 +438,7 @@ class ConvocatoriaController extends Controller
             return response()->json(['message' => 'El jugador ya esta confirmado'], 400);
         }
 
-        $targetUser = \App\\Models\\User::findOrFail($request->user_id);
+        $targetUser = \App\Models\User::findOrFail($request->user_id);
         if ($targetUser->role !== 'member' || $targetUser->status !== 'active') {
             return response()->json(['message' => 'Solo se pueden agregar jugadores activos a una convocatoria.'], 422);
         }
