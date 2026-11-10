@@ -24,6 +24,7 @@ const adminSections: SidebarSection[] = [
       { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
       { name: 'Convocatorias', path: '/admin/convocatorias', icon: Trophy },
       { name: 'Miembros', path: '/admin/miembros', icon: Users },
+      { name: 'Reactivaciones', path: '/admin/reactivaciones', icon: ShieldCheck },
       { name: 'Multas', path: '/admin/multas', icon: AlertCircle },
       { name: 'Billeteras', path: '/admin/billeteras', icon: Wallet },
       { name: 'Asistencias', path: '/admin/asistencias', icon: ClipboardCheck },
@@ -72,6 +73,7 @@ const userSections: SidebarSection[] = [
       { name: 'Mi Billetera', path: '/billetera', icon: Wallet },
       { name: 'Mis Multas', path: '/mis-multas', icon: AlertCircle },
       { name: 'Mi Perfil', path: '/perfil', icon: User },
+      { name: 'Reactivación', path: '/reactivacion', icon: ShieldCheck },
     ]
   }
 ];
