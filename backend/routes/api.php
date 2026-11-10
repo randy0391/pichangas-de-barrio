@@ -50,7 +50,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Maintenance tasks run through deployment/CLI, not public HTTP endpoints.
 
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user', [AuthController::class, 'user']);\n    Route::post('/reactivation-requests', [\\App\\Http\\Controllers\\ReactivationRequestController::class, 'store']);\n    Route::get('/reactivation-requests/mine', [\\App\\Http\\Controllers\\ReactivationRequestController::class, 'mine']);
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/reactivation-requests', [\App\\Http\\Controllers\\ReactivationRequestController::class, 'store']);
+    Route::get('/reactivation-requests/mine', [\App\\Http\\Controllers\\ReactivationRequestController::class, 'mine']);
     Route::put('/user', [AuthController::class, 'updateProfile']);
     Route::post('/user/avatar', [AuthController::class, 'updateAvatar']);
 
@@ -84,7 +86,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin routes
     Route::middleware('admin')->group(function () {
-        Route::get('/admin/reactivation-requests', [\\App\\Http\\Controllers\\ReactivationRequestController::class, 'index']);\n        Route::post('/admin/reactivation-requests/{id}/review', [\\App\\Http\\Controllers\\ReactivationRequestController::class, 'review']);\n\n        // Admin Wallets
+        Route::get('/admin/reactivation-requests', [\App\\Http\\Controllers\\ReactivationRequestController::class, 'index']);
+        Route::post('/admin/reactivation-requests/{id}/review', [\App\\Http\\Controllers\\ReactivationRequestController::class, 'review']);
+
+        // Admin Wallets
         Route::get('/admin/wallets', [\App\Http\Controllers\WalletController::class, 'adminListAll']);
         Route::get('/admin/wallets/pending', [\App\Http\Controllers\WalletController::class, 'adminListPending']);
         Route::get('/admin/wallets/recharges', [\App\Http\Controllers\WalletController::class, 'adminRechargesHistory']);
