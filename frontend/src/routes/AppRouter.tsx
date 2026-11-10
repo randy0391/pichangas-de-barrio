@@ -10,6 +10,8 @@ const LoginPage = React.lazy(() => import('@/features/auth/LoginPage').then(m =>
 const RegisterPage = React.lazy(() => import('@/features/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));
 const OldPlayerRegisterPage = React.lazy(() => import('@/features/auth/OldPlayerRegisterPage').then(m => ({ default: m.OldPlayerRegisterPage })));
 
+const ReactivationPage = React.lazy(() => import('@/features/members/ReactivationPage').then(m => ({ default: m.ReactivationPage })));
+
 // Dashboard Pages
 const UserDashboardPage = React.lazy(() => import('@/features/dashboard/UserDashboardPage').then(m => ({ default: m.UserDashboardPage })));
 const ConvocatoriasPage = React.lazy(() => import('@/features/convocatorias/ConvocatoriasPage').then(m => ({ default: m.ConvocatoriasPage })));
@@ -26,6 +28,7 @@ const GalleryDetailPage = React.lazy(() => import('@/features/gallery/GalleryDet
 const WalletPage = React.lazy(() => import('@/features/wallet/WalletPage').then(m => ({ default: m.WalletPage })));
 
 // Admin Pages
+const AdminReactivationRequestsPage = React.lazy(() => import('@/features/admin/AdminReactivationRequestsPage').then(m => ({ default: m.AdminReactivationRequestsPage })));
 const AdminDashboardPage = React.lazy(() => import('@/features/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
 const AdminPostsPage = React.lazy(() => import('@/features/admin/AdminPostsPage').then(m => ({ default: m.AdminPostsPage })));
 const AdminEventsPage = React.lazy(() => import('@/features/admin/AdminEventsPage').then(m => ({ default: m.AdminEventsPage })));
@@ -72,6 +75,7 @@ export const AppRouter = () => {
           <Route path="/billetera" element={<WalletPage />} />
           <Route path="/mis-multas" element={<MyFinesPage />} />
           <Route path="/perfil" element={<ProfilePage />} />
+          <Route path="/reactivacion" element={<ReactivationPage />} />
         </Route>
 
         {/* Protected: Admin */}
@@ -79,6 +83,7 @@ export const AppRouter = () => {
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/convocatorias" element={<AdminConvocatoriasPage />} />
           <Route path="/admin/miembros" element={<AdminMembersPage />} />
+          <Route path="/admin/reactivaciones" element={<AdminReactivationRequestsPage />} />
           <Route path="/admin/multas" element={<AdminFinesPage />} />
           <Route path="/admin/billeteras" element={<AdminWalletsPage />} />
           <Route path="/admin/asistencias" element={<AdminAttendanceReportPage />} />
