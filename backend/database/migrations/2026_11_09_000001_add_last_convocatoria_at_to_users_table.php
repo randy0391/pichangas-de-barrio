@@ -17,17 +17,17 @@ return new class extends Migration
         DB::statement("
             UPDATE users
             SET last_convocatoria_at = (
-                SELECT MAX(confirmaciones.confirmed_at)
+                SELECT MAX(COALESCE(confirmaciones.confirmed_at, confirmaciones.created_at))
                 FROM confirmaciones
                 WHERE confirmaciones.user_id = users.id
                   AND confirmaciones.status = 'confirmado'
-                  AND confirmaciones.confirmed_at IS NOT NULL
+                  AND (confirmaciones.confirmed_at IS NOT NULL OR confirmaciones.created_at IS NOT NULL)
             )
             WHERE EXISTS (
                 SELECT 1 FROM confirmaciones
                 WHERE confirmaciones.user_id = users.id
                   AND confirmaciones.status = 'confirmado'
-                  AND confirmaciones.confirmed_at IS NOT NULL
+                  AND (confirmaciones.confirmed_at IS NOT NULL OR confirmaciones.created_at IS NOT NULL)
             )
         ");
     }
