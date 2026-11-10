@@ -178,7 +178,9 @@ class ConvocatoriaController extends Controller
                 ]
             );
 
-            $request->user()->forceFill(['last_convocatoria_at' => now()])->save();\n\n            return response()->json(['message' => 'Inscripción confirmada exitosamente']);
+            $request->user()->forceFill(['last_convocatoria_at' => now()])->save();
+
+            return response()->json(['message' => 'Inscripción confirmada exitosamente']);
         });
     }
 
@@ -436,7 +438,7 @@ class ConvocatoriaController extends Controller
             return response()->json(['message' => 'El jugador ya esta confirmado'], 400);
         }
 
-        $targetUser = \\App\\Models\\User::findOrFail($request->user_id);
+        $targetUser = \App\\Models\\User::findOrFail($request->user_id);
         if ($targetUser->role !== 'member' || $targetUser->status !== 'active') {
             return response()->json(['message' => 'Solo se pueden agregar jugadores activos a una convocatoria.'], 422);
         }
@@ -469,6 +471,8 @@ class ConvocatoriaController extends Controller
             'notes' => 'Anadido manualmente por administrador'
         ]);
 
-        $targetUser->forceFill(['last_convocatoria_at' => now()])->save();\n\n        return response()->json(['message' => 'Jugador añadido exitosamente']);
+        $targetUser->forceFill(['last_convocatoria_at' => now()])->save();
+
+        return response()->json(['message' => 'Jugador añadido exitosamente']);
     }
 }
