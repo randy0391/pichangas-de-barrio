@@ -27,7 +27,7 @@ class User extends Authenticatable
         'payment_receipt',
         'birth_date',
         'blood_type',
-        'nickname'
+        'nickname', 'last_convocatoria_at'
     ];
 
     protected $hidden = [
@@ -37,7 +37,8 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',\n            'last_convocatoria_at' => 'datetime',
+            'email_verified_at' => 'datetime',
+            'last_convocatoria_at' => 'datetime',
             'password' => 'hashed',
         
         ];
