@@ -185,7 +185,8 @@ class MemberController extends Controller
         }
         if (isset($validated['status']) && $validated['status'] === 'active' && $user->status !== 'active') {
             $validated['last_convocatoria_at'] = now();
-        }\n        if (isset($validated['is_approved'])) {
+        }
+        if (isset($validated['is_approved'])) {
             $validated['is_approved'] = $validated['is_approved'] ? 'true' : 'false';
         }
         if (isset($validated['position']) && empty($validated['position'])) $validated['position'] = null;
