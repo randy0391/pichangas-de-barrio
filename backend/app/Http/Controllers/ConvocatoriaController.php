@@ -66,7 +66,7 @@ class ConvocatoriaController extends Controller
         $matchRole = $request->input('match_role', 'jugador');
         
         $user = $request->user();
-        if ($user->hasPendingMultas()) {
+        if ($user->role === 'member' && $user->status !== 'active') {\n            return response()->json(['message' => 'Tu cuenta está inactiva. Solicita la reactivación al administrador para inscribirte nuevamente.', 'inactive' => true], 403);\n        }\n        if ($user->hasPendingMultas()) {
             return response()->json([
                 'message' => 'No puedes unirte. Tienes una multa pendiente que debe ser pagada y aprobada primero.',
                 'has_multas' => true,
@@ -175,7 +175,7 @@ class ConvocatoriaController extends Controller
                 ]
             );
 
-            return response()->json(['message' => 'Asistencia confirmada exitosamente']);
+            $request->user()->forceFill(['last_convocatoria_at' => now()])->save();\n\n            return response()->json(['message' => 'Inscripción confirmada exitosamente']);
         });
     }
 
@@ -461,6 +461,6 @@ class ConvocatoriaController extends Controller
             'notes' => 'Anadido manualmente por administrador'
         ]);
 
-        return response()->json(['message' => 'Jugador anadido exitosamente']);
+        $targetUser->forceFill(['last_convocatoria_at' => now()])->save();\n\n        return response()->json(['message' => 'Jugador añadido exitosamente']);
     }
 }
