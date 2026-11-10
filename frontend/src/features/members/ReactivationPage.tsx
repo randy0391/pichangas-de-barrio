@@ -5,7 +5,6 @@ import api from '@/lib/axios';
 import { useAuthStore } from '@/stores/authStore';
 
 export const ReactivationPage = () => {
-  const user = useAuthStore(state => state.user) as any;
   const [requests, setRequests] = useState<any[]>([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
