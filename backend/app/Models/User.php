@@ -27,7 +27,7 @@ class User extends Authenticatable
         'payment_receipt',
         'birth_date',
         'blood_type',
-        'nickname'
+        'nickname', 'last_convocatoria_at'
     ];
 
     protected $hidden = [
@@ -38,6 +38,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_convocatoria_at' => 'datetime',
             'password' => 'hashed',
         
         ];

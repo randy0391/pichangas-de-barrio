@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\User;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 
 class DeactivateInactiveUsers extends Command
 {
@@ -20,34 +20,23 @@ class DeactivateInactiveUsers extends Command
      *
      * @var string
      */
-    protected $description = 'Deactivates users who have not participated in any event or convocatoria for 2 months.';
+    protected $description = 'Deactivates approved members with no confirmed convocatoria registration in the last 30 days.';
 
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
-        $twoMonthsAgo = Carbon::now()->subMonths(2);
-        
-        $inactiveUsers = User::where('status', 'active')
-            ->where('role', 'member') // Let's keep admins active
-            ->whereDoesntHave('confirmaciones', function ($query) use ($twoMonthsAgo) {
-                $query->where('created_at', '>=', $twoMonthsAgo);
-            })
-            ->whereDoesntHave('eventRegistrations', function ($query) use ($twoMonthsAgo) {
-                $query->where('created_at', '>=', $twoMonthsAgo);
-            })
-            // Also ensure they were created more than 2 months ago, giving new users a grace period
-            ->where('created_at', '<', $twoMonthsAgo)
-            ->get();
+        $cutoff = Carbon::now()->subDays(30);
 
-        $count = 0;
-        foreach ($inactiveUsers as $user) {
-            $user->status = 'inactive';
-            $user->save();
-            $count++;
-        }
+        $count = User::query()
+            ->where('role', 'member')
+            ->where('status', 'active')
+            ->where('is_approved', true)
+            ->whereRaw('COALESCE(last_convocatoria_at, created_at) <= ?', [$cutoff])
+            ->update(['status' => 'inactive']);
 
-        $this->info("Deactivated {$count} inactive users.");
+        $this->info("Deactivated {$count} inactive players.");
+        return self::SUCCESS;
     }
 }

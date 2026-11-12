@@ -152,7 +152,7 @@ class MemberController extends Controller
         $validated['is_approved'] = 'true'; // Auto approve manually added players
 
         try {
-            $user = User::create($validated);
+            $user = User::create($validated + ['last_convocatoria_at' => now()]);
             return new UserResource($user);
         } catch (\Exception $e) {
             report($e);
@@ -182,6 +182,9 @@ class MemberController extends Controller
         // La contraseña del jugador se mantiene sincronizada con su DNI.
         if (isset($validated['dni']) && $validated['dni'] !== $user->dni) {
             $validated['password'] = Hash::make($validated['dni']);
+        }
+        if (isset($validated['status']) && $validated['status'] === 'active' && $user->status !== 'active') {
+            $validated['last_convocatoria_at'] = now();
         }
         if (isset($validated['is_approved'])) {
             $validated['is_approved'] = $validated['is_approved'] ? 'true' : 'false';

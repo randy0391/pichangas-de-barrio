@@ -24,6 +24,7 @@ const adminSections: SidebarSection[] = [
       { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
       { name: 'Convocatorias', path: '/admin/convocatorias', icon: Trophy },
       { name: 'Miembros', path: '/admin/miembros', icon: Users },
+      { name: 'Reactivaciones', path: '/admin/reactivaciones', icon: ShieldCheck },
       { name: 'Multas', path: '/admin/multas', icon: AlertCircle },
       { name: 'Billeteras', path: '/admin/billeteras', icon: Wallet },
       { name: 'Asistencias', path: '/admin/asistencias', icon: ClipboardCheck },

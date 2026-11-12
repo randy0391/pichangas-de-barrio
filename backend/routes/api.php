@@ -46,11 +46,13 @@ Route::post('/register', [AuthController::class, 'register'])->middleware('throt
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
 // Protected routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'inactive.member'])->group(function () {
     // Maintenance tasks run through deployment/CLI, not public HTTP endpoints.
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/reactivation-requests', [\App\Http\Controllers\ReactivationRequestController::class, 'store']);
+    Route::get('/reactivation-requests/mine', [\App\Http\Controllers\ReactivationRequestController::class, 'mine']);
     Route::put('/user', [AuthController::class, 'updateProfile']);
     Route::post('/user/avatar', [AuthController::class, 'updateAvatar']);
 
@@ -84,6 +86,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin routes
     Route::middleware('admin')->group(function () {
+        Route::get('/admin/reactivation-requests', [\App\Http\Controllers\ReactivationRequestController::class, 'index']);
+        Route::post('/admin/reactivation-requests/{id}/review', [\App\Http\Controllers\ReactivationRequestController::class, 'review']);
+
         // Admin Wallets
         Route::get('/admin/wallets', [\App\Http\Controllers\WalletController::class, 'adminListAll']);
         Route::get('/admin/wallets/pending', [\App\Http\Controllers\WalletController::class, 'adminListPending']);

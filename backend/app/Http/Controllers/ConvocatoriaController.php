@@ -66,6 +66,9 @@ class ConvocatoriaController extends Controller
         $matchRole = $request->input('match_role', 'jugador');
         
         $user = $request->user();
+        if ($user->role === 'member' && $user->status !== 'active') {
+            return response()->json(['message' => 'Tu cuenta está inactiva. Solicita la reactivación al administrador para inscribirte nuevamente.', 'inactive' => true], 403);
+        }
         if ($user->hasPendingMultas()) {
             return response()->json([
                 'message' => 'No puedes unirte. Tienes una multa pendiente que debe ser pagada y aprobada primero.',
@@ -175,7 +178,9 @@ class ConvocatoriaController extends Controller
                 ]
             );
 
-            return response()->json(['message' => 'Asistencia confirmada exitosamente']);
+            $request->user()->forceFill(['last_convocatoria_at' => now()])->save();
+
+            return response()->json(['message' => 'Inscripción confirmada exitosamente']);
         });
     }
 
@@ -433,6 +438,11 @@ class ConvocatoriaController extends Controller
             return response()->json(['message' => 'El jugador ya esta confirmado'], 400);
         }
 
+        $targetUser = \App\Models\User::findOrFail($request->user_id);
+        if ($targetUser->role !== 'member' || $targetUser->status !== 'active') {
+            return response()->json(['message' => 'Solo se pueden agregar jugadores activos a una convocatoria.'], 422);
+        }
+
         $numTeams = max(2, (int) ($convocatoria->num_teams ?: 2));
         $maxPorteros = $numTeams;
         $maxJugadores = max(0, (int) $convocatoria->max_players - $maxPorteros);
@@ -461,6 +471,8 @@ class ConvocatoriaController extends Controller
             'notes' => 'Anadido manualmente por administrador'
         ]);
 
-        return response()->json(['message' => 'Jugador anadido exitosamente']);
+        $targetUser->forceFill(['last_convocatoria_at' => now()])->save();
+
+        return response()->json(['message' => 'Jugador añadido exitosamente']);
     }
 }
