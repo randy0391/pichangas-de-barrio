@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ShieldCheck, Clock, Send, LogOut } from 'lucide-react';
+import { ShieldCheck, Clock, Send, LogOut, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import api from '@/lib/axios';
@@ -40,6 +40,17 @@ export const ReactivationPage = () => {
       toast.error(error.response?.data?.message || 'No se pudo enviar la solicitud.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const refreshAccountStatus = async () => {
+    await fetchUser();
+    const updatedUser = useAuthStore.getState().user;
+    if (updatedUser?.status === 'active') {
+      toast.success('Tu cuenta fue reactivada. Ya puedes ingresar nuevamente.');
+      navigate('/dashboard', { replace: true });
+    } else {
+      toast.info('Tu cuenta todavía figura como inactiva.');
     }
   };
 
@@ -92,6 +103,13 @@ export const ReactivationPage = () => {
                 <span className="mt-1 block text-sm text-cyan-100/80">
                   El administrador ya recibió tu solicitud. Cuando la revise, podrás volver a ingresar al sistema si la aprueba.
                 </span>
+                <button
+                  type="button"
+                  onClick={refreshAccountStatus}
+                  className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-cyan-200 hover:text-white"
+                >
+                  <RefreshCw size={15} /> Actualizar estado de mi cuenta
+                </button>
               </div>
             </div>
           ) : (
