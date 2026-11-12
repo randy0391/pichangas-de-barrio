@@ -46,7 +46,7 @@ Route::post('/register', [AuthController::class, 'register'])->middleware('throt
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
 // Protected routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'inactive.member'])->group(function () {
     // Maintenance tasks run through deployment/CLI, not public HTTP endpoints.
 
     Route::post('/logout', [AuthController::class, 'logout']);
