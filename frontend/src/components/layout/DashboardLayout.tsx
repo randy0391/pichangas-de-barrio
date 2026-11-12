@@ -73,7 +73,6 @@ const userSections: SidebarSection[] = [
       { name: 'Mi Billetera', path: '/billetera', icon: Wallet },
       { name: 'Mis Multas', path: '/mis-multas', icon: AlertCircle },
       { name: 'Mi Perfil', path: '/perfil', icon: User },
-      { name: 'Reactivación', path: '/reactivacion', icon: ShieldCheck },
     ]
   }
 ];
