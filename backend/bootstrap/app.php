@@ -24,7 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-            'inactive.member' => \\App\\Http\\Middleware\\InactiveMemberAccess::class,
+            'inactive.member' => \App\Http\Middleware\InactiveMemberAccess::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
 
