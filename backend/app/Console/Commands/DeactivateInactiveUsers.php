@@ -1,10 +1,10 @@
 <?php
 
-namespace App\\Console\\Commands;
+namespace App\Console\Commands;
 
-use App\\Models\\User;
-use Illuminate\\Console\\Command;
-use Illuminate\\Support\\Carbon;
+use App\Models\User;
+use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 
 class DeactivateInactiveUsers extends Command
 {
