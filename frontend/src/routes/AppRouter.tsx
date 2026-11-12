@@ -45,7 +45,7 @@ const HomeRedirect = () => {
   const { isAuthenticated, user, isLoading } = useAuthStore();
   if (isLoading) return <FootballSpinner variant="inline" label="Verificando tu sesión" />;
   if (isAuthenticated) {
-    return <Navigate to={user?.role === 'admin' ? '/admin' : '/dashboard'} replace />;
+    return <Navigate to={user?.role === 'admin' ? '/admin' : user?.status === 'inactive' ? '/reactivacion' : '/dashboard'} replace />;
   }
   return <LoginPage />;
 };
@@ -59,6 +59,9 @@ export const AppRouter = () => {
         <Route path="/login" element={<HomeRedirect />} />
         <Route path="/registro" element={<RegisterPage />} />
         <Route path="/registro-antiguos" element={<OldPlayerRegisterPage />} />
+
+        {/* Inactive members only: standalone reactivation screen without app navigation */}
+        <Route path="/reactivacion" element={<ProtectedRoute allowInactive><ReactivationPage /></ProtectedRoute>} />
 
         {/* Protected: User Dashboard */}
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
@@ -75,7 +78,6 @@ export const AppRouter = () => {
           <Route path="/billetera" element={<WalletPage />} />
           <Route path="/mis-multas" element={<MyFinesPage />} />
           <Route path="/perfil" element={<ProfilePage />} />
-          <Route path="/reactivacion" element={<ReactivationPage />} />
         </Route>
 
         {/* Protected: Admin */}
