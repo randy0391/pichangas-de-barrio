@@ -1096,7 +1096,10 @@ export const ConvocatoriaDetailPage = () => {
                                                                     </select>
                                                                     <button
                                                                         type="button"
-                                                                        onClick={() => handleSwapTeam(p.user.id, unassignedTeamSelections[p.user.id] ?? 1)}
+                                                                        onClick={(event) => {
+                                                                            event.stopPropagation();
+                                                                            handleSwapTeam(p.user.id, unassignedTeamSelections[p.user.id] ?? 1);
+                                                                        }}
                                                                         className="rounded-lg bg-[#A5E900] px-2.5 py-2 text-xs font-black text-slate-950 hover:bg-lime-400 transition-colors"
                                                                     >
                                                                         Asignar
@@ -1197,7 +1200,10 @@ export const ConvocatoriaDetailPage = () => {
                                                                     </select>
                                                                     <button
                                                                         type="button"
-                                                                        onClick={() => handleSwapTeam(p.user.id, unassignedTeamSelections[p.user.id] ?? 1)}
+                                                                        onClick={(event) => {
+                                                                            event.stopPropagation();
+                                                                            handleSwapTeam(p.user.id, unassignedTeamSelections[p.user.id] ?? 1);
+                                                                        }}
                                                                         className="rounded-lg bg-[#A5E900] px-2.5 py-2 text-xs font-black text-slate-950 hover:bg-lime-400 transition-colors"
                                                                     >
                                                                         Asignar
