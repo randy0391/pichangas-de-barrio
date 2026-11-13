@@ -379,6 +379,21 @@ class ConvocatoriaController extends Controller
             $maxJugadores = max(0, (int) $convocatoria->max_players - $maxPorteros);
 
             if ($request->match_role === 'portero') {
+                if ($confirmacion->team_number !== null) {
+                    $goalkeeperExistsInTeam = $convocatoria->confirmaciones()
+                        ->where('status', 'confirmado')
+                        ->where('match_role', 'portero')
+                        ->where('team_number', $confirmacion->team_number)
+                        ->where('user_id', '!=', $userId)
+                        ->exists();
+
+                    if ($goalkeeperExistsInTeam) {
+                        return response()->json([
+                            'message' => "El Equipo {$confirmacion->team_number} ya tiene arquero.",
+                        ], 422);
+                    }
+                }
+
                 $currentPorteros = $convocatoria->confirmaciones()
                     ->where('status', 'confirmado')
                     ->where('match_role', 'portero')
