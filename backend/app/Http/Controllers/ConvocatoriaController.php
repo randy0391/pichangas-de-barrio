@@ -202,6 +202,7 @@ class ConvocatoriaController extends Controller
     {
         $convocatoriaId = $convocatoria->id;
         $numTeams = max(2, (int) ($convocatoria->num_teams ?: 2));
+        $teamCapacity = (int) ceil($convocatoria->max_players / $numTeams);
 
         $drawAlreadyDone = Confirmacion::where('convocatoria_id', $convocatoriaId)
             ->where('status', 'confirmado')
@@ -213,9 +214,19 @@ class ConvocatoriaController extends Controller
         }
 
         $teamNumbers = range(1, $numTeams);
+        $teamTotals = Confirmacion::where('convocatoria_id', $convocatoriaId)
+            ->where('status', 'confirmado')
+            ->whereNotNull('team_number')
+            ->selectRaw('team_number, COUNT(*) as total')
+            ->groupBy('team_number')
+            ->pluck('total', 'team_number');
+
+        $availableTeams = array_values(array_filter($teamNumbers, function ($teamNumber) use ($teamTotals, $teamCapacity) {
+            return (int) ($teamTotals[$teamNumber] ?? 0) < $teamCapacity;
+        }));
 
         if ($confirmacion->match_role === 'portero') {
-            $occupiedTeams = Confirmacion::where('convocatoria_id', $convocatoriaId)
+            $occupiedGoalkeeperTeams = Confirmacion::where('convocatoria_id', $convocatoriaId)
                 ->where('status', 'confirmado')
                 ->where('match_role', 'portero')
                 ->whereNotNull('team_number')
@@ -223,39 +234,30 @@ class ConvocatoriaController extends Controller
                 ->map(fn ($team) => (int) $team)
                 ->all();
 
-            $availableTeams = array_values(array_diff($teamNumbers, $occupiedTeams));
+            $availableTeams = array_values(array_diff($availableTeams, $occupiedGoalkeeperTeams));
+        } else {
+            $fieldCounts = Confirmacion::where('convocatoria_id', $convocatoriaId)
+                ->where('status', 'confirmado')
+                ->where('match_role', 'jugador')
+                ->whereNotNull('team_number')
+                ->selectRaw('team_number, COUNT(*) as total')
+                ->groupBy('team_number')
+                ->pluck('total', 'team_number');
 
-            if (empty($availableTeams)) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'match_role' => 'No hay ningún equipo con vacante de arquero.',
-                ]);
-            }
-
-            $confirmacion->team_number = $availableTeams[0];
-            $confirmacion->save();
-            return;
+            usort($availableTeams, function ($a, $b) use ($fieldCounts) {
+                return (int) ($fieldCounts[$a] ?? 0) <=> (int) ($fieldCounts[$b] ?? 0);
+            });
         }
 
-        $playerCounts = Confirmacion::where('convocatoria_id', $convocatoriaId)
-            ->where('status', 'confirmado')
-            ->where('match_role', 'jugador')
-            ->whereNotNull('team_number')
-            ->selectRaw('team_number, COUNT(*) as total')
-            ->groupBy('team_number')
-            ->pluck('total', 'team_number');
-
-        $targetTeam = $teamNumbers[0];
-        $lowestCount = PHP_INT_MAX;
-
-        foreach ($teamNumbers as $teamNumber) {
-            $count = (int) ($playerCounts[$teamNumber] ?? 0);
-            if ($count < $lowestCount) {
-                $lowestCount = $count;
-                $targetTeam = $teamNumber;
-            }
+        if (empty($availableTeams)) {
+            throw \\Illuminate\\Validation\\ValidationException::withMessages([
+                'match_role' => $confirmacion->match_role === 'portero'
+                    ? 'No hay equipo con espacio disponible y vacante de arquero.'
+                    : 'Todos los equipos alcanzaron su máximo de integrantes.',
+            ]);
         }
 
-        $confirmacion->team_number = $targetTeam;
+        $confirmacion->team_number = $availableTeams[0];
         $confirmacion->save();
     }
 
@@ -407,21 +409,61 @@ class ConvocatoriaController extends Controller
     {
         if (!$request->user()->isAdmin()) return response()->json(['message' => 'Unauthorized'], 403);
 
-        $request->validate([
-            'team_number' => 'nullable|integer|min:0|max:10'
-        ]);
-
         $convocatoria = Convocatoria::findOrFail($id);
-        $confirmacion = $convocatoria->confirmaciones()->where('user_id', $userId)->firstOrFail();
+        $numTeams = max(2, (int) ($convocatoria->num_teams ?: 2));
 
-        $val = $request->team_number;
-        $confirmacion->team_number = ($val === 0 || $val === null) ? null : (int) $val;
-        $confirmacion->save();
-
-        return response()->json([
-            'message' => 'Equipo del jugador actualizado exitosamente',
-            'team_number' => $confirmacion->team_number
+        $request->validate([
+            'team_number' => ['nullable', 'integer', 'min:0', 'max:' . $numTeams],
         ]);
+
+        return \\Illuminate\\Support\\Facades\\DB::transaction(function () use ($request, $convocatoria, $userId, $numTeams) {
+            $lockedConvocatoria = Convocatoria::whereKey($convocatoria->id)->lockForUpdate()->firstOrFail();
+            $confirmacion = $lockedConvocatoria->confirmaciones()
+                ->where('user_id', $userId)
+                ->where('status', 'confirmado')
+                ->firstOrFail();
+
+            $value = $request->team_number;
+            $targetTeam = ($value === 0 || $value === null) ? null : (int) $value;
+
+            if ($targetTeam !== null && $targetTeam !== (int) $confirmacion->team_number) {
+                $teamCapacity = (int) ceil($lockedConvocatoria->max_players / $numTeams);
+                $currentTeamMembers = $lockedConvocatoria->confirmaciones()
+                    ->where('status', 'confirmado')
+                    ->where('team_number', $targetTeam)
+                    ->where('id', '!=', $confirmacion->id)
+                    ->count();
+
+                if ($currentTeamMembers >= $teamCapacity) {
+                    return response()->json([
+                        'message' => "El Equipo {$targetTeam} ya está completo ({$teamCapacity}/{$teamCapacity}).",
+                    ], 422);
+                }
+
+                if ($confirmacion->match_role === 'portero') {
+                    $goalkeeperExists = $lockedConvocatoria->confirmaciones()
+                        ->where('status', 'confirmado')
+                        ->where('match_role', 'portero')
+                        ->where('team_number', $targetTeam)
+                        ->where('id', '!=', $confirmacion->id)
+                        ->exists();
+
+                    if ($goalkeeperExists) {
+                        return response()->json([
+                            'message' => "El Equipo {$targetTeam} ya tiene arquero.",
+                        ], 422);
+                    }
+                }
+            }
+
+            $confirmacion->team_number = $targetTeam;
+            $confirmacion->save();
+
+            return response()->json([
+                'message' => 'Equipo del jugador actualizado exitosamente',
+                'team_number' => $confirmacion->team_number
+            ]);
+        });
     }
 
     public function resetEquipos($id)
