@@ -927,6 +927,47 @@ export const ConvocatoriaDetailPage = () => {
                 transition={{ delay: 0.2 }}
                 className="space-y-6"
             >
+                {isAdmin && confirmados.some((p: Confirmacion) => Number(p.team_number || 0) === 0) && (
+                    <div className="rounded-3xl border border-amber-500/30 bg-amber-950/20 p-5 space-y-3">
+                        <div>
+                            <h3 className="text-sm font-black uppercase tracking-wide text-amber-300">Participantes sin equipo</h3>
+                            <p className="mt-1 text-xs text-slate-300">Asigna a cada participante a una vacante sin modificar los equipos ya formados.</p>
+                        </div>
+                        {confirmados.filter((p: Confirmacion) => Number(p.team_number || 0) === 0 && p.user?.id).map((p: Confirmacion) => {
+                            const playerName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
+                            const playerId = p.user!.id;
+                            const selectedTeam = unassignedTeamSelections[playerId] ?? 1;
+                            return (
+                                <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-slate-700 bg-slate-900/80 p-3">
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-bold text-white">{p.match_role === 'portero' ? '🧤 ' : '⚽ '}{playerName}</p>
+                                        <p className="text-[10px] font-semibold uppercase text-slate-400">{p.match_role === 'portero' ? 'Arquero' : 'Jugador de campo'}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <select
+                                            aria-label={`Equipo para ${playerName}`}
+                                            value={selectedTeam}
+                                            onChange={(e) => setUnassignedTeamSelections(prev => ({ ...prev, [playerId]: Number(e.target.value) }))}
+                                            className="min-w-0 flex-1 rounded-lg border border-indigo-500/40 bg-slate-800 px-3 py-2 text-xs font-bold text-white sm:flex-none"
+                                        >
+                                            {Array.from({ length: Math.max(2, Number(c.num_teams || 2)) }, (_, index) => index + 1).map(teamNumber => (
+                                                <option key={teamNumber} value={teamNumber}>Equipo {teamNumber}</option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleSwapTeam(playerId, selectedTeam)}
+                                            className="rounded-lg bg-[#A5E900] px-4 py-2 text-xs font-black text-slate-950 hover:bg-lime-400"
+                                        >
+                                            Asignar
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
                 {hasTeams ? (
                     <div className="space-y-6">
                         {/* View Switcher: Tactical Pitch vs Grid */}
