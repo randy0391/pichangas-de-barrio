@@ -30,6 +30,21 @@ export const useUploadMultaReceipt = () => {
   });
 };
 
+export const usePayMultaWithWallet = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await api.post(`/multas/${id}/pay-wallet`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['multas'] });
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+};
+
 export const useApproveMulta = () => {
   const queryClient = useQueryClient();
   return useMutation({
