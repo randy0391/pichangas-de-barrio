@@ -79,6 +79,7 @@ Route::middleware(['auth:sanctum', 'inactive.member'])->group(function () {
     // Multas
     Route::get('/multas', [\App\Http\Controllers\MultaController::class, 'index']);
     Route::post('/multas/{id}/receipt', [\App\Http\Controllers\MultaController::class, 'uploadReceipt']);
+    Route::post('/multas/{id}/pay-wallet', [\App\Http\Controllers\MultaController::class, 'payWithWallet']);
 
     // Wallet (Billetera Digital)
     Route::get('/wallet', [\App\Http\Controllers\WalletController::class, 'myWallet']);
