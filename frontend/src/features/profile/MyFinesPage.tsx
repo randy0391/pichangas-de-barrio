@@ -52,6 +52,11 @@ export const MyFinesPage = () => {
             <p className="text-sm text-red-400 font-semibold">Paga con tu saldo disponible o envía el voucher del pago por Yape.</p>
             {pendientes.map(m => <article key={m.id} className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-xl border border-red-500/20 space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3"><div><div className="text-xs font-bold text-red-500 uppercase tracking-widest mb-1">{m.reason}</div><div className="text-lg font-bold text-slate-900 dark:text-white">{m.convocatoria?.title || 'Multa registrada'}</div>{m.admin_notes && <p className="text-sm text-slate-500 mt-2 italic">{m.admin_notes}</p>}</div><div className="text-3xl font-black text-slate-900 dark:text-white whitespace-nowrap">S/ {Number(m.amount).toFixed(2)}</div></div>
+                <div className="rounded-xl border border-purple-500/30 bg-purple-500/10 p-3">
+                    <p className="text-[11px] font-black uppercase tracking-wider text-purple-500">Cuenta oficial para pagar por Yape</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-white">960 735 653</p>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">MARCO ANTONIO LOPEZ LLANOS</p>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Button onClick={() => handleWalletPayment(m.id, m.amount)} disabled={isPaying || balance < Number(m.amount)} className="w-full bg-lime-500 hover:bg-lime-600 text-slate-950 font-black uppercase tracking-wide rounded-xl h-12 flex items-center justify-center gap-2 disabled:opacity-50"><Wallet size={17}/> {isPaying ? 'Procesando...' : 'Pagar con mi saldo'}</Button>
                     <div className="relative"><input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer z-10 w-full h-12" onChange={e => handleUpload(e, m.id)} disabled={isUploading}/><Button className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white font-black uppercase tracking-wide rounded-xl h-12 flex items-center justify-center gap-2 pointer-events-none"><Smartphone size={17}/> {uploadingId === m.id ? 'Subiendo voucher...' : 'Pagar con Yape'}</Button></div>
