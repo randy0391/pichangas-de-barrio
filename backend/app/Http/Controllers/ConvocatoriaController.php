@@ -226,7 +226,7 @@ class ConvocatoriaController extends Controller
             $availableTeams = array_values(array_diff($teamNumbers, $occupiedTeams));
 
             if (empty($availableTeams)) {
-                throw \\Illuminate\\Validation\\ValidationException::withMessages([
+                throw \Illuminate\Validation\ValidationException::withMessages([
                     'match_role' => 'No hay ningún equipo con vacante de arquero.',
                 ]);
             }
@@ -502,12 +502,12 @@ class ConvocatoriaController extends Controller
             'match_role' => 'required|in:jugador,portero',
         ]);
 
-        $targetUser = \\App\\Models\\User::findOrFail($request->user_id);
+        $targetUser = \App\Models\User::findOrFail($request->user_id);
         if ($targetUser->role !== 'member' || $targetUser->status !== 'active') {
             return response()->json(['message' => 'Solo se pueden agregar jugadores activos a una convocatoria.'], 422);
         }
 
-        return \\Illuminate\\Support\\Facades\\DB::transaction(function () use ($request, $id, $targetUser) {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($request, $id, $targetUser) {
             // Serialize additions to prevent two requests from consuming the same vacancy.
             $convocatoria = Convocatoria::where('id', $id)->lockForUpdate()->firstOrFail();
 
