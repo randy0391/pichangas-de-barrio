@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Multa;
 use Illuminate\Http\Request;
 use App\Helpers\ImageHelper;
+use App\Models\Wallet;
+use Illuminate\Support\Facades\DB;
 
 class MultaController extends Controller
 {
@@ -80,6 +82,32 @@ class MultaController extends Controller
             'message' => 'Comprobante subido correctamente',
             'multa' => $multa
         ]);
+    }
+
+    public function payWithWallet(Request $request, $id)
+    {
+        return DB::transaction(function () use ($request, $id) {
+            $multa = Multa::whereKey($id)->lockForUpdate()->firstOrFail();
+            if ($multa->user_id !== $request->user()->id) {
+                return response()->json(['message' => 'No puedes pagar una multa que no te pertenece.'], 403);
+            }
+            if ($multa->status !== 'pendiente') {
+                return response()->json(['message' => 'Esta multa ya no está pendiente de pago.'], 422);
+            }
+            $wallet = Wallet::where('user_id', $request->user()->id)->lockForUpdate()->first();
+            if (!$wallet || (float) $wallet->balance < (float) $multa->amount) {
+                return response()->json([
+                    'message' => 'No tienes saldo suficiente en tu billetera para pagar esta multa.',
+                    'required' => (float) $multa->amount,
+                    'balance' => (float) ($wallet->balance ?? 0),
+                ], 422);
+            }
+            $wallet->withdraw((float) $multa->amount, 'Pago de multa #' . $multa->id . ' - ' . $multa->reason, 'multa', $multa->id);
+            $multa->status = 'pagada';
+            $multa->admin_notes = 'Pagada directamente con saldo de billetera.';
+            $multa->save();
+            return response()->json(['message' => 'Multa pagada correctamente con tu billetera.', 'balance' => (float) $wallet->fresh()->balance]);
+        });
     }
 
     public function approve(Request $request, $id)
