@@ -1079,6 +1079,30 @@ export const ConvocatoriaDetailPage = () => {
                                                         </div>
 
                                                         <div className="flex items-center gap-2 shrink-0">
+                                                            {isAdmin && tNum === 0 && (
+                                                                <>
+                                                                    <select
+                                                                        aria-label={`Asignar ${pName} a un equipo`}
+                                                                        value={unassignedTeamSelections[p.user.id] ?? 1}
+                                                                        onChange={(e) => setUnassignedTeamSelections(prev => ({
+                                                                            ...prev,
+                                                                            [p.user.id]: Number(e.target.value)
+                                                                        }))}
+                                                                        className="max-w-28 rounded-lg border border-indigo-500/40 bg-slate-900 px-2 py-2 text-xs font-bold text-white"
+                                                                    >
+                                                                        {Array.from({ length: Math.max(2, Number(c.num_teams || 2)) }, (_, index) => index + 1).map(teamNumber => (
+                                                                            <option key={teamNumber} value={teamNumber}>Equipo {teamNumber}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleSwapTeam(p.user.id, unassignedTeamSelections[p.user.id] ?? 1)}
+                                                                        className="rounded-lg bg-[#A5E900] px-2.5 py-2 text-xs font-black text-slate-950 hover:bg-lime-400 transition-colors"
+                                                                    >
+                                                                        Asignar
+                                                                    </button>
+                                                                </>
+                                                            )}
                                                             {isAdmin && (
                                                                 <button
                                                                     type="button"
