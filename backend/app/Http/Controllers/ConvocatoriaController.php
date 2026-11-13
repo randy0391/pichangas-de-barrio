@@ -250,7 +250,7 @@ class ConvocatoriaController extends Controller
         }
 
         if (empty($availableTeams)) {
-            throw \\Illuminate\\Validation\\ValidationException::withMessages([
+            throw \Illuminate\Validation\\ValidationException::withMessages([
                 'match_role' => $confirmacion->match_role === 'portero'
                     ? 'No hay equipo con espacio disponible y vacante de arquero.'
                     : 'Todos los equipos alcanzaron su máximo de integrantes.',
@@ -431,7 +431,7 @@ class ConvocatoriaController extends Controller
             'team_number' => ['nullable', 'integer', 'min:0', 'max:' . $numTeams],
         ]);
 
-        return \\Illuminate\\Support\\Facades\\DB::transaction(function () use ($request, $convocatoria, $userId, $numTeams) {
+        return \Illuminate\Support\\Facades\\DB::transaction(function () use ($request, $convocatoria, $userId, $numTeams) {
             $lockedConvocatoria = Convocatoria::whereKey($convocatoria->id)->lockForUpdate()->firstOrFail();
             $confirmacion = $lockedConvocatoria->confirmaciones()
                 ->where('user_id', $userId)
