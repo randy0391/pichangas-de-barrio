@@ -12,7 +12,7 @@ class RecurringConvocatoriaService
 {
     public static function generateUpcoming(?int $weeksAhead = null): array
     {
-        $schedules = RecurringSchedule::where('is_active', true)->get();
+        $schedules = RecurringSchedule::whereRaw('is_active IS TRUE')->get();
         if ($schedules->isEmpty()) {
             return [
                 'created_count' => 0,
