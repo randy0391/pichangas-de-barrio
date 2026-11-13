@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\\Http\\Controllers;
 
-use App\Models\RecurringSchedule;
-use App\Services\RecurringConvocatoriaService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
+use App\\Models\\RecurringSchedule;
+use App\\Services\\RecurringConvocatoriaService;
+use Illuminate\\Http\\Request;
+use Illuminate\\Support\\Facades\\Artisan;
+use Illuminate\\Support\\Facades\\Log;
 
 class RecurringScheduleController extends Controller
 {
@@ -17,11 +18,11 @@ class RecurringScheduleController extends Controller
                 Artisan::call('migrate', ['--force' => true]);
                 $schedules = RecurringSchedule::orderBy('day_of_week', 'asc')->get();
             }
-        } catch (\Throwable $e) {
+        } catch (\\Throwable $e) {
             try {
                 Artisan::call('migrate', ['--force' => true]);
                 $schedules = RecurringSchedule::orderBy('day_of_week', 'asc')->get();
-            } catch (\Throwable $e2) {
+            } catch (\\Throwable $e2) {
                 $schedules = collect([
                     [
                         'id' => 1,
@@ -109,15 +110,21 @@ class RecurringScheduleController extends Controller
 
     public function generate(Request $request)
     {
+        $weeks = (int) $request->input('weeks', 4);
+
         try {
-            $weeks = $request->input('weeks', 4);
-            $result = RecurringConvocatoriaService::generateUpcoming((int) $weeks);
+            $result = RecurringConvocatoriaService::generateUpcoming($weeks);
+
             return response()->json($result);
-        } catch (\Throwable $e) {
-            Artisan::call('migrate', ['--force' => true]);
-            $weeks = $request->input('weeks', 4);
-            $result = RecurringConvocatoriaService::generateUpcoming((int) $weeks);
-            return response()->json($result);
+        } catch (\\Throwable $e) {
+            Log::error('Error al generar convocatorias recurrentes.', [
+                'weeks' => $weeks,
+                'exception' => $e,
+            ]);
+
+            return response()->json([
+                'message' => 'No se pudieron generar las convocatorias. El error fue registrado para su revisión.',
+            ], 500);
         }
     }
 }
