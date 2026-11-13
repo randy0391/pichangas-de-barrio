@@ -1,12 +1,12 @@
 <?php
 
-namespace App\\Http\\Controllers;
+namespace App\Http\Controllers;
 
-use App\\Models\\RecurringSchedule;
-use App\\Services\\RecurringConvocatoriaService;
-use Illuminate\\Http\\Request;
-use Illuminate\\Support\\Facades\\Artisan;
-use Illuminate\\Support\\Facades\\Log;
+use App\Models\RecurringSchedule;
+use App\Services\RecurringConvocatoriaService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 class RecurringScheduleController extends Controller
 {
@@ -18,11 +18,11 @@ class RecurringScheduleController extends Controller
                 Artisan::call('migrate', ['--force' => true]);
                 $schedules = RecurringSchedule::orderBy('day_of_week', 'asc')->get();
             }
-        } catch (\\Throwable $e) {
+        } catch (\Throwable $e) {
             try {
                 Artisan::call('migrate', ['--force' => true]);
                 $schedules = RecurringSchedule::orderBy('day_of_week', 'asc')->get();
-            } catch (\\Throwable $e2) {
+            } catch (\Throwable $e2) {
                 $schedules = collect([
                     [
                         'id' => 1,
@@ -116,7 +116,7 @@ class RecurringScheduleController extends Controller
             $result = RecurringConvocatoriaService::generateUpcoming($weeks);
 
             return response()->json($result);
-        } catch (\\Throwable $e) {
+        } catch (\Throwable $e) {
             Log::error('Error al generar convocatorias recurrentes.', [
                 'weeks' => $weeks,
                 'exception' => $e,
