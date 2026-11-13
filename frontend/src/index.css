@@ -842,3 +842,30 @@
     backdrop-filter: blur(12px);
   }
 }
+
+/* ===== Final glass overrides: keep Tailwind background utilities from covering the glass surfaces ===== */
+.pdb-header {
+  background:
+    linear-gradient(105deg, rgb(240 0 145 / 10%), transparent 38%),
+    linear-gradient(275deg, rgb(0 201 232 / 9%), transparent 42%),
+    rgb(5 10 20 / 72%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+  backdrop-filter: blur(18px) saturate(135%) !important;
+}
+
+.pdb-sidebar {
+  background:
+    radial-gradient(ellipse at 0 0, rgb(240 0 145 / 13%), transparent 22rem),
+    radial-gradient(ellipse at 100% 65%, rgb(0 201 232 / 9%), transparent 20rem),
+    rgb(5 10 20 / 70%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(125%) !important;
+  backdrop-filter: blur(18px) saturate(125%) !important;
+}
+
+.pdb-mobile-nav {
+  background:
+    linear-gradient(90deg, rgb(240 0 145 / 9%), transparent 48%, rgb(0 201 232 / 9%)),
+    rgb(5 10 20 / 74%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+  backdrop-filter: blur(18px) saturate(135%) !important;
+}
