@@ -34,7 +34,7 @@ export const EventsPage = () => {
     if (isLoading) return <div className="py-20 flex justify-center"><FootballSpinner /></div>;
 
     return (
-        <div className="container mx-auto px-4 py-12">
+        <div className="pdb-premium-page pdb-premium-page--events container mx-auto px-4 py-12">
             <div className="mb-12 text-center md:text-left flex flex-col md:flex-row justify-between items-end gap-6">
                 <div>
                     <h1 className="text-5xl font-black text-white uppercase tracking-tight mb-2">
