@@ -139,7 +139,7 @@ export const AdminMembersPage = () => {
                     const name = (m.full_name || `${m.nombres || ''} ${m.apellido_paterno || ''} ${m.apellido_materno || ''}`.trim() || m.name || 'Sin nombre').trim();
                     return `${idx + 1}. ${name}`;
                 });
-                await navigator.clipboard.writeText(`⚽ JUGADORES INACTIVOS - PICHANGAS DE BARRIO (${targetList.length})\\n\\n${lines.join('\\n')}`);
+                await navigator.clipboard.writeText(`⚽ JUGADORES INACTIVOS - PICHANGAS DE BARRIO (${targetList.length})\n\n${lines.join('\n')}`);
                 toast.success(`¡Lista de ${targetList.length} jugadores inactivos copiada!`);
                 return;
             }
