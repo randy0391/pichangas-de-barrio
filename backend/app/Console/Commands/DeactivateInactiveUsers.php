@@ -19,7 +19,7 @@ class DeactivateInactiveUsers extends Command
         $candidates = User::query()
             ->where('role', 'member')
             ->where('status', 'active')
-            ->where('is_approved', true)
+            ->whereRaw('"is_approved" IS TRUE')
             ->whereRaw('COALESCE(last_convocatoria_at, created_at) <= ?', [$cutoff]);
 
         if ($this->option('dry-run')) {
