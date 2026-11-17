@@ -61,14 +61,14 @@ export const RegisterPage = () => {
   }
 
   return (
-    <div className="min-h-[calc(100vh-10rem)] flex items-center justify-center p-4">
+    <div className="pdb-auth-page pdb-auth-page--register min-h-screen flex items-center justify-center p-4 md:p-6 relative overflow-hidden">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-5xl bg-card/90 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col md:flex-row-reverse border border-white/10"
+        className="pdb-auth-card w-full max-w-5xl bg-card/90 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col md:flex-row-reverse border border-white/10 relative z-10"
       >
         {/* Right Side: Visual (Reversed for Register) */}
-        <div className="w-full md:w-1/2 bg-gradient-to-bl from-slate-900 via-[#0a1128] to-black p-12 flex-col justify-between relative overflow-hidden hidden md:flex">
+        <div className="pdb-auth-visual w-full md:w-1/2 bg-gradient-to-bl from-slate-900 via-[#0a1128] to-black p-12 flex-col justify-between relative overflow-hidden hidden md:flex">
             {/* Tactical pitch pattern */}
             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.8)_1px,transparent_1px)] bg-[size:24px_24px]"></div>
             
@@ -89,7 +89,7 @@ export const RegisterPage = () => {
         </div>
 
         {/* Left Side: Form */}
-        <div className="w-full md:w-1/2 p-8 md:p-12 bg-white dark:bg-slate-950 flex flex-col justify-center relative">
+        <div className="pdb-auth-form w-full md:w-1/2 p-8 md:p-12 bg-slate-950 flex flex-col justify-center relative">
             <div className="absolute top-0 left-0 p-8 md:hidden">
                  <img src="/logo.jpg" alt="Logo" className="w-12 h-12 rounded-full border-2 border-accent" />
             </div>
