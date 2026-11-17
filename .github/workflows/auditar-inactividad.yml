@@ -1,6 +1,8 @@
 name: Auditar inactividad de jugadores
 
 on:
+  schedule:
+    - cron: "0 8 * * *" # Todos los días a las 03:00, hora de Perú (UTC-5)
   workflow_dispatch:
     inputs:
       ejecutar_desactivacion:
@@ -18,7 +20,7 @@ concurrency:
 
 jobs:
   audit:
-    name: Revisar candidatos de inactividad
+    name: Revisar y desactivar jugadores inactivos
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -55,9 +57,13 @@ jobs:
 
       - name: Auditar o desactivar jugadores
         env:
+          EVENTO: ${{ github.event_name }}
           EJECUTAR_DESACTIVACION: ${{ inputs.ejecutar_desactivacion }}
         run: |
-          if [ "$EJECUTAR_DESACTIVACION" = "true" ]; then
+          if [ "$EVENTO" = "schedule" ]; then
+            echo "MODO: DESACTIVACION AUTOMATICA DIARIA AUTORIZADA"
+            php artisan users:deactivate-inactive --confirm
+          elif [ "$EJECUTAR_DESACTIVACION" = "true" ]; then
             echo "MODO: DESACTIVACION REAL AUTORIZADA MANUALMENTE"
             php artisan users:deactivate-inactive --confirm
           else
