@@ -1079,3 +1079,108 @@
     padding-right: .25rem;
   }
 }
+
+
+/* Premium visual pass: community, events, media and content management */
+@layer components {
+  .pdb-premium-page--events,
+  .pdb-premium-page--gallery,
+  .pdb-premium-page--gallery-detail,
+  .pdb-premium-page--news,
+  .pdb-premium-page--news-detail,
+  .pdb-premium-page--community,
+  .pdb-premium-page--admin-events,
+  .pdb-premium-page--admin-galleries,
+  .pdb-premium-page--admin-gallery-detail,
+  .pdb-premium-page--admin-posts,
+  .pdb-premium-page--admin-wallets {
+    --pdb-glass-border: rgb(148 163 184 / 17%);
+    color: #f1f5f9;
+  }
+
+  .pdb-premium-page--events article,
+  .pdb-premium-page--gallery article,
+  .pdb-premium-page--news article,
+  .pdb-premium-page--community article,
+  .pdb-premium-page--admin-events article,
+  .pdb-premium-page--admin-galleries article,
+  .pdb-premium-page--admin-posts article,
+  .pdb-premium-page--admin-wallets article {
+    border-color: var(--pdb-glass-border);
+    box-shadow: 0 14px 38px rgb(0 0 0 / 17%);
+    transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+  }
+
+  .pdb-premium-page--events article:hover,
+  .pdb-premium-page--gallery article:hover,
+  .pdb-premium-page--news article:hover,
+  .pdb-premium-page--community article:hover,
+  .pdb-premium-page--admin-events article:hover,
+  .pdb-premium-page--admin-galleries article:hover,
+  .pdb-premium-page--admin-posts article:hover {
+    border-color: rgb(0 201 232 / 35%);
+    box-shadow: 0 18px 42px rgb(0 0 0 / 24%), 0 0 24px rgb(0 201 232 / 5%);
+    transform: translateY(-2px);
+  }
+
+  .pdb-premium-page--events button,
+  .pdb-premium-page--gallery button,
+  .pdb-premium-page--gallery-detail button,
+  .pdb-premium-page--news button,
+  .pdb-premium-page--news-detail button,
+  .pdb-premium-page--community button,
+  .pdb-premium-page--admin-events button,
+  .pdb-premium-page--admin-galleries button,
+  .pdb-premium-page--admin-gallery-detail button,
+  .pdb-premium-page--admin-posts button,
+  .pdb-premium-page--admin-wallets button {
+    transition: filter .18s ease, transform .18s ease, border-color .18s ease;
+  }
+
+  .pdb-premium-page--events button:hover,
+  .pdb-premium-page--gallery button:hover,
+  .pdb-premium-page--gallery-detail button:hover,
+  .pdb-premium-page--news button:hover,
+  .pdb-premium-page--news-detail button:hover,
+  .pdb-premium-page--community button:hover,
+  .pdb-premium-page--admin-events button:hover,
+  .pdb-premium-page--admin-galleries button:hover,
+  .pdb-premium-page--admin-gallery-detail button:hover,
+  .pdb-premium-page--admin-posts button:hover,
+  .pdb-premium-page--admin-wallets button:hover {
+    filter: brightness(1.07);
+  }
+
+  .pdb-premium-page--events input,
+  .pdb-premium-page--events select,
+  .pdb-premium-page--community input,
+  .pdb-premium-page--community select,
+  .pdb-premium-page--admin-events input,
+  .pdb-premium-page--admin-events select,
+  .pdb-premium-page--admin-galleries input,
+  .pdb-premium-page--admin-galleries select,
+  .pdb-premium-page--admin-posts input,
+  .pdb-premium-page--admin-posts select,
+  .pdb-premium-page--admin-wallets input,
+  .pdb-premium-page--admin-wallets select {
+    accent-color: #00C9E8;
+  }
+
+  .pdb-premium-page--gallery-detail > div:first-child {
+    isolation: isolate;
+  }
+}
+
+@media (max-width: 640px) {
+  .pdb-premium-page--events,
+  .pdb-premium-page--gallery,
+  .pdb-premium-page--news,
+  .pdb-premium-page--community,
+  .pdb-premium-page--admin-events,
+  .pdb-premium-page--admin-galleries,
+  .pdb-premium-page--admin-posts,
+  .pdb-premium-page--admin-wallets {
+    padding-left: .75rem;
+    padding-right: .75rem;
+  }
+}
