@@ -1184,3 +1184,140 @@
     padding-right: .75rem;
   }
 }
+
+
+/* ===== PDB shared interface polish: navigation, controls and dialogs ===== */
+@layer components {
+  .pdb-shell {
+    --pdb-magenta: #F00091;
+    --pdb-cyan: #00C9E8;
+    --pdb-lime: #A5E900;
+  }
+
+  /* Header: clearer hierarchy and subtle brand lighting */
+  .pdb-header {
+    border-bottom-color: rgb(0 201 232 / 22%) !important;
+    box-shadow: 0 10px 32px rgb(0 0 0 / 24%), 0 1px 0 rgb(240 0 145 / 10%);
+  }
+  .pdb-header a:focus-visible,
+  .pdb-header button:focus-visible {
+    outline: 2px solid var(--pdb-cyan);
+    outline-offset: 3px;
+  }
+
+  /* Desktop sidebar links */
+  .pdb-sidebar nav a {
+    min-height: 42px;
+    border: 1px solid transparent;
+    transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease;
+  }
+  .pdb-sidebar nav a:hover {
+    border-color: rgb(0 201 232 / 18%);
+    background: linear-gradient(100deg, rgb(240 0 145 / 10%), rgb(0 201 232 / 8%));
+    transform: translateX(2px);
+  }
+  .pdb-sidebar nav a[aria-current="page"],
+  .pdb-sidebar nav a.active {
+    border-color: rgb(0 201 232 / 28%);
+    background: linear-gradient(100deg, rgb(240 0 145 / 13%), rgb(0 201 232 / 11%));
+  }
+
+  /* Mobile drawer */
+  .pdb-mobile-menu-panel {
+    background:
+      radial-gradient(ellipse at 0 0, rgb(240 0 145 / 12%), transparent 22rem),
+      radial-gradient(ellipse at 100% 70%, rgb(0 201 232 / 10%), transparent 20rem),
+      rgb(5 10 20 / 96%) !important;
+    border-right-color: rgb(0 201 232 / 24%) !important;
+    box-shadow: 24px 0 70px rgb(0 0 0 / 42%);
+  }
+  .pdb-mobile-menu-panel a,
+  .pdb-mobile-menu-panel button {
+    min-height: 44px;
+  }
+  .pdb-mobile-menu-panel a:focus-visible,
+  .pdb-mobile-menu-panel button:focus-visible {
+    outline: 2px solid var(--pdb-cyan);
+    outline-offset: 2px;
+  }
+
+  /* Bottom navigation: stable touch targets and active-state glow */
+  .pdb-mobile-nav {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    border-top-color: rgb(240 0 145 / 30%) !important;
+  }
+  .pdb-mobile-nav a {
+    min-height: 58px;
+    border-radius: 12px;
+    transition: background .18s ease, color .18s ease;
+  }
+  .pdb-mobile-nav a:active {
+    background: rgb(0 201 232 / 9%);
+  }
+  .pdb-mobile-nav a:focus-visible {
+    outline: 2px solid var(--pdb-cyan);
+    outline-offset: -2px;
+  }
+
+  /* Shared button behavior; preserve each component's existing variant colors */
+  .pdb-shell button,
+  .pdb-shell [role="button"] {
+    transition-property: color, background-color, border-color, box-shadow, transform, filter;
+    transition-duration: 180ms;
+  }
+  .pdb-shell button:focus-visible,
+  .pdb-shell input:focus-visible,
+  .pdb-shell select:focus-visible,
+  .pdb-shell textarea:focus-visible {
+    outline: 2px solid rgb(0 201 232 / 85%);
+    outline-offset: 2px;
+  }
+  .pdb-shell button:disabled {
+    cursor: not-allowed;
+    filter: saturate(.55);
+  }
+
+  /* Dialogs and confirmation modals, including Radix portals */
+  [role="dialog"] {
+    color: #f1f5f9;
+    background:
+      radial-gradient(ellipse at 0 0, rgb(240 0 145 / 9%), transparent 55%),
+      radial-gradient(ellipse at 100% 100%, rgb(0 201 232 / 8%), transparent 55%),
+      #0b1220 !important;
+    border: 1px solid rgb(148 163 184 / 22%) !important;
+    border-radius: 1.15rem !important;
+    box-shadow: 0 28px 90px rgb(0 0 0 / 58%), inset 0 1px rgb(255 255 255 / 6%) !important;
+  }
+  [role="dialog"] input,
+  [role="dialog"] select,
+  [role="dialog"] textarea {
+    color: #f8fafc;
+    background-color: rgb(5 10 20 / 88%);
+    border-color: rgb(148 163 184 / 28%);
+  }
+  [role="dialog"] input::placeholder,
+  [role="dialog"] textarea::placeholder {
+    color: #94a3b8;
+  }
+}
+
+@media (max-width: 767px) {
+  .pdb-header { height: 60px; }
+  .pdb-shell .pdb-content { padding-top: 1rem; padding-bottom: 1.25rem; }
+  [role="dialog"] {
+    width: calc(100vw - 1.25rem) !important;
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+    padding: 1.15rem !important;
+    border-radius: 1rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdb-sidebar nav a,
+  .pdb-mobile-nav a,
+  .pdb-shell button,
+  .pdb-shell [role="button"] {
+    transition: none !important;
+  }
+}
