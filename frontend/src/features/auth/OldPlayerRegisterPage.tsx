@@ -56,7 +56,7 @@ export const OldPlayerRegisterPage = () => {
 
   if (!isTemporaryPeriod) {
     return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4">
+      <div className="pdb-auth-page pdb-auth-page--old-register min-h-screen flex items-center justify-center p-4 md:p-6 relative overflow-hidden">
         <div className="bg-red-50 text-red-800 p-8 rounded-xl max-w-lg text-center">
             <h2 className="text-2xl font-bold mb-4">Enlace Expirado</h2>
             <p>El periodo de registro rápido para jugadores antiguos ha terminado.</p>
@@ -79,10 +79,10 @@ export const OldPlayerRegisterPage = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-5xl bg-card/90 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col md:flex-row-reverse border border-white/10"
+        className="pdb-auth-card w-full max-w-5xl bg-card/90 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col md:flex-row-reverse border border-white/10 relative z-10"
       >
         {/* Right Side: Visual */}
-        <div className="w-full md:w-1/2 bg-gradient-to-bl from-yellow-600 via-orange-500 to-red-600 p-12 flex-col justify-between relative overflow-hidden hidden md:flex">
+        <div className="pdb-auth-visual w-full md:w-1/2 bg-gradient-to-bl from-slate-900 via-[#0a1128] to-black p-12 flex-col justify-between relative overflow-hidden hidden md:flex">
             {/* Tactical pitch pattern */}
             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.8)_1px,transparent_1px)] bg-[size:24px_24px]"></div>
             
@@ -94,16 +94,16 @@ export const OldPlayerRegisterPage = () => {
                 <h1 className="text-5xl font-black text-white mb-4 leading-tight tracking-tight">
                     BIENVENIDO<br/>DE VUELTA
                 </h1>
-                <p className="text-yellow-100 text-lg leading-relaxed ml-auto max-w-sm">Registro rápido exclusivo para jugadores antiguos. Válido solo por hoy.</p>
+                <p className="text-slate-300 text-lg leading-relaxed ml-auto max-w-sm">Registro rápido exclusivo para jugadores antiguos. Válido solo por hoy.</p>
             </div>
         </div>
 
         {/* Left Side: Form */}
-        <div className="w-full md:w-1/2 p-8 md:p-12 bg-white dark:bg-slate-950 flex flex-col justify-center relative">
+        <div className="pdb-auth-form w-full md:w-1/2 p-8 md:p-12 bg-slate-950 flex flex-col justify-center relative">
             <div className="max-w-md w-full mx-auto space-y-6">
                 <div className="text-center md:text-left mt-8 md:mt-0">
                     <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Jugador Antiguo</h2>
-                    <p className="text-yellow-600 font-bold mt-2">Vía rápida de registro (Sin comprobante)</p>
+                    <p className="text-primary font-bold mt-2">Vía rápida de registro (Sin comprobante)</p>
                 </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -167,11 +167,14 @@ export const OldPlayerRegisterPage = () => {
                         />
                     </div>
                     
-                    <Button type="submit" disabled={isSubmitting} className="w-full h-14 text-lg font-bold bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:opacity-90 shadow-lg transition-all rounded-xl mt-6 border-0">
+                    <Button type="submit" disabled={isSubmitting} className="w-full h-14 text-lg font-bold bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 shadow-[0_0_20px_rgba(0,201,232,0.22)] transition-all rounded-xl mt-6 border-0">
                         {isSubmitting ? 'Registrando...' : 'Confirmar Retorno'}
                     </Button>
                 </form>
 
+                <div className="text-center text-sm font-medium text-slate-500 pt-2">
+                    ¿Ya tienes una cuenta? <Link to="/login" className="text-primary hover:text-accent transition-colors font-bold text-base">Inicia Sesión</Link>
+                </div>
             </div>
         </div>
       </motion.div>
