@@ -100,6 +100,9 @@ export const OldPlayerRegisterPage = () => {
 
         {/* Left Side: Form */}
         <div className="pdb-auth-form w-full md:w-1/2 p-8 md:p-12 bg-slate-950 flex flex-col justify-center relative">
+            <div className="flex justify-center mb-5 md:hidden">
+                <img src="/logo.jpg" alt="Pichangas FC" className="w-16 h-16 rounded-full border-2 border-primary shadow-[0_0_20px_rgba(0,201,232,0.25)]" />
+            </div>
             <div className="max-w-md w-full mx-auto space-y-6">
                 <div className="text-center md:text-left mt-8 md:mt-0">
                     <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Jugador Antiguo</h2>
