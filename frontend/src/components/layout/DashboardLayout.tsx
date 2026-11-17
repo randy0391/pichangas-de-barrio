@@ -3,11 +3,11 @@ import { useAuthStore } from '@/stores/authStore';
 import {
   LayoutDashboard, Trophy, Users, User, Image, AlertCircle,
   History, Newspaper, CalendarDays, Wallet, ClipboardCheck,
-  LogOut, Menu, X, ChevronRight, PanelLeftOpen, PanelLeftClose, ShieldCheck, Sparkles, Award, Sun, Moon
+  LogOut, Menu, X, ChevronRight, PanelLeftOpen, PanelLeftClose, ShieldCheck, Sparkles, Award
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FootballSpinner } from '@/components/ui/FootballSpinner';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/axios';
 
@@ -99,15 +99,6 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarExpandedAll, setSidebarExpandedAll] = useState(false);
   const [hoveredSidebarLink, setHoveredSidebarLink] = useState<{ name: string; top: number } | null>(null);
-  const [lightMode, setLightMode] = useState(() => {
-    try { return window.localStorage.getItem('pdb-theme') === 'light'; } catch { return false; }
-  });
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('pdb-light-mode', lightMode);
-    try { window.localStorage.setItem('pdb-theme', lightMode ? 'light' : 'dark'); } catch { /* Storage may be unavailable. */ }
-  }, [lightMode]);
-
   const mobileTabs = user?.role === 'admin' ? adminMobileTabs : userMobileTabs;
 
   const isActive = (path: string) => {
@@ -215,16 +206,6 @@ export const DashboardLayout = ({ children, isAdmin = false }: { children?: Reac
 
           {/* Right: Wallet Chip + User Profile Capsule + Logout */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <button
-              type="button"
-              onClick={() => setLightMode((current) => !current)}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-cyan-400/25 bg-slate-900/80 px-2.5 py-2 text-cyan-300 hover:border-cyan-300/60 hover:bg-slate-800 transition-all"
-              aria-label={lightMode ? 'Activar modo oscuro' : 'Activar modo claro'}
-              title={lightMode ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
-            >
-              {lightMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-              <span className="hidden sm:inline text-[10px] font-black uppercase tracking-wide">{lightMode ? 'Oscuro' : 'Claro'}</span>
-            </button>
             {/* Wallet Balance Capsule */}
             <Link 
               to="/billetera" 
