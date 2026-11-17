@@ -94,7 +94,7 @@ export const OldPlayerRegisterPage = () => {
                 <h1 className="text-5xl font-black text-white mb-4 leading-tight tracking-tight">
                     BIENVENIDO<br/>DE VUELTA
                 </h1>
-                <p className="text-slate-300 text-lg leading-relaxed ml-auto max-w-sm">Registro rápido exclusivo para jugadores antiguos. Válido solo por hoy.</p>
+                <p className="text-slate-300 text-lg leading-relaxed ml-auto max-w-sm">Registro rápido para jugadores que ya formaron parte de nuestra comunidad.</p>
             </div>
         </div>
 
