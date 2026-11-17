@@ -589,7 +589,7 @@ export const AdminConvocatoriasPage = () => {
     if (isLoading) return <div className="py-20 flex justify-center"><FootballSpinner /></div>;
 
     return (
-        <div className="space-y-8">
+        <div className="pdb-premium-page pdb-premium-page--admin-matches space-y-8">
             {/* Header */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div>
