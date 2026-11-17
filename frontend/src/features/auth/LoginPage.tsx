@@ -24,7 +24,7 @@ export const LoginPage = () => {
     setIsSubmitting(true);
     try {
       await login({ phone, password });
-      toast.success('Bienvenido!');
+      toast.success('¡Bienvenido!');
       const currentUser = useAuthStore.getState().user;
       if (currentUser?.role === 'admin') {
         navigate('/admin');
@@ -32,7 +32,7 @@ export const LoginPage = () => {
         navigate('/dashboard');
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Credenciales invalidas');
+      toast.error(error.response?.data?.message || 'Credenciales inválidas');
       setIsSubmitting(false);
     }
   };
@@ -71,7 +71,7 @@ export const LoginPage = () => {
             <h1 className="text-5xl font-black text-white mb-4 leading-tight tracking-tight">
               Volvamos a la <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-lime-400">cancha.</span>
             </h1>
-            <p className="text-xl text-slate-300 font-medium">Inicia sesion y revisa tu proxima convocatoria.</p>
+            <p className="text-xl text-slate-300 font-medium">Inicia sesión y revisa tu próxima convocatoria.</p>
           </div>
           
           {/* Decorative glows */}
@@ -88,13 +88,13 @@ export const LoginPage = () => {
             </div>
 
             <div className="text-center md:text-left mb-8">
-              <h2 className="text-3xl font-black text-white uppercase tracking-tight">Iniciar Sesion</h2>
+              <h2 className="text-3xl font-black text-white uppercase tracking-tight">Iniciar Sesión</h2>
               <p className="text-slate-500 mt-2">Ingresa tus credenciales para continuar</p>
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">Numero de Celular</label>
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">Número de Celular</label>
                 <Input
                   type="text"
                   required
@@ -105,7 +105,7 @@ export const LoginPage = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">DNI (Contrasena)</label>
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">DNI (Contraseña)</label>
                 <Input
                   type="password"
                   required
@@ -121,7 +121,10 @@ export const LoginPage = () => {
             </form>
 
             <div className="text-center text-sm font-medium text-slate-500 pt-6">
-              Aun no tienes equipo? <Link to="/registro" className="text-primary hover:text-accent transition-colors font-bold text-base">Solicita tu Fichaje</Link>
+              ¿Aún no tienes equipo? <Link to="/registro" className="text-primary hover:text-accent transition-colors font-bold text-base">Solicita tu Fichaje</Link>
+            </div>
+            <div className="text-center text-xs font-medium text-slate-600 pt-3">
+              ¿Ya jugaste con nosotros? <Link to="/registro-antiguos" className="text-accent hover:text-primary transition-colors font-semibold">Registro para jugadores antiguos</Link>
             </div>
           </div>
         </div>
