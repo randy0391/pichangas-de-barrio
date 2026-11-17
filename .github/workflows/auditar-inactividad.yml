@@ -2,6 +2,12 @@ name: Auditar inactividad de jugadores
 
 on:
   workflow_dispatch:
+    inputs:
+      ejecutar_desactivacion:
+        description: "Actívalo solo cuando hayas revisado y autorizado la desactivación real"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -12,7 +18,7 @@ concurrency:
 
 jobs:
   audit:
-    name: Revisar candidatos sin modificar cuentas
+    name: Revisar candidatos de inactividad
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -47,5 +53,14 @@ jobs:
       - name: Instalar dependencias
         run: composer install --no-dev --no-interaction --prefer-dist --no-progress --optimize-autoloader
 
-      - name: Auditar sin modificar jugadores
-        run: php artisan users:deactivate-inactive --dry-run
+      - name: Auditar o desactivar jugadores
+        env:
+          EJECUTAR_DESACTIVACION: ${{ inputs.ejecutar_desactivacion }}
+        run: |
+          if [ "$EJECUTAR_DESACTIVACION" = "true" ]; then
+            echo "MODO: DESACTIVACION REAL AUTORIZADA MANUALMENTE"
+            php artisan users:deactivate-inactive --confirm
+          else
+            echo "MODO: SOLO AUDITORIA; NO SE MODIFICARAN CUENTAS"
+            php artisan users:deactivate-inactive --dry-run
+          fi
