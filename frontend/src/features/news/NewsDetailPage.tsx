@@ -27,7 +27,7 @@ export const NewsDetailPage = () => {
     );
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="pdb-premium-page pdb-premium-page--news-detail container mx-auto px-4 py-8 max-w-4xl">
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                 <Button 
                     variant="outline" 
