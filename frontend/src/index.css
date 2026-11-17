@@ -1459,3 +1459,37 @@
 @media (max-width: 767px) {
   .pdb-auth-page--old-register .pdb-auth-card { margin: auto 0; }
 }
+
+
+/* Mobile form ergonomics for public registration screens. */
+@media (max-width: 767px) {
+  .pdb-auth-page--register .pdb-auth-form,
+  .pdb-auth-page--old-register .pdb-auth-form {
+    padding: 5.5rem 1.15rem 1.5rem !important;
+  }
+  .pdb-auth-page--register .pdb-auth-form .grid.grid-cols-2,
+  .pdb-auth-page--old-register .pdb-auth-form .grid.grid-cols-2 {
+    grid-template-columns: minmax(0, 1fr);
+    gap: .85rem;
+  }
+  .pdb-auth-page--register .pdb-auth-form input[type="file"] {
+    min-height: 3.25rem;
+    height: auto;
+    padding: .55rem;
+    font-size: .75rem;
+  }
+  .pdb-auth-page--register .pdb-auth-form input[type="file"]::file-selector-button {
+    max-width: 100%;
+    margin-bottom: .35rem;
+    white-space: normal;
+  }
+  .pdb-auth-page--old-register .pdb-auth-form .max-w-md > .text-center {
+    margin-top: 0;
+  }
+  .pdb-auth-page--login .pdb-auth-form {
+    padding: 1.5rem 1.15rem !important;
+  }
+  .pdb-auth-page--login .pdb-auth-form h2 {
+    font-size: clamp(1.45rem, 7vw, 1.8rem);
+  }
+}
