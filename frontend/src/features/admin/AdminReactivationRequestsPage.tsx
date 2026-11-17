@@ -36,7 +36,7 @@ export const AdminReactivationRequestsPage = () => {
   };
 
   return (
-    <div className="space-y-6 py-6">
+    <div className="pdb-premium-page pdb-premium-page--admin-reactivations space-y-6 py-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><h1 className="text-3xl font-black text-white">Solicitudes de reactivación</h1><p className="mt-1 text-slate-400">Revisa y decide qué jugadores pueden volver a inscribirse.</p></div>
         <button onClick={() => void refresh()} className="inline-flex items-center gap-2 rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold text-white"><RefreshCw size={16}/> Actualizar</button>
