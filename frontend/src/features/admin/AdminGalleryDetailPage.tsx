@@ -79,7 +79,7 @@ export const AdminGalleryDetailPage = () => {
     };
 
     return (
-        <div className="space-y-8">
+        <div className="pdb-premium-page pdb-premium-page--admin-gallery-detail space-y-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <Link to="/admin/galeria" className="inline-flex items-center text-accent hover:text-accent/80 font-bold mb-2 transition-colors">
