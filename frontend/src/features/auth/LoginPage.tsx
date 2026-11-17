@@ -46,7 +46,7 @@ export const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#070b14] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="pdb-auth-page pdb-auth-page--login min-h-screen bg-[#070b14] flex items-center justify-center p-4 md:p-6 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_2px,transparent_2px),linear-gradient(90deg,rgba(255,255,255,0.03)_2px,transparent_2px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_10%,transparent_100%)]"></div>
       <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[120px]"></div>
@@ -56,10 +56,10 @@ export const LoginPage = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-5xl bg-card/90 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col md:flex-row border border-white/10 relative z-10"
+        className="pdb-auth-card w-full max-w-5xl bg-card/90 backdrop-blur-xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col md:flex-row border border-white/10 relative z-10"
       >
         {/* Left Side: Visual */}
-        <div className="w-full md:w-1/2 bg-gradient-to-br from-slate-900 via-[#0a1128] to-black p-8 md:p-12 flex-col justify-between relative overflow-hidden hidden md:flex">
+        <div className="pdb-auth-visual w-full md:w-1/2 bg-gradient-to-br from-slate-900 via-[#0a1128] to-black p-8 md:p-12 flex-col justify-between relative overflow-hidden hidden md:flex">
           {/* Tactical pitch pattern */}
           <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)] bg-[size:3rem_3rem]"></div>
           
@@ -80,7 +80,7 @@ export const LoginPage = () => {
         </div>
 
         {/* Right Side: Form */}
-        <div className="w-full md:w-1/2 p-8 md:p-12 bg-slate-950 flex flex-col justify-center">
+        <div className="pdb-auth-form w-full md:w-1/2 p-8 md:p-12 bg-slate-950 flex flex-col justify-center">
           <div className="max-w-md mx-auto w-full">
             {/* Mobile logo */}
             <div className="flex justify-center mb-6 md:hidden">
