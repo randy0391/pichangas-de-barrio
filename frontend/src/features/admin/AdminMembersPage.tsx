@@ -130,6 +130,20 @@ export const AdminMembersPage = () => {
                         (m.dni || '').toLowerCase().includes(q) || (m.nickname || '').toLowerCase().includes(q);
                 });
             }
+            if (filterTab === 'inactivos') {
+                if (!targetList.length) {
+                    toast.info('No hay jugadores inactivos para copiar');
+                    return;
+                }
+                const lines = targetList.map((m, idx) => {
+                    const name = (m.full_name || `${m.nombres || ''} ${m.apellido_paterno || ''} ${m.apellido_materno || ''}`.trim() || m.name || 'Sin nombre').trim();
+                    return `${idx + 1}. ${name}`;
+                });
+                await navigator.clipboard.writeText(`⚽ JUGADORES INACTIVOS - PICHANGAS DE BARRIO (${targetList.length})\\n\\n${lines.join('\\n')}`);
+                toast.success(`¡Lista de ${targetList.length} jugadores inactivos copiada!`);
+                return;
+            }
+
             const withPhone = targetList.filter(m => m.phone && m.phone.trim().length >= 6);
             if (!withPhone.length) {
                 toast.info('No se encontraron teléfonos para copiar con este filtro');
@@ -167,7 +181,7 @@ export const AdminMembersPage = () => {
                         variant="outline"
                         className="h-12 px-4 rounded-xl border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs uppercase tracking-wider flex items-center gap-2"
                     >
-                        <Copy size={16} /> {isFetchingAllMembers ? 'Cargando contactos...' : 'Copiar Teléfonos'}
+                        <Copy size={16} /> {isFetchingAllMembers ? 'Cargando lista...' : filterTab === 'inactivos' ? 'Copiar lista de inactivos' : 'Copiar Teléfonos'}
                     </Button>
                     <Button 
                         onClick={openCreate} 
