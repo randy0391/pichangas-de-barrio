@@ -1007,3 +1007,75 @@
   .pdb-premium-page--matches > div:first-child { border-radius: 1.5rem; }
   .pdb-premium-page--match-detail { padding-left: .75rem; padding-right: .75rem; }
 }
+
+
+/* Premium visual pass: player profile, fines, attendance history and reactivation */
+@layer components {
+  .pdb-premium-page--profile,
+  .pdb-premium-page--my-fines,
+  .pdb-premium-page--history,
+  .pdb-premium-page--admin-fines,
+  .pdb-premium-page--admin-reactivations {
+    color: #f1f5f9;
+  }
+
+  .pdb-premium-page--profile > div:first-child,
+  .pdb-premium-page--profile form,
+  .pdb-premium-page--profile .rounded-3xl,
+  .pdb-premium-page--my-fines section,
+  .pdb-premium-page--history > div,
+  .pdb-premium-page--admin-fines > div,
+  .pdb-premium-page--admin-reactivations > div {
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+  }
+
+  .pdb-premium-page--profile form,
+  .pdb-premium-page--profile .rounded-3xl,
+  .pdb-premium-page--my-fines section,
+  .pdb-premium-page--history .rounded-2xl,
+  .pdb-premium-page--admin-fines .rounded-3xl,
+  .pdb-premium-page--admin-reactivations .rounded-2xl {
+    border-color: rgb(148 163 184 / 16%);
+    box-shadow: 0 16px 40px rgb(0 0 0 / 18%);
+  }
+
+  .pdb-premium-page--profile input,
+  .pdb-premium-page--profile textarea,
+  .pdb-premium-page--my-fines input,
+  .pdb-premium-page--admin-fines input,
+  .pdb-premium-page--admin-reactivations input,
+  .pdb-premium-page--admin-reactivations select {
+    accent-color: #00C9E8;
+  }
+
+  .pdb-premium-page--profile button,
+  .pdb-premium-page--my-fines button,
+  .pdb-premium-page--admin-fines button,
+  .pdb-premium-page--admin-reactivations button {
+    transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+  }
+
+  .pdb-premium-page--profile button:hover,
+  .pdb-premium-page--my-fines button:hover,
+  .pdb-premium-page--admin-fines button:hover,
+  .pdb-premium-page--admin-reactivations button:hover {
+    filter: brightness(1.08);
+  }
+
+  .pdb-premium-page--reactivation > div > section {
+    border-color: rgb(0 201 232 / 20%);
+    background: linear-gradient(145deg, rgb(15 23 42 / 96%), rgb(8 13 25 / 96%));
+    box-shadow: 0 24px 70px rgb(0 0 0 / 32%), 0 0 36px rgb(0 201 232 / 5%);
+  }
+}
+
+@media (max-width: 640px) {
+  .pdb-premium-page--profile,
+  .pdb-premium-page--my-fines,
+  .pdb-premium-page--history,
+  .pdb-premium-page--admin-fines,
+  .pdb-premium-page--admin-reactivations {
+    padding-left: .25rem;
+    padding-right: .25rem;
+  }
+}
