@@ -41,7 +41,7 @@ export const MyFinesPage = () => {
         });
     };
 
-    return <div className="max-w-4xl mx-auto space-y-8">
+    return <div className="pdb-premium-page pdb-premium-page--my-fines max-w-4xl mx-auto space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div><h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Mis Multas</h1><p className="text-slate-500 dark:text-slate-400">Elige cómo deseas pagar tus multas pendientes.</p></div>
             <div className="rounded-2xl border border-lime-500/30 bg-lime-500/10 px-5 py-3"><p className="text-xs font-bold uppercase tracking-wider text-lime-600 dark:text-lime-400 flex items-center gap-2"><Wallet size={15}/> Saldo de mi billetera</p><p className="text-2xl font-black text-slate-900 dark:text-white">S/ {balance.toFixed(2)}</p></div>
