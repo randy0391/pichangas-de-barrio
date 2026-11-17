@@ -254,7 +254,7 @@ export const ConvocatoriaDetailPage = () => {
     const googleMapsUrl = c.maps_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.location)}`;
 
     return (
-        <div className="container mx-auto px-4 py-8 md:py-12 max-w-5xl space-y-8">
+        <div className="pdb-premium-page pdb-premium-page--match-detail container mx-auto px-4 py-8 md:py-12 max-w-5xl space-y-8">
             {/* Volver */}
             <Button 
                 variant="outline" 
