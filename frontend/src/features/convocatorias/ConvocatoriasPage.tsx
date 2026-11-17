@@ -333,7 +333,7 @@ export const ConvocatoriasPage = () => {
     };
 
     return (
-        <div className="space-y-8 pb-12 font-sans">
+        <div className="pdb-premium-page pdb-premium-page--matches space-y-8 pb-12 font-sans">
             {/* ===== Top Hero & Weekly Fixed Schedule Banner ===== */}
             <div className="bg-gradient-to-br from-slate-900 via-slate-900/90 to-slate-950 p-6 sm:p-8 rounded-3xl border border-slate-800 shadow-2xl relative overflow-hidden space-y-6">
                 {/* Decorative neon ambient glows */}
