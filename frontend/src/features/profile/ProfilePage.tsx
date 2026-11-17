@@ -59,7 +59,7 @@ export const ProfilePage = () => {
     };
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8">
+        <div className="pdb-premium-page pdb-premium-page--profile max-w-5xl mx-auto space-y-8">
             {/* Header Banner */}
             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
