@@ -221,7 +221,7 @@ export const WalletPage = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="pdb-premium-page pdb-premium-page--wallet space-y-6 max-w-5xl mx-auto">
       {/* Admin Bridge Banner (If current user is admin) */}
       {user?.role === 'admin' && (
         <div className="bg-gradient-to-r from-fuchsia-950/80 via-slate-900 to-cyan-950/50 border border-fuchsia-500/30 shadow-[0_12px_40px_rgba(240,0,145,0.08)] rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
