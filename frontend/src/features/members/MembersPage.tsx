@@ -36,7 +36,7 @@ export const MembersPage = () => {
     };
 
     return (
-        <div className="space-y-8 pb-10">
+        <div className="pdb-premium-page pdb-premium-page--community space-y-8 pb-10">
             <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="relative isolate flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8 overflow-hidden rounded-[2rem] border border-white/10 bg-[#080D1B] p-6 shadow-2xl shadow-black/20 sm:p-8">
                 <div>
                     <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2">
