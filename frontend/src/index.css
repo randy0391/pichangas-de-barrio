@@ -940,3 +940,70 @@
   .pdb-dashboard { gap: 1.5rem; }
   .pdb-dashboard--player > div:first-child { border-radius: 1.5rem; }
 }
+
+
+/* ===== Premium visual pass: matches, administration and wallet ===== */
+@layer components {
+  .pdb-premium-page {
+    --pdb-magenta: #F00091;
+    --pdb-cyan: #00C9E8;
+    --pdb-lime: #A5E900;
+    color: #f8fafc;
+  }
+
+  .pdb-premium-page h1,
+  .pdb-premium-page h2,
+  .pdb-premium-page h3 {
+    text-wrap: balance;
+  }
+
+  .pdb-premium-page--matches > div:first-child {
+    background:
+      radial-gradient(ellipse at 0% 0%, rgb(240 0 145 / 12%), transparent 42%),
+      radial-gradient(ellipse at 100% 100%, rgb(0 201 232 / 12%), transparent 42%),
+      linear-gradient(135deg, #080d1b, #111827 60%, #080d1b);
+    border-color: rgb(255 255 255 / 11%);
+    box-shadow: 0 22px 55px rgb(0 0 0 / 24%), inset 0 1px rgb(255 255 255 / 5%);
+  }
+
+  .pdb-premium-page--matches a.block,
+  .pdb-premium-page--match-detail > div,
+  .pdb-premium-page--admin-matches article,
+  .pdb-premium-page--members > div,
+  .pdb-premium-page--wallet > div {
+    border-color: rgb(255 255 255 / 9%);
+    box-shadow: 0 12px 30px rgb(0 0 0 / 17%), inset 0 1px rgb(255 255 255 / 3%);
+  }
+
+  .pdb-premium-page--matches a.block,
+  .pdb-premium-page--admin-matches article {
+    transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+  }
+
+  .pdb-premium-page--matches a.block:hover,
+  .pdb-premium-page--admin-matches article:hover {
+    border-color: rgb(0 201 232 / 38%);
+    box-shadow: 0 18px 38px rgb(0 0 0 / 24%), 0 0 22px rgb(0 201 232 / 6%);
+  }
+
+  .pdb-premium-page--wallet > div:first-child {
+    background:
+      radial-gradient(ellipse at 100% 0%, rgb(0 201 232 / 12%), transparent 45%),
+      radial-gradient(ellipse at 0% 100%, rgb(165 233 0 / 9%), transparent 45%),
+      #0b1220;
+    border-color: rgb(0 201 232 / 22%);
+  }
+
+  .pdb-premium-page--members input,
+  .pdb-premium-page--members select,
+  .pdb-premium-page--members button,
+  .pdb-premium-page--admin-matches input,
+  .pdb-premium-page--admin-matches select {
+    accent-color: #00C9E8;
+  }
+}
+
+@media (max-width: 640px) {
+  .pdb-premium-page--matches > div:first-child { border-radius: 1.5rem; }
+  .pdb-premium-page--match-detail { padding-left: .75rem; padding-right: .75rem; }
+}
