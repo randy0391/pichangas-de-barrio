@@ -111,7 +111,7 @@ export const LoginPage = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Tu numero de DNI"
+                  placeholder="Tu número de DNI"
                   className="bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 h-14 text-lg rounded-xl focus-visible:ring-primary"
                 />
               </div>
