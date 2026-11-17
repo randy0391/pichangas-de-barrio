@@ -2,7 +2,7 @@ name: Auditar inactividad de jugadores
 
 on:
   schedule:
-    - cron: "0 8 * * *" # Todos los días a las 03:00, hora de Perú (UTC-5)
+    - cron: "0 5 * * *" # Todos los días a las 00:00, hora de Perú (UTC-5)
   workflow_dispatch:
     inputs:
       ejecutar_desactivacion:
