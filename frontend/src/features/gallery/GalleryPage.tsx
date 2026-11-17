@@ -12,7 +12,7 @@ export const GalleryPage = () => {
     if (isLoading) return <div className="py-20 flex justify-center"><FootballSpinner /></div>;
 
     return (
-        <div className="container mx-auto px-4 py-12">
+        <div className="pdb-premium-page pdb-premium-page--gallery container mx-auto px-4 py-12">
             <div className="text-center max-w-2xl mx-auto mb-16">
                 <div className="inline-flex items-center justify-center p-3 bg-accent/10 rounded-full mb-4 text-accent">
                     <Camera size={32} />
