@@ -75,7 +75,7 @@ export const OldPlayerRegisterPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4">
+    <div className="pdb-auth-page pdb-auth-page--old-register min-h-screen flex items-center justify-center p-4 md:p-6 relative overflow-hidden">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
