@@ -169,7 +169,7 @@ export const AdminFinesPage = () => {
     };
 
     return (
-        <div className="space-y-8">
+        <div className="pdb-premium-page pdb-premium-page--admin-fines space-y-8">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
