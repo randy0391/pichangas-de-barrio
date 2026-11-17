@@ -53,7 +53,7 @@ export const UserDashboardPage = () => {
     if (isLoading) return <div className="py-20 flex justify-center"><FootballSpinner /></div>;
 
     return (
-        <div className="space-y-8">
+        <div className="pdb-dashboard pdb-dashboard--player space-y-8">
             {/* VIP Player Welcome Banner */}
             <motion.div 
                 initial={{ opacity: 0, y: 15 }} 
