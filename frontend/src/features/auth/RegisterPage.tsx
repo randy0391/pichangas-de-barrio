@@ -201,6 +201,9 @@ export const RegisterPage = () => {
                 <div className="text-center text-sm font-medium text-slate-500 pt-2">
                     ¿Ya eres parte del plantel? <Link to="/login" className="text-accent hover:text-lime-500 transition-colors font-bold text-base">Inicia Sesión</Link>
                 </div>
+                <div className="text-center text-xs font-medium text-slate-600">
+                    ¿Jugador antiguo? <Link to="/registro-antiguos" className="text-primary hover:text-accent font-semibold">Usa el registro rápido</Link>
+                </div>
             </div>
         </div>
       </motion.div>
