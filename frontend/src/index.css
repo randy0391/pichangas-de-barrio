@@ -870,3 +870,73 @@
   backdrop-filter: blur(18px) saturate(135%) !important;
 }
 
+
+
+/* ===== PDB premium dashboards: shared visual language ===== */
+@layer components {
+  .pdb-dashboard {
+    --pdb-magenta: #F00091;
+    --pdb-cyan: #00C9E8;
+    --pdb-lime: #A5E900;
+    color: #f8fafc;
+  }
+
+  .pdb-dashboard > section:first-child,
+  .pdb-dashboard > div:first-child {
+    position: relative;
+  }
+
+  .pdb-dashboard article,
+  .pdb-dashboard a.block.group,
+  .pdb-dashboard .pdb-premium-surface {
+    border-color: rgb(255 255 255 / 9%);
+    background-color: rgb(15 20 32 / 88%);
+    box-shadow: 0 14px 34px rgb(0 0 0 / 18%), inset 0 1px rgb(255 255 255 / 3%);
+    backdrop-filter: blur(14px);
+  }
+
+  .pdb-dashboard article:hover,
+  .pdb-dashboard a.block.group:hover {
+    border-color: rgb(0 201 232 / 34%);
+    box-shadow: 0 18px 38px rgb(0 0 0 / 25%), 0 0 24px rgb(0 201 232 / 5%);
+  }
+
+  .pdb-dashboard h1,
+  .pdb-dashboard h2 {
+    text-wrap: balance;
+  }
+
+  .pdb-dashboard--player > div:first-child,
+  .pdb-dashboard--admin > section:first-child {
+    border-color: rgb(255 255 255 / 11%);
+    box-shadow: 0 22px 55px rgb(0 0 0 / 28%), inset 0 1px rgb(255 255 255 / 7%);
+  }
+
+  .pdb-dashboard--player > div:first-child {
+    background:
+      radial-gradient(ellipse at 0% 0%, rgb(240 0 145 / 13%), transparent 42%),
+      radial-gradient(ellipse at 100% 100%, rgb(0 201 232 / 11%), transparent 40%),
+      linear-gradient(135deg, #080d1b, #111827 58%, #080d1b);
+  }
+
+  .pdb-dashboard--player .grid > div,
+  .pdb-dashboard--admin article {
+    transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+  }
+
+  .pdb-dashboard--player .grid > div {
+    border-color: rgb(255 255 255 / 9%);
+    background: linear-gradient(145deg, rgb(20 27 42 / 96%), rgb(11 15 25 / 96%));
+    box-shadow: 0 12px 30px rgb(0 0 0 / 18%), inset 0 1px rgb(255 255 255 / 4%);
+  }
+
+  .pdb-dashboard--player .grid > div:hover {
+    border-color: rgb(240 0 145 / 35%);
+    transform: translateY(-3px);
+  }
+}
+
+@media (max-width: 640px) {
+  .pdb-dashboard { gap: 1.5rem; }
+  .pdb-dashboard--player > div:first-child { border-radius: 1.5rem; }
+}
