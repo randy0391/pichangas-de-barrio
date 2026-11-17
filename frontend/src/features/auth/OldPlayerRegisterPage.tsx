@@ -60,7 +60,7 @@ export const OldPlayerRegisterPage = () => {
         <div className="bg-red-50 text-red-800 p-8 rounded-xl max-w-lg text-center">
             <h2 className="text-2xl font-bold mb-4">Enlace Expirado</h2>
             <p>El periodo de registro rápido para jugadores antiguos ha terminado.</p>
-            <Link to="/register" className="mt-6 inline-block bg-accent text-white px-6 py-2 rounded-lg font-bold">Ir al Registro Normal</Link>
+            <Link to="/registro" className="mt-6 inline-block bg-accent text-white px-6 py-2 rounded-lg font-bold">Ir al Registro Normal</Link>
         </div>
       </div>
     );
