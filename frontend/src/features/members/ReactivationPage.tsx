@@ -66,7 +66,7 @@ export const ReactivationPage = () => {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#060913] px-4 py-10">
+    <main className="pdb-premium-page pdb-premium-page--reactivation min-h-screen flex items-center justify-center bg-[#060913] px-4 py-10">
       <div className="w-full max-w-2xl space-y-5">
         <section className="rounded-3xl border border-amber-400/20 bg-[#0b1221] p-6 shadow-2xl sm:p-8">
           <div className="mb-5 flex items-start justify-between gap-4">
