@@ -26,7 +26,7 @@ export const AdminDashboardPage = () => {
     ];
 
     return (
-        <div className="space-y-7 sm:space-y-9">
+        <div className="pdb-dashboard pdb-dashboard--admin space-y-7 sm:space-y-9">
             <motion.section
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
