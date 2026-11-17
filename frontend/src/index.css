@@ -1444,3 +1444,18 @@
   .pdb-auth-form button { transition: none !important; }
   .pdb-auth-form button[type="submit"]:hover:not(:disabled) { transform: none; }
 }
+
+
+/* Legacy registration shares the public premium auth shell. */
+.pdb-auth-page--old-register .pdb-auth-visual {
+  background-image:
+    radial-gradient(ellipse at 18% 18%, rgb(240 0 145 / 18%), transparent 45%),
+    radial-gradient(ellipse at 85% 82%, rgb(0 201 232 / 16%), transparent 42%),
+    linear-gradient(145deg, #10172a, #070b14 72%);
+}
+.pdb-auth-page--old-register .pdb-auth-form button[type="submit"] {
+  color: #07111c;
+}
+@media (max-width: 767px) {
+  .pdb-auth-page--old-register .pdb-auth-card { margin: auto 0; }
+}
