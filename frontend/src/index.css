@@ -1321,3 +1321,126 @@
     transition: none !important;
   }
 }
+
+
+/* ===== PDB premium authentication screens ===== */
+.pdb-auth-page {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 8% 12%, rgb(240 0 145 / 13%), transparent 34rem),
+    radial-gradient(ellipse at 92% 88%, rgb(0 201 232 / 12%), transparent 32rem),
+    #070b14;
+}
+.pdb-auth-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .24;
+  background-image: linear-gradient(rgb(255 255 255 / 3%) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 3%) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(ellipse at center, #000 8%, transparent 78%);
+}
+.pdb-auth-card {
+  border-color: rgb(0 201 232 / 24%) !important;
+  background: rgb(8 14 27 / 94%) !important;
+  box-shadow: 0 32px 100px rgb(0 0 0 / 55%), 0 0 42px rgb(0 201 232 / 7%), 0 0 42px rgb(240 0 145 / 6%);
+}
+.pdb-auth-visual {
+  min-height: 610px;
+  background-color: #0a1120;
+}
+.pdb-auth-visual::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgb(240 0 145 / 9%), transparent 42%, rgb(0 201 232 / 8%));
+}
+.pdb-auth-visual img {
+  object-fit: cover;
+  box-shadow: 0 0 24px rgb(0 201 232 / 20%);
+}
+.pdb-auth-form {
+  color: #f8fafc;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgb(0 201 232 / 7%), transparent 55%),
+    #080e1b !important;
+}
+.pdb-auth-form h2 {
+  letter-spacing: -.035em;
+}
+.pdb-auth-form label {
+  color: #cbd5e1;
+}
+.pdb-auth-form input:not([type="file"]) {
+  color: #f8fafc;
+  background-color: rgb(15 23 42 / 82%) !important;
+  border-color: rgb(100 116 139 / 34%) !important;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.pdb-auth-form input:not([type="file"]):hover {
+  border-color: rgb(0 201 232 / 45%) !important;
+}
+.pdb-auth-form input:not([type="file"]):focus {
+  border-color: #00c9e8 !important;
+  box-shadow: 0 0 0 3px rgb(0 201 232 / 12%);
+}
+.pdb-auth-form input::placeholder {
+  color: #64748b !important;
+}
+.pdb-auth-form input[type="file"] {
+  width: 100%;
+  color: #cbd5e1;
+  font-size: .82rem;
+}
+.pdb-auth-form input[type="file"]::file-selector-button {
+  margin-right: .8rem;
+  padding: .55rem .9rem;
+  border: 0;
+  border-radius: .65rem;
+  color: #07111c;
+  background: linear-gradient(100deg, #00c9e8, #a5e900);
+  font-weight: 800;
+  cursor: pointer;
+}
+.pdb-auth-form button[type="submit"] {
+  min-height: 3.25rem;
+  box-shadow: 0 10px 28px rgb(0 201 232 / 13%);
+}
+.pdb-auth-form button[type="submit"]:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 14px 34px rgb(240 0 145 / 16%);
+}
+.pdb-auth-form a {
+  text-decoration: none;
+  text-underline-offset: 4px;
+}
+.pdb-auth-form a:hover {
+  text-decoration: underline;
+}
+.pdb-auth-form input:focus-visible,
+.pdb-auth-form button:focus-visible,
+.pdb-auth-form a:focus-visible {
+  outline: 2px solid #00c9e8;
+  outline-offset: 3px;
+}
+@media (max-width: 767px) {
+  .pdb-auth-page { min-height: 100dvh; align-items: flex-start; }
+  .pdb-auth-card {
+    margin: auto 0;
+    border-radius: 1.35rem !important;
+  }
+  .pdb-auth-form { padding: 1.5rem !important; }
+  .pdb-auth-page--register .pdb-auth-form { padding-top: 5rem !important; }
+  .pdb-auth-form h2 { font-size: 1.7rem; }
+  .pdb-auth-form form { gap: 1rem; }
+  .pdb-auth-page--register .pdb-auth-form .grid.grid-cols-2 { gap: .7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pdb-auth-form input,
+  .pdb-auth-form button { transition: none !important; }
+  .pdb-auth-form button[type="submit"]:hover:not(:disabled) { transform: none; }
+}
