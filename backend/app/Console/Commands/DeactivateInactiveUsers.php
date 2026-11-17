@@ -8,12 +8,20 @@ use Illuminate\Support\Carbon;
 
 class DeactivateInactiveUsers extends Command
 {
-    protected $signature = 'users:deactivate-inactive {--dry-run : Only report how many players would be deactivated}';
+    protected $signature = 'users:deactivate-inactive
+                            {--dry-run : Only report how many players would be deactivated}
+                            {--confirm : Explicitly authorize changing active players to inactive}';
 
     protected $description = 'Deactivates approved members with no recent or upcoming confirmed convocatoria registration.';
 
     public function handle(): int
     {
+        if (! $this->option('dry-run') && ! $this->option('confirm')) {
+            $this->error('No changes made. Use --dry-run to audit or --confirm to explicitly authorize deactivation.');
+
+            return self::FAILURE;
+        }
+
         $cutoff = Carbon::now()->subDays(30);
         $today = Carbon::today();
 
