@@ -68,7 +68,7 @@ export const GalleryDetailPage = () => {
     };
 
     return (
-        <div className="min-h-screen pb-12">
+        <div className="pdb-premium-page pdb-premium-page--gallery-detail min-h-screen pb-12">
             {/* Immersive Header */}
             <div className="relative pt-32 pb-16 px-4 mb-12 overflow-hidden">
                 <div className="absolute inset-0 z-0 bg-slate-900">
