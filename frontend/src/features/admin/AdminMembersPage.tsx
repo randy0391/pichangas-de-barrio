@@ -111,6 +111,37 @@ export const AdminMembersPage = () => {
         return `https://wa.me/${clean}?text=${msg}`;
     };
 
+    // Copiar únicamente los celulares de los jugadores inactivos.
+    const copyInactivePhones = async () => {
+        try {
+            const { data: allMembers = [] } = await fetchAllMembers();
+            let inactiveMembers = allMembers.filter(m => m.status === 'inactive');
+
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase().trim();
+                inactiveMembers = inactiveMembers.filter(m => {
+                    const fullName = `${m.nombres || ''} ${m.apellido_paterno || ''} ${m.apellido_materno || ''} ${m.name || ''}`.toLowerCase();
+                    return fullName.includes(q) || (m.phone || '').toLowerCase().includes(q) ||
+                        (m.dni || '').toLowerCase().includes(q) || (m.nickname || '').toLowerCase().includes(q);
+                });
+            }
+
+            const phones = inactiveMembers
+                .map(m => (m.phone || '').trim())
+                .filter(phone => phone.length >= 6);
+
+            if (!phones.length) {
+                toast.info('No se encontraron celulares de jugadores inactivos');
+                return;
+            }
+
+            await navigator.clipboard.writeText(phones.join('\\n'));
+            toast.success(`¡${phones.length} números de jugadores inactivos copiados!`);
+        } catch {
+            toast.error('No se pudieron cargar o copiar los celulares de los inactivos');
+        }
+    };
+
     // Copiar lista completa de teléfonos usando allMembers (los 150+ miembros)
     const copyContactsList = async () => {
         try {
@@ -175,6 +206,16 @@ export const AdminMembersPage = () => {
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    {filterTab === 'inactivos' && (
+                        <Button
+                            onClick={copyInactivePhones}
+                            disabled={isFetchingAllMembers}
+                            variant="outline"
+                            className="h-12 px-4 rounded-xl border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 font-bold text-xs uppercase tracking-wider flex items-center gap-2"
+                        >
+                            <Phone size={16} /> Copiar celulares
+                        </Button>
+                    )}
                     <Button 
                         onClick={copyContactsList}
                         disabled={isFetchingAllMembers}
