@@ -135,7 +135,7 @@ export const AdminMembersPage = () => {
                 return;
             }
 
-            await navigator.clipboard.writeText(phones.join('\\n'));
+            await navigator.clipboard.writeText(phones.join('\n'));
             toast.success(`¡${phones.length} números de jugadores inactivos copiados!`);
         } catch {
             toast.error('No se pudieron cargar o copiar los celulares de los inactivos');
