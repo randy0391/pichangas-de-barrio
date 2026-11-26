@@ -560,7 +560,7 @@ class ConvocatoriaController extends Controller
         ]);
 
         $targetUser = \App\Models\User::findOrFail($request->user_id);
-        if ($targetUser->role !== 'member' || $targetUser->status !== 'active') {
+        if (!in_array($targetUser->role, ['member', 'admin'], true) || ($targetUser->role === 'member' && $targetUser->status !== 'active')) {
             return response()->json(['message' => 'Solo se pueden agregar jugadores activos a una convocatoria.'], 422);
         }
 
