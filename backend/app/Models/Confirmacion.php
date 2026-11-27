@@ -11,7 +11,7 @@ class Confirmacion extends Model
     protected $table = 'confirmaciones';
 
     protected $fillable = [
-        'convocatoria_id', 'user_id', 'status', 'match_role', 'team_number', 'notes', 'confirmed_at', 'payment_receipt'
+        'convocatoria_id', 'user_id', 'guest_name', 'status', 'match_role', 'team_number', 'notes', 'confirmed_at', 'payment_receipt'
     ];
 
     protected $casts = [
