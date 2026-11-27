@@ -428,7 +428,7 @@ class ConvocatoriaController extends Controller
         $numTeams = max(2, (int) ($convocatoria->num_teams ?: 2));
         $request->validate(['team_number' => ['nullable', 'integer', 'min:0', 'max:' . $numTeams]]);
 
-        return \\Illuminate\\Support\\Facades\\DB::transaction(function () use ($request, $convocatoria, $userId, $numTeams) {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($request, $convocatoria, $userId, $numTeams) {
             $lockedConvocatoria = Convocatoria::whereKey($convocatoria->id)->lockForUpdate()->firstOrFail();
             $query = $lockedConvocatoria->confirmaciones()->where('status', 'confirmado');
             $confirmacion = ((int) $userId < 0)
@@ -486,15 +486,15 @@ class ConvocatoriaController extends Controller
         $refundableAmount = 0;
         if ($confirmacion->user_id) {
             $targetUserId = $confirmacion->user_id;
-            $deductedAmount = abs((float) \\App\\Models\\WalletTransaction::where('user_id', $targetUserId)
+            $deductedAmount = abs((float) \App\Models\WalletTransaction::where('user_id', $targetUserId)
                 ->where('reference_type', 'convocatoria')->where('reference_id', $convocatoria->id)
                 ->where('type', 'descuento')->where('status', 'aprobado')->sum('amount'));
-            $refundedAmount = (float) \\App\\Models\\WalletTransaction::where('user_id', $targetUserId)
+            $refundedAmount = (float) \App\Models\WalletTransaction::where('user_id', $targetUserId)
                 ->where('reference_type', 'convocatoria')->where('reference_id', $convocatoria->id)
                 ->where('type', 'devolucion')->where('status', 'aprobado')->sum('amount');
             $refundableAmount = max(0, $deductedAmount - $refundedAmount);
             if ($refundableAmount > 0) {
-                $targetUser = \\App\\Models\\User::find($targetUserId);
+                $targetUser = \App\Models\User::find($targetUserId);
                 if ($targetUser) {
                     $wallet = $targetUser->getOrCreateWallet();
                     $wallet->refund($refundableAmount, 'Devolucion por cancelacion en convocatoria: ' . $convocatoria->title, 'convocatoria', $convocatoria->id);
@@ -522,16 +522,16 @@ class ConvocatoriaController extends Controller
             'match_role' => 'required|in:jugador,portero',
         ]);
 
-        $targetUser = $request->filled('user_id') ? \\App\\Models\\User::findOrFail($request->user_id) : null;
+        $targetUser = $request->filled('user_id') ? \App\Models\User::findOrFail($request->user_id) : null;
         if ($targetUser && (!in_array($targetUser->role, ['member', 'admin'], true) || ($targetUser->role === 'member' && $targetUser->status !== 'active'))) {
             return response()->json(['message' => 'Solo se pueden agregar jugadores activos a una convocatoria.'], 422);
         }
-        $guestName = $targetUser ? null : trim(preg_replace('/\\s+/', ' ', (string) $request->guest_name));
+        $guestName = $targetUser ? null : trim(preg_replace('/\s+/', ' ', (string) $request->guest_name));
         if (!$targetUser && mb_strlen($guestName) < 2) {
             return response()->json(['message' => 'Escribe el nombre del invitado.'], 422);
         }
 
-        return \\Illuminate\\Support\\Facades\\DB::transaction(function () use ($request, $id, $targetUser, $guestName) {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($request, $id, $targetUser, $guestName) {
             $convocatoria = Convocatoria::where('id', $id)->lockForUpdate()->firstOrFail();
             if ($convocatoria->status !== 'abierta') return response()->json(['message' => 'La convocatoria ya no esta abierta'], 400);
 
