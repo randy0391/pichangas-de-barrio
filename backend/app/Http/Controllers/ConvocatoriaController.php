@@ -426,58 +426,34 @@ class ConvocatoriaController extends Controller
 
         $convocatoria = Convocatoria::findOrFail($id);
         $numTeams = max(2, (int) ($convocatoria->num_teams ?: 2));
+        $request->validate(['team_number' => ['nullable', 'integer', 'min:0', 'max:' . $numTeams]]);
 
-        $request->validate([
-            'team_number' => ['nullable', 'integer', 'min:0', 'max:' . $numTeams],
-        ]);
-
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($request, $convocatoria, $userId, $numTeams) {
+        return \\Illuminate\\Support\\Facades\\DB::transaction(function () use ($request, $convocatoria, $userId, $numTeams) {
             $lockedConvocatoria = Convocatoria::whereKey($convocatoria->id)->lockForUpdate()->firstOrFail();
-            $confirmacion = $lockedConvocatoria->confirmaciones()
-                ->where('user_id', $userId)
-                ->where('status', 'confirmado')
-                ->firstOrFail();
+            $query = $lockedConvocatoria->confirmaciones()->where('status', 'confirmado');
+            $confirmacion = ((int) $userId < 0)
+                ? $query->whereNull('user_id')->whereKey(abs((int) $userId))->firstOrFail()
+                : $query->where('user_id', $userId)->firstOrFail();
 
             $value = $request->team_number;
             $targetTeam = ($value === 0 || $value === null) ? null : (int) $value;
-
             if ($targetTeam !== null && $targetTeam !== (int) $confirmacion->team_number) {
                 $teamCapacity = (int) ceil($lockedConvocatoria->max_players / $numTeams);
-                $currentTeamMembers = $lockedConvocatoria->confirmaciones()
-                    ->where('status', 'confirmado')
-                    ->where('team_number', $targetTeam)
-                    ->where('id', '!=', $confirmacion->id)
-                    ->count();
-
+                $currentTeamMembers = $lockedConvocatoria->confirmaciones()->where('status', 'confirmado')
+                    ->where('team_number', $targetTeam)->where('id', '!=', $confirmacion->id)->count();
                 if ($currentTeamMembers >= $teamCapacity) {
-                    return response()->json([
-                        'message' => "El Equipo {$targetTeam} ya está completo ({$teamCapacity}/{$teamCapacity}).",
-                    ], 422);
+                    return response()->json(['message' => "El Equipo {$targetTeam} ya está completo ({$teamCapacity}/{$teamCapacity})."], 422);
                 }
-
                 if ($confirmacion->match_role === 'portero') {
-                    $goalkeeperExists = $lockedConvocatoria->confirmaciones()
-                        ->where('status', 'confirmado')
-                        ->where('match_role', 'portero')
-                        ->where('team_number', $targetTeam)
-                        ->where('id', '!=', $confirmacion->id)
-                        ->exists();
-
-                    if ($goalkeeperExists) {
-                        return response()->json([
-                            'message' => "El Equipo {$targetTeam} ya tiene arquero.",
-                        ], 422);
-                    }
+                    $goalkeeperExists = $lockedConvocatoria->confirmaciones()->where('status', 'confirmado')
+                        ->where('match_role', 'portero')->where('team_number', $targetTeam)
+                        ->where('id', '!=', $confirmacion->id)->exists();
+                    if ($goalkeeperExists) return response()->json(['message' => "El Equipo {$targetTeam} ya tiene arquero."], 422);
                 }
             }
-
             $confirmacion->team_number = $targetTeam;
             $confirmacion->save();
-
-            return response()->json([
-                'message' => 'Equipo del jugador actualizado exitosamente',
-                'team_number' => $confirmacion->team_number
-            ]);
+            return response()->json(['message' => 'Equipo actualizado exitosamente', 'team_number' => $confirmacion->team_number]);
         });
     }
 
@@ -501,53 +477,39 @@ class ConvocatoriaController extends Controller
     public function removeConfirmacion($id, $userId)
     {
         $convocatoria = Convocatoria::findOrFail($id);
-        $confirmacion = Confirmacion::where('convocatoria_id', $id)->where('user_id', $userId)->first();
+        $confirmacion = ((int) $userId < 0)
+            ? Confirmacion::where('convocatoria_id', $id)->whereNull('user_id')->whereKey(abs((int) $userId))->first()
+            : Confirmacion::where('convocatoria_id', $id)->where('user_id', $userId)->first();
 
-        if ($confirmacion) {
-            // Solo devolver saldo si hubo un descuento previo de billetera para esta convocatoria
-            $deductedAmount = abs((float) \App\Models\WalletTransaction::where('user_id', $userId)
-                ->where('reference_type', 'convocatoria')
-                ->where('reference_id', $convocatoria->id)
-                ->where('type', 'descuento')
-                ->where('status', 'aprobado')
-                ->sum('amount'));
+        if (!$confirmacion) return response()->json(['message' => 'No se encontro la confirmacion del participante'], 404);
 
-            $refundedAmount = (float) \App\Models\WalletTransaction::where('user_id', $userId)
-                ->where('reference_type', 'convocatoria')
-                ->where('reference_id', $convocatoria->id)
-                ->where('type', 'devolucion')
-                ->where('status', 'aprobado')
-                ->sum('amount');
-
+        $refundableAmount = 0;
+        if ($confirmacion->user_id) {
+            $targetUserId = $confirmacion->user_id;
+            $deductedAmount = abs((float) \\App\\Models\\WalletTransaction::where('user_id', $targetUserId)
+                ->where('reference_type', 'convocatoria')->where('reference_id', $convocatoria->id)
+                ->where('type', 'descuento')->where('status', 'aprobado')->sum('amount'));
+            $refundedAmount = (float) \\App\\Models\\WalletTransaction::where('user_id', $targetUserId)
+                ->where('reference_type', 'convocatoria')->where('reference_id', $convocatoria->id)
+                ->where('type', 'devolucion')->where('status', 'aprobado')->sum('amount');
             $refundableAmount = max(0, $deductedAmount - $refundedAmount);
-
             if ($refundableAmount > 0) {
-                $targetUser = \App\Models\User::find($userId);
+                $targetUser = \\App\\Models\\User::find($targetUserId);
                 if ($targetUser) {
                     $wallet = $targetUser->getOrCreateWallet();
-                    $wallet->refund(
-                        $refundableAmount,
-                        'Devolucion por cancelacion en convocatoria: ' . $convocatoria->title,
-                        'convocatoria',
-                        $convocatoria->id
-                    );
+                    $wallet->refund($refundableAmount, 'Devolucion por cancelacion en convocatoria: ' . $convocatoria->title, 'convocatoria', $convocatoria->id);
                 }
             }
-
-            $confirmacion->delete();
-
-            $msg = $refundableAmount > 0
-                ? 'Reserva eliminada y saldo devuelto a su billetera (S/ ' . number_format($refundableAmount, 2) . ')'
-                : 'Reserva eliminada. No se realizo devolucion ya que el jugador no tuvo descuento de saldo previo.';
-
-            return response()->json([
-                'message' => $msg,
-                'refunded' => $refundableAmount > 0,
-                'refunded_amount' => $refundableAmount,
-            ]);
         }
 
-        return response()->json(['message' => 'No se encontro la confirmacion del jugador'], 404);
+        $confirmacion->delete();
+        return response()->json([
+            'message' => $confirmacion->user_id
+                ? ($refundableAmount > 0 ? 'Reserva eliminada y saldo devuelto.' : 'Reserva eliminada.')
+                : 'Invitado eliminado de esta convocatoria.',
+            'refunded' => $refundableAmount > 0,
+            'refunded_amount' => $refundableAmount,
+        ]);
     }
 
     public function addPlayer(Request $request, $id)
@@ -555,70 +517,51 @@ class ConvocatoriaController extends Controller
         if (!$request->user()->isAdmin()) return response()->json(['message' => 'Unauthorized'], 403);
 
         $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'nullable|required_without:guest_name|exists:users,id',
+            'guest_name' => 'nullable|required_without:user_id|string|max:120',
             'match_role' => 'required|in:jugador,portero',
         ]);
 
-        $targetUser = \App\Models\User::findOrFail($request->user_id);
-        if (!in_array($targetUser->role, ['member', 'admin'], true) || ($targetUser->role === 'member' && $targetUser->status !== 'active')) {
+        $targetUser = $request->filled('user_id') ? \\App\\Models\\User::findOrFail($request->user_id) : null;
+        if ($targetUser && (!in_array($targetUser->role, ['member', 'admin'], true) || ($targetUser->role === 'member' && $targetUser->status !== 'active'))) {
             return response()->json(['message' => 'Solo se pueden agregar jugadores activos a una convocatoria.'], 422);
         }
+        $guestName = $targetUser ? null : trim(preg_replace('/\\s+/', ' ', (string) $request->guest_name));
+        if (!$targetUser && mb_strlen($guestName) < 2) {
+            return response()->json(['message' => 'Escribe el nombre del invitado.'], 422);
+        }
 
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($request, $id, $targetUser) {
-            // Serialize additions to prevent two requests from consuming the same vacancy.
+        return \\Illuminate\\Support\\Facades\\DB::transaction(function () use ($request, $id, $targetUser, $guestName) {
             $convocatoria = Convocatoria::where('id', $id)->lockForUpdate()->firstOrFail();
+            if ($convocatoria->status !== 'abierta') return response()->json(['message' => 'La convocatoria ya no esta abierta'], 400);
 
-            if ($convocatoria->status !== 'abierta') {
-                return response()->json(['message' => 'La convocatoria ya no esta abierta'], 400);
-            }
-
-            if ($convocatoria->confirmaciones()->where('user_id', $request->user_id)->exists()) {
+            if ($targetUser && $convocatoria->confirmaciones()->where('user_id', $targetUser->id)->exists()) {
                 return response()->json(['message' => 'El jugador ya esta confirmado'], 400);
             }
-
             $numTeams = max(2, (int) ($convocatoria->num_teams ?: 2));
             $maxPorteros = $numTeams;
             $maxJugadores = max(0, (int) $convocatoria->max_players - $maxPorteros);
-
             if ($request->match_role === 'portero') {
-                $currentPorteros = $convocatoria->confirmaciones()
-                    ->where('status', 'confirmado')
-                    ->where('match_role', 'portero')
-                    ->count();
-
-                if ($currentPorteros >= $maxPorteros) {
-                    return response()->json(['message' => "Ya se completaron los cupos de arquero ({$maxPorteros}/{$maxPorteros})."], 422);
-                }
+                $current = $convocatoria->confirmaciones()->where('status', 'confirmado')->where('match_role', 'portero')->count();
+                if ($current >= $maxPorteros) return response()->json(['message' => "Ya se completaron los cupos de arquero ({$maxPorteros}/{$maxPorteros})."], 422);
             } else {
-                $currentJugadores = $convocatoria->confirmaciones()
-                    ->where('status', 'confirmado')
-                    ->where('match_role', 'jugador')
-                    ->count();
-
-                if ($currentJugadores >= $maxJugadores) {
-                    return response()->json(['message' => "Ya se completaron los cupos de jugadores de campo ({$maxJugadores}/{$maxJugadores})."], 422);
-                }
+                $current = $convocatoria->confirmaciones()->where('status', 'confirmado')->where('match_role', 'jugador')->count();
+                if ($current >= $maxJugadores) return response()->json(['message' => "Ya se completaron los cupos de jugadores de campo ({$maxJugadores}/{$maxJugadores})."], 422);
             }
-
-            $currentConfirmados = $convocatoria->confirmaciones()
-                ->where('status', 'confirmado')
-                ->count();
-
-            if ($currentConfirmados >= $convocatoria->max_players) {
-                return response()->json(['message' => 'Ya se completo el cupo maximo de la convocatoria.'], 422);
-            }
+            $currentTotal = $convocatoria->confirmaciones()->where('status', 'confirmado')->count();
+            if ($currentTotal >= $convocatoria->max_players) return response()->json(['message' => 'Ya se completo el cupo maximo de la convocatoria.'], 422);
 
             $confirmation = $convocatoria->confirmaciones()->create([
-                'user_id' => $request->user_id,
+                'user_id' => $targetUser?->id,
+                'guest_name' => $guestName,
                 'match_role' => $request->match_role,
                 'status' => 'confirmado',
-                'notes' => 'Anadido manualmente por administrador',
+                'notes' => $targetUser ? 'Anadido manualmente por administrador' : 'Invitado temporal de esta convocatoria',
             ]);
-
             $this->asignarEquipoAutomatico($convocatoria, $confirmation);
-            $targetUser->forceFill(['last_convocatoria_at' => now()])->save();
-
-            return response()->json(['message' => 'Jugador añadido exitosamente']);
+            if ($targetUser) $targetUser->forceFill(['last_convocatoria_at' => now()])->save();
+            return response()->json(['message' => $targetUser ? 'Jugador añadido exitosamente' : 'Invitado añadido a esta convocatoria']);
         });
     }
+
 }
