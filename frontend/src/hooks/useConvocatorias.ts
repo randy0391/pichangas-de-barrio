@@ -226,9 +226,9 @@ export const useRemoveConfirmacion = () => {
 export const useAddPlayerToConvocatoria = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, userId, matchRole }: { id: number; userId: number; matchRole: 'jugador' | 'portero' }) => {
+    mutationFn: async ({ id, userId, guestName, matchRole }: { id: number; userId?: number; guestName?: string; matchRole: 'jugador' | 'portero' }) => {
       const { data } = await api.post(`/convocatorias/${id}/add-player`, {
-        user_id: userId,
+        ...(userId ? { user_id: userId } : { guest_name: guestName }),
         match_role: matchRole
       });
       return data;
