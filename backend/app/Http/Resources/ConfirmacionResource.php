@@ -20,6 +20,7 @@ class ConfirmacionResource extends JsonResource
             'payment_receipt' => \App\Helpers\ImageHelper::getUrl($this->payment_receipt),
             'attendance' => $this->attendance,
             'user' => new UserResource($this->whenLoaded('user')),
+            'guest_name' => $this->guest_name,
         ];
     }
 }
