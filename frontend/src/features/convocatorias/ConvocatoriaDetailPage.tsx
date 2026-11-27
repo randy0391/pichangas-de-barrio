@@ -1257,7 +1257,7 @@ export const ConvocatoriaDetailPage = () => {
                                                                         type="button"
                                                                         onClick={(event) => {
                                                                             event.stopPropagation();
-                                                                            handleSwapTeam(p.user.id, unassignedTeamSelections[p.user.id] ?? 1);
+                                                                            handleSwapTeam(p.user?.id ?? -p.id, unassignedTeamSelections[p.user?.id ?? -p.id] ?? 1);
                                                                         }}
                                                                         className="rounded-lg bg-[#A5E900] px-2.5 py-2 text-xs font-black text-slate-950 hover:bg-lime-400 transition-colors"
                                                                     >
@@ -1426,7 +1426,7 @@ export const ConvocatoriaDetailPage = () => {
                                                                 toast(`¿Eliminar la reserva de ${pName}?`, {
                                                                     action: {
                                                                         label: 'Eliminar',
-                                                                        onClick: () => removeConfirmacion({ id: c.id, userId: p.user.id })
+                                                                        onClick: () => removeConfirmacion({ id: c.id, userId: p.user?.id ?? -p.id })
                                                                     },
                                                                     cancel: { label: 'Cancelar', onClick: () => {} }
                                                                 });
