@@ -356,7 +356,7 @@ export const TacticalPitch: React.FC<TacticalPitchProps> = ({
         {[...team1Positions, ...team2Positions].map(({ player, tacticalRole, roleLabel, x, y }) => {
           const isGoalkeeper = tacticalRole === 'POR';
           const isMe = player.user?.id === user?.id;
-          const pName = player.user?.name || player.user?.nombres || 'Jugador';
+          const pName = player.user?.name || player.guest_name || player.user?.nombres || 'Invitado';
           const shortName = (player.user?.nickname || pName.split(' ')[0]).toUpperCase();
           const pTeamNum = player.team_number || 1;
           const colorObj = teamColors[pTeamNum] || teamColors[1];
@@ -468,7 +468,7 @@ export const TacticalPitch: React.FC<TacticalPitchProps> = ({
                 <div className="grid grid-cols-2 gap-2">
                   {restPlayers.map(p => {
                     const isGk = p.match_role === 'portero';
-                    const pName = p.user?.name || 'Jugador';
+                    const pName = p.user?.name || p.guest_name || 'Invitado';
                     return (
                       <div
                         key={p.id}
