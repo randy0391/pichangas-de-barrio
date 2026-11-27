@@ -80,7 +80,8 @@ export interface Confirmacion {
   confirmed_at: string | null;
   payment_receipt: string | null;
   attendance?: 'presente' | 'tardanza' | 'falta' | 'pendiente';
-  user: User;
+  user?: User | null;
+  guest_name?: string | null;
 }
 
 export interface Convocatoria {
