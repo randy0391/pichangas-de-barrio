@@ -146,7 +146,7 @@ export const ConvocatoriaDetailPage = () => {
     const handleCopy = () => {
         const sorted = [...confirmados].sort((a,b) => a.match_role === 'portero' ? -1 : 1);
         const text = sorted.map((p, i) => {
-            const userName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
+            const userName = p.user?.name || p.guest_name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
             const nickname = p.user?.nickname ? ` "${p.user?.nickname}"` : '';
             const roleTag = p.match_role === 'portero' ? '🧤 (Portero)' : '⚽';
             return `${i + 1}. ${roleTag} ${userName}${nickname}`;
@@ -1099,7 +1099,7 @@ export const ConvocatoriaDetailPage = () => {
                                                 return (
                                                     <div 
                                                         key={p.id} 
-                                                        onClick={() => setSelectedPlayerCard(p)}
+                                                        onClick={() => p.user && setSelectedPlayerCard(p)}
                                                         className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer hover:scale-[1.01] ${
                                                             isMe 
                                                                 ? 'bg-[#F00091]/15 border-[#F00091]/40 shadow-sm' 
@@ -1191,8 +1191,8 @@ export const ConvocatoriaDetailPage = () => {
 
                                             {/* Jugadores de Campo */}
                                             {teamFieldPlayers.map((p, idx) => {
-                                                const pName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
-                                                const isMe = p.user?.id === user?.id;
+                                                const pName = p.user?.name || p.guest_name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
+                                                const isMe = Boolean(p.user?.id && p.user.id === user?.id);
 
                                                 return (
                                                     <div 
@@ -1240,10 +1240,10 @@ export const ConvocatoriaDetailPage = () => {
                                                                 <>
                                                                     <select
                                                                         aria-label={`Asignar ${pName} a un equipo`}
-                                                                        value={unassignedTeamSelections[p.user.id] ?? 1}
+                                                                        value={unassignedTeamSelections[p.user?.id ?? -p.id] ?? 1}
                                                                         onChange={(e) => setUnassignedTeamSelections(prev => ({
                                                                             ...prev,
-                                                                            [p.user.id]: Number(e.target.value)
+                                                                            [p.user?.id ?? -p.id]: Number(e.target.value)
                                                                         }))}
                                                                         className="max-w-28 rounded-lg border border-indigo-500/40 bg-slate-900 px-2 py-2 text-xs font-bold text-white"
                                                                     >
@@ -1272,7 +1272,7 @@ export const ConvocatoriaDetailPage = () => {
                                                                         toast(`¿Eliminar la reserva de ${pName}?`, {
                                                                             action: {
                                                                                 label: 'Eliminar',
-                                                                                onClick: () => removeConfirmacion({ id: c.id, userId: p.user.id })
+                                                                                onClick: () => removeConfirmacion({ id: c.id, userId: p.user?.id ?? -p.id })
                                                                             },
                                                                             cancel: { label: 'Cancelar', onClick: () => {} }
                                                                         });
