@@ -61,6 +61,8 @@ export const ConvocatoriaDetailPage = () => {
     const [paymentReceipt, setPaymentReceipt] = useState<File | null>(null);
 
     const [adminSelectedUserId, setAdminSelectedUserId] = useState<string>('');
+    const [adminAddMode, setAdminAddMode] = useState<'member' | 'guest'>('member');
+    const [guestName, setGuestName] = useState('');
     const [adminSelectedRole, setAdminSelectedRole] = useState<'jugador' | 'portero'>('jugador');
     const [adminSearch, setAdminSearch] = useState('');
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -222,18 +224,20 @@ export const ConvocatoriaDetailPage = () => {
     };
 
     const handleAdminAddPlayer = () => {
-        if (!adminSelectedUserId) return toast.error('Selecciona un jugador');
+        if (adminAddMode === 'member' && !adminSelectedUserId) return toast.error('Selecciona un jugador');
+        if (adminAddMode === 'guest' && guestName.trim().length < 2) return toast.error('Escribe el nombre del invitado');
         if (adminSelectedRole === 'portero' && porterosLlenos) {
             return toast.error(`Los cupos de arquero ya están completos (${porterosMax}/${porterosMax})`);
         }
         if (adminSelectedRole === 'jugador' && jugadoresLlenos) {
             return toast.error(`Los cupos de jugadores de campo ya están completos (${jugadoresMax}/${jugadoresMax})`);
         }
-        addPlayer({ id: c.id, userId: Number(adminSelectedUserId), matchRole: adminSelectedRole }, {
+        addPlayer({ id: c.id, ...(adminAddMode === 'member' ? { userId: Number(adminSelectedUserId) } : { guestName: guestName.trim() }), matchRole: adminSelectedRole }, {
             onSuccess: () => {
                 toast.success('Jugador añadido a la convocatoria');
                 setAdminSelectedUserId('');
                 setAdminSearch('');
+                setGuestName('');
                 setIsSearchOpen(false);
             },
             onError: (err: any) => toast.error(err?.response?.data?.message || 'Error al añadir jugador')
@@ -725,8 +729,18 @@ export const ConvocatoriaDetailPage = () => {
                         Busca cualquier jugador registrado por su <strong>nombre, apellido, apodo o DNI</strong> para sumarlo a la convocatoria.
                     </p>
 
+                    <div className="flex gap-2 mb-4">
+                        <button type="button" onClick={() => setAdminAddMode('member')} className={`flex-1 rounded-xl px-3 py-2 text-xs font-black ${adminAddMode === 'member' ? 'bg-indigo-500 text-white' : 'bg-slate-900 text-slate-400 border border-slate-700'}`}>JUGADOR REGISTRADO</button>
+                        <button type="button" onClick={() => { setAdminAddMode('guest'); setAdminSelectedUserId(''); }} className={`flex-1 rounded-xl px-3 py-2 text-xs font-black ${adminAddMode === 'guest' ? 'bg-[#A5E900] text-slate-950' : 'bg-slate-900 text-slate-400 border border-slate-700'}`}>INVITADO TEMPORAL</button>
+                    </div>
                     {/* Selected Member Preview Card OR Search Combobox */}
-                    {selectedMember ? (
+                    {adminAddMode === 'guest' ? (
+                        <div className="mb-4">
+                            <label className="block text-xs font-bold text-lime-300 mb-2">Nombre del invitado (solo para esta pichanga)</label>
+                            <input value={guestName} onChange={e => setGuestName(e.target.value)} maxLength={120} placeholder="Ej. Juan Pérez" className="w-full rounded-2xl border border-lime-500/40 bg-slate-900 px-4 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-lime-500" />
+                            <p className="mt-2 text-[11px] text-slate-400">No se crea una cuenta ni se guarda en la lista de integrantes.</p>
+                        </div>
+                    ) : selectedMember ? (
                         <div className="bg-slate-900/90 border border-indigo-500/40 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
                             <div className="flex items-center gap-3 w-full sm:w-auto">
                                 <div className="w-12 h-12 rounded-full bg-slate-800 text-[#A5E900] border border-indigo-500/50 flex items-center justify-center font-black text-base shrink-0 overflow-hidden">
@@ -904,7 +918,7 @@ export const ConvocatoriaDetailPage = () => {
                             </label>
                             <Button 
                                 onClick={handleAdminAddPlayer} 
-                                disabled={isAddingPlayer || !adminSelectedUserId || (adminSelectedRole === 'portero' ? porterosLlenos : jugadoresLlenos)} 
+                                disabled={isAddingPlayer || (adminAddMode === 'member' ? !adminSelectedUserId : guestName.trim().length < 2) || (adminSelectedRole === 'portero' ? porterosLlenos : jugadoresLlenos)} 
                                 className="w-full h-12 bg-[#A5E900] hover:bg-[#A5E900] text-slate-950 font-black uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-lime-400/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm border-0"
                             >
                                 <UserPlus className="h-4 w-4" />
@@ -933,9 +947,9 @@ export const ConvocatoriaDetailPage = () => {
                             <h3 className="text-sm font-black uppercase tracking-wide text-amber-300">Participantes sin equipo</h3>
                             <p className="mt-1 text-xs text-slate-300">Asigna a cada participante a una vacante sin modificar los equipos ya formados.</p>
                         </div>
-                        {confirmados.filter((p: Confirmacion) => Number(p.team_number || 0) === 0 && p.user?.id).map((p: Confirmacion) => {
-                            const playerName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
-                            const playerId = p.user!.id;
+                        {confirmados.filter((p: Confirmacion) => Number(p.team_number || 0) === 0).map((p: Confirmacion) => {
+                            const playerName = p.user?.name || p.guest_name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
+                            const playerId = p.user?.id ?? -p.id;
                             const selectedTeam = unassignedTeamSelections[playerId] ?? 1;
                             return (
                                 <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-slate-700 bg-slate-900/80 p-3">
@@ -1079,8 +1093,8 @@ export const ConvocatoriaDetailPage = () => {
                                         <div className="p-5 space-y-2.5 flex-1">
                                             {/* Porteros Primero */}
                                             {teamGoalkeepers.map((p) => {
-                                                const pName = p.user?.name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
-                                                const isMe = p.user?.id === user?.id;
+                                                const pName = p.user?.name || p.guest_name || `${p.user?.nombres || ''} ${p.user?.apellido_paterno || ''}`.trim() || 'Jugador';
+                                                const isMe = Boolean(p.user?.id && p.user.id === user?.id);
 
                                                 return (
                                                     <div 
@@ -1124,10 +1138,10 @@ export const ConvocatoriaDetailPage = () => {
                                                                 <>
                                                                     <select
                                                                         aria-label={`Asignar ${pName} a un equipo`}
-                                                                        value={unassignedTeamSelections[p.user.id] ?? 1}
+                                                                        value={unassignedTeamSelections[p.user?.id ?? -p.id] ?? 1}
                                                                         onChange={(e) => setUnassignedTeamSelections(prev => ({
                                                                             ...prev,
-                                                                            [p.user.id]: Number(e.target.value)
+                                                                            [p.user?.id ?? -p.id]: Number(e.target.value)
                                                                         }))}
                                                                         className="max-w-28 rounded-lg border border-indigo-500/40 bg-slate-900 px-2 py-2 text-xs font-bold text-white"
                                                                     >
@@ -1139,7 +1153,7 @@ export const ConvocatoriaDetailPage = () => {
                                                                         type="button"
                                                                         onClick={(event) => {
                                                                             event.stopPropagation();
-                                                                            handleSwapTeam(p.user.id, unassignedTeamSelections[p.user.id] ?? 1);
+                                                                            handleSwapTeam(p.user?.id ?? -p.id, unassignedTeamSelections[p.user?.id ?? -p.id] ?? 1);
                                                                         }}
                                                                         className="rounded-lg bg-[#A5E900] px-2.5 py-2 text-xs font-black text-slate-950 hover:bg-lime-400 transition-colors"
                                                                     >
@@ -1154,7 +1168,7 @@ export const ConvocatoriaDetailPage = () => {
                                                                         toast(`¿Eliminar la reserva de ${pName}?`, {
                                                                             action: {
                                                                                 label: 'Eliminar',
-                                                                                onClick: () => removeConfirmacion({ id: c.id, userId: p.user.id })
+                                                                                onClick: () => removeConfirmacion({ id: c.id, userId: p.user?.id ?? -p.id })
                                                                             },
                                                                             cancel: { label: 'Cancelar', onClick: () => {} }
                                                                         });
